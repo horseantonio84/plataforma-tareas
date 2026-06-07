@@ -15,7 +15,21 @@
     <i class="bi bi-list" style="font-size:1.4rem"></i>
   </button>
   <div class="brand">Aula<em>Online</em></div>
-  <span class="class-chip" id="topbar-classname">Cargando...</span>
+  <div class="class-switcher" id="class-switcher">
+    <button class="class-switcher-btn" id="class-switcher-btn" onclick="toggleClassMenu()">
+      <i class="bi bi-mortarboard-fill"></i>
+      <span id="topbar-classname">Cargando...</span>
+      <i class="bi bi-chevron-down" style="font-size:.7rem;opacity:.7"></i>
+    </button>
+    <div class="class-switcher-menu" id="class-switcher-menu">
+      <div class="csm-header">Mis clases</div>
+      <div id="csm-list"></div>
+      <div class="csm-divider"></div>
+      <button class="csm-new" onclick="openNewClassModal()">
+        <i class="bi bi-plus-circle"></i> Nueva clase
+      </button>
+    </div>
+  </div>
   <div class="spacer"></div>
   <div class="topbar-actions">
     <span class="badge badge-brand" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)">
@@ -413,6 +427,33 @@
   </div>
 </div>
 
+<!-- NUEVA CLASE -->
+<div class="modal-overlay" id="modal-nueva-clase" onclick="closeModalOutside(event,'modal-nueva-clase')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3><i class="bi bi-mortarboard-fill"></i> Nueva clase</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-nueva-clase')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre de la clase <span class="req">*</span></label>
+        <input type="text" class="form-control" id="new-class-name" placeholder="Ej: Programación, Base de Datos..."/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción</label>
+        <textarea class="form-control" id="new-class-desc" rows="2" placeholder="Descripción breve opcional..."></textarea>
+      </div>
+      <div class="alert alert-info" style="margin-top:.5rem">
+        <i class="bi bi-info-circle"></i> Se generará un código único para que los alumnos puedan unirse.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-nueva-clase')">Cancelar</button>
+      <button class="btn btn-primary" onclick="createNewClass()"><i class="bi bi-plus-lg"></i> Crear clase</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 
 <script type="module">
@@ -429,41 +470,97 @@ let currentClass = null;
 let studentsCache = [];
 
 // ─── INIT / AUTH GUARD ───────────────────
+let _initialized = false;
 onAuthStateChanged(auth, async (user) => {
+  if (_initialized) return;  // evitar bucle si se dispara varias veces
   if (!user) { window.location.href = 'index.html'; return; }
-  const snap = await getDoc(doc(db, 'users', user.uid));
-  if (!snap.exists() || snap.data().role !== 'teacher') {
-    window.location.href = 'index.html'; return;
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (!snap.exists() || snap.data().role !== 'teacher') {
+      window.location.href = 'index.html'; return;
+    }
+    currentUser = { ...snap.data(), uid: user.uid };
+    await loadClass();
+    initUI();
+    _initialized = true;
+    showSection('inicio');
+  } catch (err) {
+    console.error('Error al inicializar:', err);
+    // No redirigir — mostrar error sin bucle
+    document.getElementById('topbar-classname').textContent = 'Error de conexión';
   }
-  currentUser = { ...snap.data(), uid: user.uid };
-  await loadClass();
-  initUI();
-  showSection('inicio');
 });
 
+let allClasses = [];
+
 async function loadClass() {
-  // Buscar la clase del profesor
   const q = query(collection(db, 'classes'), where('teacherUid', '==', currentUser.uid));
   const snap = await getDocs(q);
   if (snap.empty) {
-    // Primera vez: crear la clase automáticamente
     const code = generateCode();
     const ref = await addDoc(collection(db, 'classes'), {
-      name:        'Mi Clase',
-      description: '',
-      teacherUid:  currentUser.uid,
-      teacherName: currentUser.displayName,
-      code,
-      createdAt:   serverTimestamp()
+      name: 'Mi Clase', description: '',
+      teacherUid: currentUser.uid, teacherName: currentUser.displayName,
+      code, createdAt: serverTimestamp()
     });
-    currentClass = { id: ref.id, name: 'Mi Clase', code, description: '' };
+    allClasses = [{ id: ref.id, name: 'Mi Clase', code, description: '' }];
   } else {
-    const d = snap.docs[0];
-    currentClass = { id: d.id, ...d.data() };
+    allClasses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allClasses.sort((a, b) => (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
   }
-  document.getElementById('topbar-classname').textContent = currentClass.name;
-  document.getElementById('settings-code').textContent    = currentClass.code;
+  const savedId = localStorage.getItem('ao_activeClassId');
+  currentClass = allClasses.find(c => c.id === savedId) || allClasses[0];
+  renderClassSwitcher();
+  document.getElementById('settings-code').textContent = currentClass.code;
 }
+
+function renderClassSwitcher() {
+  document.getElementById('topbar-classname').textContent = currentClass.name;
+  document.getElementById('csm-list').innerHTML = allClasses.map(c => `
+    <button class="csm-item ${c.id === currentClass.id ? 'active' : ''}" onclick="switchClass('${c.id}')">
+      <div class="csm-item-icon">${c.name[0].toUpperCase()}</div>
+      <div class="csm-item-info">
+        <div class="csm-item-name">${esc(c.name)}</div>
+        <div class="csm-item-code">${c.code}</div>
+      </div>
+      ${c.id === currentClass.id ? '<i class="bi bi-check2" style="color:var(--brand);margin-left:auto;flex-shrink:0"></i>' : ''}
+    </button>`).join('');
+}
+
+window.switchClass = (classId) => {
+  if (currentClass?.id === classId) { closeClassMenu(); return; }
+  currentClass = allClasses.find(c => c.id === classId);
+  localStorage.setItem('ao_activeClassId', classId);
+  renderClassSwitcher();
+  document.getElementById('settings-code').textContent = currentClass.code;
+  closeClassMenu();
+  showSection('inicio');
+  toast(`Cambiado a: ${currentClass.name}`, 'success');
+};
+
+window.toggleClassMenu = () => document.getElementById('class-switcher-menu').classList.toggle('open');
+window.closeClassMenu  = () => document.getElementById('class-switcher-menu').classList.remove('open');
+
+window.openNewClassModal = () => {
+  closeClassMenu();
+  document.getElementById('new-class-name').value = '';
+  document.getElementById('new-class-desc').value = '';
+  openModal('modal-nueva-clase');
+};
+
+window.createNewClass = async () => {
+  const name = document.getElementById('new-class-name').value.trim();
+  if (!name) { toast('El nombre es obligatorio.', 'error'); return; }
+  const code = generateCode();
+  const ref = await addDoc(collection(db, 'classes'), {
+    name, description: document.getElementById('new-class-desc').value.trim(),
+    teacherUid: currentUser.uid, teacherName: currentUser.displayName,
+    code, createdAt: serverTimestamp()
+  });
+  allClasses.push({ id: ref.id, name, code, description: '' });
+  closeModal('modal-nueva-clase');
+  switchClass(ref.id);
+};
 
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -1013,9 +1110,17 @@ window.saveClassSettings = async () => {
   await updateDoc(doc(db,'classes',currentClass.id), { name, description: desc });
   currentClass.name = name;
   currentClass.description = desc;
-  document.getElementById('topbar-classname').textContent = name;
+  const idx = allClasses.findIndex(c => c.id === currentClass.id);
+  if (idx !== -1) allClasses[idx].name = name;
+  renderClassSwitcher();
   toast('Ajustes guardados.','success');
 };
+
+// Cerrar menú de clases al hacer click fuera
+document.addEventListener('click', e => {
+  const sw = document.getElementById('class-switcher');
+  if (sw && !sw.contains(e.target)) closeClassMenu();
+});
 
 window.copyCode = () => {
   navigator.clipboard.writeText(currentClass.code);
@@ -1037,6 +1142,62 @@ window.addEventListener('resize', () => {
     #home-grid { grid-template-columns: 1fr !important; }
   }
   [style*="display:flex"][style*="gap:.4rem"] { flex-wrap: wrap; }
+
+  /* ── CLASS SWITCHER ── */
+  .class-switcher { position: relative; }
+  .class-switcher-btn {
+    display: flex; align-items: center; gap: .5rem;
+    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+    color: #fff; border-radius: 2rem;
+    padding: .3rem .85rem .3rem .65rem;
+    font-family: var(--font); font-size: .8rem; font-weight: 600;
+    cursor: pointer; transition: background var(--transition);
+    max-width: 220px; white-space: nowrap;
+  }
+  .class-switcher-btn:hover { background: rgba(255,255,255,.25); }
+  .class-switcher-btn span { overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+  .class-switcher-menu {
+    position: absolute; top: calc(100% + 10px); left: 0;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    min-width: 240px; overflow: hidden; z-index: 2000; display: none;
+  }
+  .class-switcher-menu.open { display: block; }
+  .csm-header {
+    padding: .6rem 1rem; font-size: .68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .csm-item {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .65rem 1rem; width: 100%;
+    background: none; border: none; cursor: pointer; text-align: left;
+    transition: background var(--transition); font-family: var(--font);
+  }
+  .csm-item:hover { background: var(--surface); }
+  .csm-item.active { background: var(--brand-light); }
+  .csm-item-icon {
+    width: 30px; height: 30px; border-radius: .4rem;
+    background: var(--brand); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .8rem; flex-shrink: 0;
+  }
+  .csm-item.active .csm-item-icon { background: var(--brand-dark); }
+  .csm-item-info { flex: 1; min-width: 0; }
+  .csm-item-name { font-size: .85rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .csm-item-code { font-size: .7rem; color: var(--muted); font-family: var(--mono); }
+  .csm-divider { height: 1px; background: var(--border); }
+  .csm-new {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .7rem 1rem; width: 100%;
+    background: none; border: none; cursor: pointer;
+    font-size: .85rem; font-weight: 600; color: var(--brand);
+    font-family: var(--font); transition: background var(--transition);
+  }
+  .csm-new:hover { background: var(--brand-light); }
+  @media (max-width: 768px) {
+    .class-switcher-btn span { max-width: 80px; }
+  }
 </style>
 
 </body>
