@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AulaOnline — Pendiente de aprobación</title>
+  <link rel="stylesheet" href="assets/css/app.css"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Aula<em>Online</em></div>
+</div>
+
+<div class="pending-screen" style="margin-top:var(--topbar-h)">
+  <div class="pending-icon"><i class="bi bi-hourglass-split"></i></div>
+  <h2 style="font-size:1.4rem">Cuenta pendiente de aprobación</h2>
+  <p style="color:var(--muted);max-width:360px;font-size:.925rem">
+    Tu solicitud de acceso ha sido enviada. El profesor revisará tu cuenta y te dará acceso en breve.
+  </p>
+  <div class="alert alert-info" style="max-width:400px">
+    <i class="bi bi-info-circle"></i>
+    Cuando tu acceso sea aprobado, podrás iniciar sesión normalmente. Vuelve a intentarlo en unos minutos.
+  </div>
+  <div style="display:flex;gap:.75rem;margin-top:.5rem">
+    <button class="btn btn-secondary" onclick="checkAndRedirect()">
+      <i class="bi bi-arrow-clockwise"></i> Comprobar estado
+    </button>
+    <button class="btn btn-ghost" onclick="doLogout()">
+      <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+    </button>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { auth, db } from './assets/js/firebase-config.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) window.location.href = 'index.html';
+});
+
+window.checkAndRedirect = async () => {
+  const user = auth.currentUser;
+  if (!user) return;
+  const snap = await getDoc(doc(db, 'users', user.uid));
+  if (snap.exists() && snap.data().approved) {
+    window.location.href = 'dashboard.html';
+  } else {
+    // Toast
+    const t = document.createElement('div');
+    t.className = 'toast toast-warning';
+    t.innerHTML = '<i class="bi bi-clock"></i> Aún pendiente. El profesor todavía no ha aprobado tu acceso.';
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  }
+};
+
+window.doLogout = async () => {
+  await signOut(auth);
+  window.location.href = 'index.html';
+};
+</script>
+</body>
+</html>
