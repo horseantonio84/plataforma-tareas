@@ -791,8 +791,27 @@ window.saveTask = async () => {
 };
 
 window.deleteTask = async (id) => {
-  if (!confirm('¿Eliminar esta tarea? También se eliminarán sus entregas.')) return;
-  await deleteDoc(doc(db,'tasks',id));
+  // Comprobar si hay entregas corregidas con nota
+  const subsSnap = await getDocs(query(collection(db,'submissions'), where('taskId','==',id)));
+  const graded = subsSnap.docs.filter(d => d.data().grade != null);
+  const ungraded = subsSnap.docs.filter(d => d.data().grade == null);
+
+  let msg = '¿Eliminar esta tarea?';
+  if (graded.length > 0) {
+    msg += `\n\n⚠️ Hay ${graded.length} entrega(s) con nota. Se conservarán en "Entregas" marcadas como tarea eliminada.`;
+  }
+  if (ungraded.length > 0) {
+    msg += `\n${ungraded.length} entrega(s) sin nota serán eliminadas.`;
+  }
+  if (!confirm(msg)) return;
+
+  // Eliminar solo entregas sin nota
+  for (const d of ungraded) await deleteDoc(doc(db,'submissions', d.id));
+  // Marcar entregas con nota como huérfanas (conservar nota)
+  for (const d of graded) {
+    await updateDoc(doc(db,'submissions', d.id), { taskTitle: d.data().taskTitle || '(tarea eliminada)', taskDeleted: true });
+  }
+  await deleteDoc(doc(db,'tasks', id));
   renderTasks(); toast('Tarea eliminada.');
 };
 
@@ -829,9 +848,14 @@ async function renderSubmissions() {
       <tbody>
         ${snap.docs.map(d => {
           const s = d.data();
+          const taskLabel = taskMap[s.taskId]
+            ? esc(taskMap[s.taskId])
+            : s.taskDeleted
+              ? `<span style="color:var(--muted);font-style:italic">${esc(s.taskTitle||'Tarea eliminada')}</span>`
+              : '<span style="color:var(--muted)">—</span>';
           return `<tr>
             <td><span style="font-weight:600">${esc(s.studentName)}</span></td>
-            <td style="color:var(--muted);font-size:.85rem">${esc(taskMap[s.taskId]||'—')}</td>
+            <td style="font-size:.85rem">${taskLabel}</td>
             <td style="font-size:.8rem">${fmtDate(s.submittedAt)}</td>
             <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.comment||'—')}</td>
             <td>${gradeBadge(s.grade)}</td>
@@ -859,11 +883,19 @@ window.openGradeSubmission = async (subId) => {
 };
 
 window.gradeSubmission = async () => {
-  const id   = document.getElementById('sub-edit-id').value;
+  const id    = document.getElementById('sub-edit-id').value;
   const grade = parseFloat(document.getElementById('sub-grade').value);
   const fb    = document.getElementById('sub-feedback').value.trim();
   if (isNaN(grade) || grade < 0 || grade > 10) { toast('Introduce una nota entre 0 y 10.','error'); return; }
-  await updateDoc(doc(db,'submissions',id), { grade, feedback: fb, gradedAt: serverTimestamp() });
+  // Guardar también el título de la tarea como referencia
+  const subSnap = await getDoc(doc(db,'submissions',id));
+  const taskId  = subSnap.data()?.taskId;
+  let taskTitle = '';
+  if (taskId) {
+    const taskSnap = await getDoc(doc(db,'tasks',taskId));
+    if (taskSnap.exists()) taskTitle = taskSnap.data().title || '';
+  }
+  await updateDoc(doc(db,'submissions',id), { grade, feedback: fb, gradedAt: serverTimestamp(), taskTitle });
   closeModal('modal-grade-submission'); renderSubmissions(); toast('Corrección guardada.','success');
 };
 
