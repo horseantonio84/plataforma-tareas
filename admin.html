@@ -423,9 +423,14 @@
         <textarea class="form-control" id="sub-feedback" rows="3" placeholder="Explica al alumno qué ha hecho bien o puede mejorar..."></textarea>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-grade-submission')">Cancelar</button>
-      <button class="btn btn-success" onclick="gradeSubmission()"><i class="bi bi-check-lg"></i> Guardar corrección</button>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-danger" onclick="removeGradeFromSubmission()" id="btn-remove-grade" style="display:none">
+        <i class="bi bi-x-circle"></i> Quitar nota
+      </button>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn btn-secondary" onclick="closeModal('modal-grade-submission')">Cancelar</button>
+        <button class="btn btn-success" onclick="gradeSubmission()"><i class="bi bi-check-lg"></i> Guardar corrección</button>
+      </div>
     </div>
   </div>
 </div>
@@ -879,7 +884,18 @@ window.openGradeSubmission = async (subId) => {
   document.getElementById('sub-feedback').value = s.feedback || '';
   document.getElementById('sub-detail').innerHTML =
     `<i class="bi bi-person"></i> <strong>${esc(s.studentName)}</strong>${s.comment ? ` · <em>${esc(s.comment)}</em>` : ''}`;
+  // Mostrar "Quitar nota" solo si ya tiene nota
+  document.getElementById('btn-remove-grade').style.display = s.grade != null ? '' : 'none';
   openModal('modal-grade-submission');
+};
+
+window.removeGradeFromSubmission = async () => {
+  if (!confirm('¿Quitar la nota de esta entrega? El alumno dejará de verla.')) return;
+  const id = document.getElementById('sub-edit-id').value;
+  await updateDoc(doc(db,'submissions',id), { grade: null, feedback: null, gradedAt: null });
+  closeModal('modal-grade-submission');
+  renderSubmissions();
+  toast('Nota eliminada.', 'success');
 };
 
 window.gradeSubmission = async () => {
