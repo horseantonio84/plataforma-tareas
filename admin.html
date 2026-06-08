@@ -32,6 +32,9 @@
   </div>
   <div class="spacer"></div>
   <div class="topbar-actions">
+    <button class="dark-toggle" id="dark-toggle" onclick="toggleDark()" title="Modo oscuro">
+      <i class="bi bi-moon-fill" id="dark-icon"></i>
+    </button>
     <span class="badge badge-brand" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)">
       <i class="bi bi-person-fill"></i> Profesor
     </span>
@@ -76,6 +79,9 @@
   </div>
   <div class="sidebar-section">
     <div class="sidebar-label">Gestión</div>
+    <button class="nav-item" onclick="showSection('estadisticas')" id="nav-estadisticas">
+      <i class="bi bi-bar-chart-fill"></i> Estadísticas
+    </button>
     <button class="nav-item" onclick="showSection('alumnos')" id="nav-alumnos">
       <i class="bi bi-people-fill"></i> Alumnos
       <span class="badge-count" id="badge-pending" style="display:none">0</span>
@@ -200,6 +206,18 @@
       </button>
     </div>
     <div id="resources-container"></div>
+  </section>
+
+  <!-- ░░ ESTADÍSTICAS ░░ -->
+  <section class="page d-none" id="s-estadisticas">
+    <div class="page-header">
+      <h1 class="page-title">Estadísticas por alumno</h1>
+      <select class="form-control" id="stats-student-filter" onchange="renderStats()" style="width:auto;max-width:240px">
+        <option value="">Todos los alumnos</option>
+      </select>
+    </div>
+    <div id="stats-overview" style="margin-bottom:1.5rem"></div>
+    <div id="stats-container"></div>
   </section>
 
   <!-- ░░ ALUMNOS ░░ -->
@@ -490,6 +508,7 @@ onAuthStateChanged(auth, async (user) => {
     currentUser = { ...snap.data(), uid: user.uid };
     await loadClass();
     initUI();
+    startNotifications();
     _initialized = true;
     showSection('inicio');
   } catch (err) {
@@ -542,6 +561,7 @@ window.switchClass = (classId) => {
   renderClassSwitcher();
   document.getElementById('settings-code').textContent = currentClass.code;
   closeClassMenu();
+  startNotifications();
   showSection('inicio');
   toast(`Cambiado a: ${currentClass.name}`, 'success');
 };
@@ -599,6 +619,7 @@ window.showSection = (id) => {
   if (id === 'notas')     renderGrades();
   if (id === 'anuncios')  renderAnnouncements();
   if (id === 'recursos')  renderResources();
+  if (id === 'estadisticas') renderStats();
   if (id === 'alumnos')   renderStudents();
   if (id === 'ajustes')   loadSettings();
   if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
@@ -915,7 +936,156 @@ window.gradeSubmission = async () => {
   closeModal('modal-grade-submission'); renderSubmissions(); toast('Corrección guardada.','success');
 };
 
-// ─── GRADES ───────────────────────────────
+// ─── ESTADÍSTICAS ─────────────────────────
+async function renderStats() {
+  const studs = await getApprovedStudents();
+
+  // Populate filter
+  const sel = document.getElementById('stats-student-filter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Todos los alumnos</option>' +
+    studs.map(s => `<option value="${s.uid}" ${s.uid===cur?'selected':''}>${esc(s.displayName)}</option>`).join('');
+
+  const filtered = cur ? studs.filter(s => s.uid === cur) : studs;
+  if (!filtered.length) {
+    document.getElementById('stats-container').innerHTML = `<div class="empty-state"><i class="bi bi-people"></i><p>No hay alumnos aprobados aún.</p></div>`;
+    return;
+  }
+
+  // Load all tasks, submissions, grades in parallel
+  const [tasksSnap, subsSnap, gradesSnap] = await Promise.all([
+    getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id))),
+    getDocs(query(collection(db,'submissions'), where('classId','==',currentClass.id))),
+    getDocs(query(collection(db,'grades'), where('classId','==',currentClass.id)))
+  ]);
+
+  const tasks   = tasksSnap.docs.map(d => ({id:d.id,...d.data()}));
+  const subs    = subsSnap.docs.map(d => ({id:d.id,...d.data()}));
+  const grades  = gradesSnap.docs.map(d => ({id:d.id,...d.data()}));
+
+  // Overview stats
+  const totalStudents = studs.length;
+  const avgGrades = grades.length ? (grades.reduce((a,g)=>a+g.grade,0)/grades.length).toFixed(1) : '—';
+  const totalSubs = subs.length;
+  const gradedSubs = subs.filter(s=>s.grade!=null).length;
+
+  document.getElementById('stats-overview').innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card fade-in">
+        <div class="stat-icon" style="background:#dbeafe"><i class="bi bi-people-fill" style="color:var(--brand)"></i></div>
+        <div><div class="stat-value">${filtered.length}</div><div class="stat-label">Alumnos analizados</div></div>
+      </div>
+      <div class="stat-card fade-in fade-in-delay-1">
+        <div class="stat-icon" style="background:var(--accent-light)"><i class="bi bi-star-fill" style="color:var(--accent)"></i></div>
+        <div><div class="stat-value">${avgGrades}</div><div class="stat-label">Nota media clase</div></div>
+      </div>
+      <div class="stat-card fade-in fade-in-delay-2">
+        <div class="stat-icon" style="background:#dcfce7"><i class="bi bi-check2-square" style="color:var(--success)"></i></div>
+        <div><div class="stat-value">${totalSubs}</div><div class="stat-label">Entregas totales</div></div>
+      </div>
+      <div class="stat-card fade-in fade-in-delay-3">
+        <div class="stat-icon" style="background:#f3e8ff"><i class="bi bi-pencil-square" style="color:#7c3aed)"></i></div>
+        <div><div class="stat-value">${gradedSubs}/${totalSubs}</div><div class="stat-label">Entregas corregidas</div></div>
+      </div>
+    </div>`;
+
+  // Per-student cards
+  document.getElementById('stats-container').innerHTML = filtered.map(student => {
+    const studentSubs   = subs.filter(s => s.studentUid === student.uid);
+    const studentGrades = grades.filter(g => g.studentUid === student.uid);
+    const delivered     = studentSubs.length;
+    const pending       = tasks.length - delivered;
+    const gradedList    = studentSubs.filter(s => s.grade != null);
+    const manualGrades  = studentGrades;
+    const allGradeVals  = [...gradedList.map(s=>s.grade), ...manualGrades.map(g=>g.grade)];
+    const avg           = allGradeVals.length ? (allGradeVals.reduce((a,b)=>a+b,0)/allGradeVals.length).toFixed(1) : null;
+    const pct           = tasks.length ? Math.round(delivered/tasks.length*100) : 0;
+    const initials      = student.displayName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+    // Grade bars (last 6 grades)
+    const recentGrades = [...gradedList.map(s=>({label:s.taskTitle||'Tarea',val:s.grade})),
+                          ...manualGrades.map(g=>({label:g.concept,val:g.grade}))]
+      .slice(-6);
+
+    const bars = recentGrades.length ? recentGrades.map(g => {
+      const h = Math.round((g.val/10)*60);
+      const cls = g.val>=9?'var(--success)':g.val>=7?'var(--brand)':g.val>=5?'var(--accent)':'var(--danger)';
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:.3rem;flex:1;min-width:0">
+        <span style="font-size:.65rem;font-weight:700;color:${cls}">${g.val.toFixed(1)}</span>
+        <div style="width:100%;background:var(--border);border-radius:.25rem;height:60px;display:flex;align-items:flex-end;overflow:hidden">
+          <div style="width:100%;height:${h}px;background:${cls};border-radius:.25rem;transition:height .3s"></div>
+        </div>
+        <span style="font-size:.6rem;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">${esc(g.label)}</span>
+      </div>`;
+    }).join('') : `<div style="color:var(--muted);font-size:.8rem;padding:.5rem">Sin calificaciones aún</div>`;
+
+    return `
+    <div class="card fade-in" style="margin-bottom:1rem">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--brand);color:#fff;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">${initials}</div>
+          <div>
+            <div style="font-weight:700">${esc(student.displayName)}</div>
+            <div style="font-size:.75rem;color:var(--muted)">${esc(student.email)}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem">
+          ${avg != null ? `${gradeBadge(avg)} <span style="font-size:.75rem;color:var(--muted)">media</span>` : '<span class="badge badge-neutral">Sin notas</span>'}
+        </div>
+      </div>
+      <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+        <!-- Progreso entregas -->
+        <div>
+          <div style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Progreso de entregas</div>
+          <div style="display:flex;gap:1rem;margin-bottom:.75rem">
+            <div style="text-align:center">
+              <div style="font-size:1.5rem;font-weight:800;color:var(--success)">${delivered}</div>
+              <div style="font-size:.72rem;color:var(--muted)">Entregadas</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:1.5rem;font-weight:800;color:var(--danger)">${pending < 0 ? 0 : pending}</div>
+              <div style="font-size:.72rem;color:var(--muted)">Pendientes</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:1.5rem;font-weight:800;color:var(--brand)">${tasks.length}</div>
+              <div style="font-size:.72rem;color:var(--muted)">Total tareas</div>
+            </div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width:${pct}%;background:${pct>=80?'var(--success)':pct>=50?'var(--brand)':'var(--danger)'}"></div>
+          </div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;text-align:right">${pct}% completado</div>
+        </div>
+        <!-- Gráfico notas -->
+        <div>
+          <div style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Últimas calificaciones</div>
+          <div style="display:flex;gap:.5rem;align-items:flex-end;height:80px">${bars}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── NOTIFICACIONES EN TIEMPO REAL ────────
+let _unsubNotif = null;
+function startNotifications() {
+  if (_unsubNotif) _unsubNotif();
+  _unsubNotif = onSnapshot(
+    query(collection(db,'submissions'), where('classId','==',currentClass.id), where('grade','==',null)),
+    (snap) => {
+      const count = snap.size;
+      const eb = document.getElementById('badge-entregas');
+      if (eb) {
+        eb.style.display = count > 0 ? '' : 'none';
+        eb.textContent = count;
+      }
+      const stEl = document.getElementById('st-entregas');
+      if (stEl) stEl.textContent = count;
+    }
+  );
+}
+
+
 async function renderGrades() {
   // Populate student select in modal
   const studs = await getApprovedStudents();
@@ -1197,6 +1367,19 @@ window.copyCode = () => {
   navigator.clipboard.writeText(currentClass.code);
   toast('Código copiado al portapapeles.','success');
 };
+
+// ─── DARK MODE ────────────────────────────
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
+  const icon = document.getElementById('dark-icon');
+  if (icon) icon.className = dark ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+}
+window.toggleDark = () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  localStorage.setItem('ao_theme', isDark ? 'light' : 'dark');
+  applyTheme(!isDark);
+};
+applyTheme(localStorage.getItem('ao_theme') === 'dark');
 
 // ─── RESPONSIVE SIDEBAR TOGGLE ────────────
 if (window.innerWidth < 768) {
