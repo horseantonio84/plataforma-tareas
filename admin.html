@@ -230,7 +230,10 @@
             <label class="form-label">Descripción</label>
             <textarea class="form-control" id="set-classdesc" rows="2"></textarea>
           </div>
-          <button class="btn btn-primary" onclick="saveClassSettings()"><i class="bi bi-floppy"></i> Guardar</button>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="saveClassSettings()"><i class="bi bi-floppy"></i> Guardar</button>
+            <button class="btn btn-danger" onclick="confirmDeleteClass()"><i class="bi bi-trash"></i> Eliminar clase</button>
+          </div>
         </div>
       </div>
       <div class="card">
@@ -625,10 +628,12 @@ function dueBadge(due) {
   if (!due) return '';
   const d = new Date(due+'T00:00:00'); const now = new Date(); now.setHours(0,0,0,0);
   const diff = Math.round((d-now)/86400000);
-  if (diff < 0) return `<span class="badge badge-danger">Vencida</span>`;
-  if (diff === 0) return `<span class="badge badge-warning">Hoy</span>`;
-  if (diff <= 3)  return `<span class="badge badge-warning">${diff}d</span>`;
-  return `<span class="badge badge-neutral">${fmtDateShort(due)}</span>`;
+  if (diff < 0)  return `<span class="badge badge-danger"><i class="bi bi-x-circle"></i> Vencida</span>`;
+  if (diff === 0) return `<span class="badge badge-warning"><i class="bi bi-alarm"></i> Hoy</span>`;
+  if (diff === 1) return `<span class="badge badge-warning"><i class="bi bi-clock"></i> Mañana</span>`;
+  if (diff <= 3)  return `<span class="badge badge-warning"><i class="bi bi-clock"></i> ${diff} días</span>`;
+  if (diff <= 7)  return `<span class="badge badge-accent"><i class="bi bi-calendar"></i> ${diff} días</span>`;
+  return `<span class="badge badge-neutral"><i class="bi bi-calendar"></i> ${fmtDateShort(due)}</span>`;
 }
 function gradeBadge(g) {
   if (g == null) return '<span class="grade-badge grade-na">—</span>';
@@ -1121,6 +1126,24 @@ document.addEventListener('click', e => {
   const sw = document.getElementById('class-switcher');
   if (sw && !sw.contains(e.target)) closeClassMenu();
 });
+
+window.confirmDeleteClass = async () => {
+  if (allClasses.length <= 1) {
+    toast('No puedes eliminar la única clase que tienes.', 'error'); return;
+  }
+  if (!confirm(`¿Eliminar la clase "${currentClass.name}"? Se eliminarán todas sus tareas, anuncios y recursos. Los alumnos perderán el acceso.`)) return;
+  const id = currentClass.id;
+  const cols = ['tasks','announcements','resources','submissions','grades'];
+  for (const col of cols) {
+    const snap = await getDocs(query(collection(db, col), where('classId','==', id)));
+    for (const d of snap.docs) await deleteDoc(doc(db, col, d.id));
+  }
+  await deleteDoc(doc(db, 'classes', id));
+  allClasses = allClasses.filter(c => c.id !== id);
+  localStorage.removeItem('ao_activeClassId');
+  switchClass(allClasses[0].id);
+  toast('Clase eliminada.', 'success');
+};
 
 window.copyCode = () => {
   navigator.clipboard.writeText(currentClass.code);
