@@ -86,6 +86,9 @@
     <button class="nav-item" onclick="showSection('estadisticas')" id="nav-estadisticas">
       <i class="bi bi-bar-chart-fill"></i> Estadísticas
     </button>
+    <button class="nav-item" onclick="showSection('historial')" id="nav-historial">
+      <i class="bi bi-clock-history"></i> Historial
+    </button>
     <button class="nav-item" onclick="showSection('alumnos')" id="nav-alumnos">
       <i class="bi bi-people-fill"></i> Alumnos
       <span class="badge-count" id="badge-pending" style="display:none">0</span>
@@ -241,6 +244,22 @@
     </div>
     <div id="stats-overview" style="margin-bottom:1.5rem"></div>
     <div id="stats-container"></div>
+  </section>
+
+  <!-- ░░ HISTORIAL ░░ -->
+  <section class="page d-none" id="s-historial">
+    <div class="page-header">
+      <h1 class="page-title">Historial de actividad</h1>
+      <select class="form-control" id="filter-activity" onchange="renderHistorial()" style="width:auto">
+        <option value="">Todo</option>
+        <option value="submission">Entregas</option>
+        <option value="grade">Correcciones</option>
+        <option value="approval">Alumnos</option>
+        <option value="task">Tareas</option>
+        <option value="announcement">Anuncios</option>
+      </select>
+    </div>
+    <div id="historial-container"></div>
   </section>
 
   <!-- ░░ ALUMNOS ░░ -->
@@ -646,6 +665,7 @@ window.showSection = (id) => {
   if (id === 'recursos')  renderResources();
   if (id === 'chat')      initChat();
   if (id === 'estadisticas') renderStats();
+  if (id === 'historial') renderHistorial();
   if (id === 'alumnos')   renderStudents();
   if (id === 'ajustes')   loadSettings();
   if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
@@ -837,8 +857,8 @@ window.saveTask = async () => {
     link:      document.getElementById('task-link').value.trim(),
     updatedAt: serverTimestamp()
   };
-  if (id) { await updateDoc(doc(db,'tasks',id), data); }
-  else    { data.createdAt = serverTimestamp(); await addDoc(collection(db,'tasks'), data); }
+  if (id) { await updateDoc(doc(db,'tasks',id), data); logActivity('task', `Tarea editada: "${title}"`); }
+  else    { data.createdAt = serverTimestamp(); await addDoc(collection(db,'tasks'), data); logActivity('task', `Nueva tarea creada: "${title}"`); }
   closeModal('modal-tarea'); renderTasks(); toast('Tarea guardada.','success');
 };
 
@@ -864,6 +884,7 @@ window.deleteTask = async (id) => {
     await updateDoc(doc(db,'submissions', d.id), { taskTitle: d.data().taskTitle || '(tarea eliminada)', taskDeleted: true });
   }
   await deleteDoc(doc(db,'tasks', id));
+  logActivity('task', `Tarea eliminada`, { detail: `${ungraded.length} entregas borradas, ${graded.length} conservadas` });
   renderTasks(); toast('Tarea eliminada.');
 };
 
@@ -959,6 +980,7 @@ window.gradeSubmission = async () => {
     if (taskSnap.exists()) taskTitle = taskSnap.data().title || '';
   }
   await updateDoc(doc(db,'submissions',id), { grade, feedback: fb, gradedAt: serverTimestamp(), taskTitle });
+  logActivity('grade', `Entrega corregida: ${subSnap.data()?.studentName || ''}`, { detail: `Nota: ${grade}${fb ? ' · ' + fb.slice(0,60) : ''}` });
   closeModal('modal-grade-submission'); renderSubmissions(); toast('Corrección guardada.','success');
 };
 
@@ -1219,6 +1241,7 @@ window.saveAnnouncement = async () => {
   await addDoc(collection(db,'announcements'), {
     classId: currentClass.id, title, body, teacherName: currentUser.displayName, createdAt: serverTimestamp()
   });
+  logActivity('announcement', `Nuevo anuncio: "${title}"`);
   closeModal('modal-anuncio');
   document.getElementById('annc-title').value = '';
   document.getElementById('annc-body').value  = '';
@@ -1331,12 +1354,16 @@ function renderStudentList(containerId, students, isApproved) {
 
 window.approveStudent = async (uid) => {
   await updateDoc(doc(db,'users',uid), { approved: true });
+  const studs = await getApprovedStudents();
+  const student = studs.find(s => s.uid === uid);
+  logActivity('approval', `Alumno aprobado: ${student?.displayName || uid}`);
   renderStudents(); renderHome(); toast('Alumno aprobado.','success');
 };
 
 window.removeStudent = async (uid) => {
   if (!confirm('¿Revocar el acceso a este alumno?')) return;
   await updateDoc(doc(db,'users',uid), { approved: false });
+  logActivity('revoke', `Acceso revocado a alumno`);
   renderStudents(); renderHome(); toast('Acceso revocado.');
 };
 
@@ -1469,6 +1496,67 @@ function startChatNotifications() {
       }
     }
   );
+}
+
+// ─── HISTORIAL DE ACTIVIDAD ───────────────
+async function logActivity(type, text, meta = {}) {
+  try {
+    await addDoc(collection(db, 'activity'), {
+      classId:   currentClass.id,
+      type,
+      text,
+      ...meta,
+      createdAt: serverTimestamp()
+    });
+  } catch(e) { /* silencioso */ }
+}
+
+async function renderHistorial() {
+  const filter = document.getElementById('filter-activity').value;
+  const el = document.getElementById('historial-container');
+  el.innerHTML = `<div class="empty-state"><i class="bi bi-hourglass-split" style="animation:spin 1s linear infinite"></i><p>Cargando...</p></div>`;
+
+  let q = query(collection(db,'activity'), where('classId','==',currentClass.id), orderBy('createdAt','desc'));
+  const snap = await getDocs(q);
+
+  let items = snap.docs.map(d => ({id:d.id,...d.data()}));
+  if (filter) items = items.filter(i => i.type === filter);
+
+  if (!items.length) {
+    el.innerHTML = `<div class="empty-state"><i class="bi bi-clock-history"></i><p>No hay actividad registrada aún.</p></div>`;
+    return;
+  }
+
+  const icons = {
+    submission:   { icon: 'bi-upload',            color: 'var(--brand)',   bg: '#dbeafe' },
+    grade:        { icon: 'bi-pencil-square',      color: 'var(--success)', bg: '#dcfce7' },
+    approval:     { icon: 'bi-person-check-fill',  color: 'var(--accent)',  bg: 'var(--accent-light)' },
+    task:         { icon: 'bi-check2-square',      color: 'var(--brand)',   bg: '#dbeafe' },
+    announcement: { icon: 'bi-megaphone-fill',     color: 'var(--warning)', bg: '#fef3c7' },
+    resource:     { icon: 'bi-folder2-open',       color: 'var(--muted)',   bg: 'var(--surface)' },
+    revoke:       { icon: 'bi-person-x-fill',      color: 'var(--danger)',  bg: '#fee2e2' },
+  };
+
+  el.innerHTML = `<div class="card">
+    <div style="padding:0">
+      ${items.map((item, idx) => {
+        const cfg = icons[item.type] || { icon:'bi-circle', color:'var(--muted)', bg:'var(--surface)' };
+        const ts  = item.createdAt?.toDate ? item.createdAt.toDate() : null;
+        const timeStr = ts ? ts.toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+        return `
+        <div style="display:flex;align-items:center;gap:1rem;padding:.875rem 1.25rem;${idx < items.length-1 ? 'border-bottom:1px solid var(--border)' : ''}">
+          <div style="width:36px;height:36px;border-radius:50%;background:${cfg.bg};color:${cfg.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.95rem">
+            <i class="bi ${cfg.icon}"></i>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.875rem;font-weight:500">${esc(item.text)}</div>
+            ${item.detail ? `<div style="font-size:.75rem;color:var(--muted);margin-top:.1rem">${esc(item.detail)}</div>` : ''}
+          </div>
+          <div style="font-size:.75rem;color:var(--muted);white-space:nowrap;flex-shrink:0">${timeStr}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
 }
 
 // ─── DARK MODE ────────────────────────────

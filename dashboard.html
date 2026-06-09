@@ -458,6 +458,9 @@ window.submitTask = async () => {
   const taskId  = document.getElementById('sub-task-id').value;
   const comment = document.getElementById('sub-comment').value.trim();
   if (!comment) { toast('Escribe un comentario o enlace a tu trabajo.','error'); return; }
+  // Get task title for activity log
+  const taskSnap = await getDoc(doc(db,'tasks',taskId));
+  const taskTitle = taskSnap.exists() ? taskSnap.data().title : '';
   await addDoc(collection(db,'submissions'), {
     classId:     currentClass.id,
     taskId,
@@ -467,6 +470,14 @@ window.submitTask = async () => {
     grade:       null,
     feedback:    null,
     submittedAt: serverTimestamp()
+  });
+  // Log activity
+  await addDoc(collection(db,'activity'), {
+    classId:   currentClass.id,
+    type:      'submission',
+    text:      `${currentUser.displayName} entregó: "${taskTitle}"`,
+    detail:    comment.slice(0, 80),
+    createdAt: serverTimestamp()
   });
   submissionsCache[taskId] = { taskId, comment, grade: null };
   closeModal('modal-entrega');
