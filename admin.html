@@ -79,6 +79,10 @@
   </div>
   <div class="sidebar-section">
     <div class="sidebar-label">Gestión</div>
+    <button class="nav-item" onclick="showSection('chat')" id="nav-chat">
+      <i class="bi bi-chat-dots-fill"></i> Chat
+      <span class="badge-count" id="badge-chat" style="display:none">0</span>
+    </button>
     <button class="nav-item" onclick="showSection('estadisticas')" id="nav-estadisticas">
       <i class="bi bi-bar-chart-fill"></i> Estadísticas
     </button>
@@ -206,6 +210,25 @@
       </button>
     </div>
     <div id="resources-container"></div>
+  </section>
+
+  <!-- ░░ CHAT ░░ -->
+  <section class="page d-none" id="s-chat">
+    <div class="page-header">
+      <h1 class="page-title">Chat de clase</h1>
+    </div>
+    <div class="chat-wrap">
+      <div class="chat-messages" id="chat-messages">
+        <div class="empty-state"><i class="bi bi-chat-dots"></i><p>No hay mensajes aún. ¡Sé el primero en escribir!</p></div>
+      </div>
+      <div class="chat-input-bar">
+        <input type="text" class="form-control" id="chat-input" placeholder="Escribe un mensaje..." maxlength="500"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"/>
+        <button class="btn btn-primary" onclick="sendChatMessage()">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+    </div>
   </section>
 
   <!-- ░░ ESTADÍSTICAS ░░ -->
@@ -509,6 +532,7 @@ onAuthStateChanged(auth, async (user) => {
     await loadClass();
     initUI();
     startNotifications();
+    startChatNotifications();
     _initialized = true;
     showSection('inicio');
   } catch (err) {
@@ -562,6 +586,7 @@ window.switchClass = (classId) => {
   document.getElementById('settings-code').textContent = currentClass.code;
   closeClassMenu();
   startNotifications();
+  startChatNotifications();
   showSection('inicio');
   toast(`Cambiado a: ${currentClass.name}`, 'success');
 };
@@ -619,6 +644,7 @@ window.showSection = (id) => {
   if (id === 'notas')     renderGrades();
   if (id === 'anuncios')  renderAnnouncements();
   if (id === 'recursos')  renderResources();
+  if (id === 'chat')      initChat();
   if (id === 'estadisticas') renderStats();
   if (id === 'alumnos')   renderStudents();
   if (id === 'ajustes')   loadSettings();
@@ -1368,6 +1394,83 @@ window.copyCode = () => {
   toast('Código copiado al portapapeles.','success');
 };
 
+// ─── CHAT ─────────────────────────────────
+let _unsubChat = null;
+let _chatLastRead = 0;
+
+function initChat() {
+  if (_unsubChat) _unsubChat();
+  document.getElementById('badge-chat').style.display = 'none';
+  _chatLastRead = Date.now();
+  localStorage.setItem('ao_chatLastRead_' + currentClass.id, _chatLastRead);
+
+  _unsubChat = onSnapshot(
+    query(collection(db,'messages'), where('classId','==',currentClass.id), orderBy('createdAt','asc')),
+    (snap) => {
+      const el = document.getElementById('chat-messages');
+      if (!el) return;
+      if (snap.empty) {
+        el.innerHTML = `<div class="empty-state"><i class="bi bi-chat-dots"></i><p>No hay mensajes aún. ¡Sé el primero en escribir!</p></div>`;
+        return;
+      }
+      el.innerHTML = snap.docs.map(d => {
+        const m = d.data();
+        const isMine = m.fromUid === currentUser.uid;
+        const time = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+        const initials = (m.fromName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        return `
+        <div class="chat-msg ${isMine ? 'mine' : 'theirs'}">
+          ${!isMine ? `<div class="chat-avatar">${initials}</div>` : ''}
+          <div class="chat-bubble-wrap">
+            ${!isMine ? `<div class="chat-sender">${esc(m.fromName)} <span class="chat-role">${m.fromRole==='teacher'?'Profesor':'Alumno'}</span></div>` : ''}
+            <div class="chat-bubble">${esc(m.text)}</div>
+            <div class="chat-time">${time}</div>
+          </div>
+        </div>`;
+      }).join('');
+      el.scrollTop = el.scrollHeight;
+    }
+  );
+}
+
+window.sendChatMessage = async () => {
+  const input = document.getElementById('chat-input');
+  const text  = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  await addDoc(collection(db,'messages'), {
+    classId:  currentClass.id,
+    fromUid:  currentUser.uid,
+    fromName: currentUser.displayName,
+    fromRole: 'teacher',
+    text,
+    createdAt: serverTimestamp()
+  });
+};
+
+// Notificar mensajes nuevos cuando chat no está activo
+let _unsubChatNotif = null;
+function startChatNotifications() {
+  if (_unsubChatNotif) _unsubChatNotif();
+  const lastRead = parseInt(localStorage.getItem('ao_chatLastRead_' + currentClass.id) || '0');
+  _unsubChatNotif = onSnapshot(
+    query(collection(db,'messages'), where('classId','==',currentClass.id), orderBy('createdAt','asc')),
+    (snap) => {
+      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (activeSection === 'nav-chat') return;
+      const newMsgs = snap.docs.filter(d => {
+        const ts = d.data().createdAt?.toMillis?.() || 0;
+        return ts > lastRead && d.data().fromUid !== currentUser.uid;
+      });
+      const badge = document.getElementById('badge-chat');
+      if (badge) {
+        badge.style.display = newMsgs.length > 0 ? '' : 'none';
+        badge.textContent = newMsgs.length;
+      }
+    }
+  );
+}
+
 // ─── DARK MODE ────────────────────────────
 function applyTheme(dark) {
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
@@ -1396,6 +1499,28 @@ window.addEventListener('resize', () => {
     #home-grid { grid-template-columns: 1fr !important; }
   }
   [style*="display:flex"][style*="gap:.4rem"] { flex-wrap: wrap; }
+
+  /* ── CHAT ── */
+  .chat-wrap {
+    display: flex; flex-direction: column;
+    height: calc(100vh - var(--topbar-h) - 130px);
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: .75rem; }
+  .chat-msg { display: flex; align-items: flex-end; gap: .6rem; }
+  .chat-msg.mine { flex-direction: row-reverse; }
+  .chat-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 700; }
+  .chat-bubble-wrap { display: flex; flex-direction: column; max-width: 65%; }
+  .chat-msg.mine .chat-bubble-wrap { align-items: flex-end; }
+  .chat-sender { font-size: .72rem; font-weight: 600; color: var(--muted); margin-bottom: .2rem; }
+  .chat-role { font-weight: 400; margin-left: .3rem; color: var(--brand); }
+  .chat-bubble { padding: .6rem .9rem; border-radius: 1rem; font-size: .875rem; line-height: 1.5; background: var(--surface); color: var(--text); border-bottom-left-radius: .25rem; word-break: break-word; }
+  .chat-msg.mine .chat-bubble { background: var(--brand); color: #fff; border-bottom-right-radius: .25rem; border-bottom-left-radius: 1rem; }
+  .chat-time { font-size: .65rem; color: var(--muted); margin-top: .2rem; }
+  .chat-input-bar { display: flex; gap: .75rem; padding: .875rem 1.25rem; border-top: 1px solid var(--border); background: var(--card); }
+  .chat-input-bar .form-control { flex: 1; }
+  .chat-input-bar .btn { flex-shrink: 0; }
 
   /* ── CLASS SWITCHER ── */
   .class-switcher { position: relative; }
