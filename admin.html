@@ -535,6 +535,25 @@
   </div>
 </div>
 
+<!-- CONFIRM DIALOG -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-header">
+      <h3 style="display:flex;align-items:center;gap:.5rem">
+        <i id="confirm-icon" class="bi bi-exclamation-triangle-fill" style="color:var(--warning)"></i>
+        <span id="confirm-title-text">¿Estás seguro?</span>
+      </h3>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message" style="font-size:.9rem;color:var(--muted);margin:0;line-height:1.6"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="confirm-cancel-btn">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 
 <script type="module">
@@ -736,6 +755,28 @@ window.toast = (msg, type='') => {
   document.getElementById('toast-container').appendChild(el);
   setTimeout(() => el.remove(), 3500);
 };
+
+// ─── CONFIRM DIALOG ───────────────────────
+function showConfirm({ title='¿Estás seguro?', message='', confirmText='Confirmar', danger=true, icon='exclamation-triangle-fill' } = {}) {
+  return new Promise(resolve => {
+    document.getElementById('confirm-title-text').textContent = title;
+    document.getElementById('confirm-message').textContent    = message;
+    document.getElementById('confirm-icon').className = `bi bi-${icon}`;
+    document.getElementById('confirm-icon').style.color = danger ? 'var(--danger)' : 'var(--warning)';
+    const okBtn = document.getElementById('confirm-ok-btn');
+    okBtn.textContent = confirmText;
+    okBtn.className = `btn ${danger ? 'btn-danger' : 'btn-primary'}`;
+    document.getElementById('modal-confirm').classList.add('open');
+    const cleanup = (result) => {
+      document.getElementById('modal-confirm').classList.remove('open');
+      okBtn.onclick = null;
+      document.getElementById('confirm-cancel-btn').onclick = null;
+      resolve(result);
+    };
+    okBtn.onclick = () => cleanup(true);
+    document.getElementById('confirm-cancel-btn').onclick = () => cleanup(false);
+  });
+}
 
 // ─── HOME ─────────────────────────────────
 async function renderHome() {
