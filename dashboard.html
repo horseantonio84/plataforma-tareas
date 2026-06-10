@@ -158,10 +158,10 @@
 
   <!-- ░░ CHAT ░░ -->
   <section class="page d-none" id="s-chat">
-    <div class="page-header"><h1 class="page-title">Chat de clase</h1></div>
+    <div class="page-header"><h1 class="page-title">Chat con el profesor</h1></div>
     <div class="chat-wrap">
       <div class="chat-messages" id="chat-messages">
-        <div class="empty-state"><i class="bi bi-chat-dots"></i><p>No hay mensajes aún.</p></div>
+        <div class="empty-state"><i class="bi bi-chat-dots"></i><p>Sin mensajes aún. ¡Escribe al profesor!</p></div>
       </div>
       <div class="chat-input-bar">
         <input type="text" class="form-control" id="chat-input" placeholder="Escribe un mensaje..." maxlength="500"
@@ -238,7 +238,7 @@
 import { auth, db } from './assets/js/firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  doc, getDoc, getDocs, addDoc, updateDoc,
+  doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
   collection, query, where, orderBy, serverTimestamp, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -556,35 +556,39 @@ async function renderGrades() {
     </div>`;
 }
 
-// ─── CHAT ─────────────────────────────────
+// ─── CHAT PRIVADO ─────────────────────────
 let _unsubChat = null;
 
+function getConvId() {
+  return `${currentClass.id}_${currentUser.uid}`;
+}
+
 function initChat() {
-  if (_unsubChat) _unsubChat();
+  if (_unsubChat) { _unsubChat(); _unsubChat = null; }
   document.getElementById('badge-chat').style.display = 'none';
   localStorage.setItem('ao_chatLastRead_' + currentClass.id, Date.now());
 
+  const convId = getConvId();
   _unsubChat = onSnapshot(
-    query(collection(db,'messages'), where('classId','==',currentClass.id), orderBy('createdAt','asc')),
+    query(collection(db,'messages'), where('convId','==',convId), orderBy('createdAt','asc')),
     (snap) => {
       const el = document.getElementById('chat-messages');
       if (!el) return;
       if (snap.empty) {
-        el.innerHTML = `<div class="empty-state"><i class="bi bi-chat-dots"></i><p>No hay mensajes aún.</p></div>`;
+        el.innerHTML = `<div class="empty-state"><i class="bi bi-chat-dots"></i><p>Sin mensajes aún. ¡Escribe al profesor!</p></div>`;
         return;
       }
       el.innerHTML = snap.docs.map(d => {
         const m = d.data();
-        const isMine = m.fromUid === currentUser.uid;
+        const isMine = m.fromRole === 'student';
         const time = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
-        const initials = (m.fromName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
         return `
         <div class="chat-msg ${isMine ? 'mine' : 'theirs'}">
-          ${!isMine ? `<div class="chat-avatar">${initials}</div>` : ''}
+          ${!isMine ? `<div class="chat-avatar"><i class="bi bi-person-fill"></i></div>` : ''}
           <div class="chat-bubble-wrap">
-            ${!isMine ? `<div class="chat-sender">${esc(m.fromName)} <span class="chat-role">${m.fromRole==='teacher'?'Profesor':'Alumno'}</span></div>` : ''}
+            ${!isMine ? `<div class="chat-sender">Profesor</div>` : ''}
             <div class="chat-bubble">${esc(m.text)}</div>
-            <div class="chat-time">${time}</div>
+            <div class="chat-time">${time}${isMine ? ` <i class="bi bi-trash" onclick="deleteChatMessage('${d.id}')" style="cursor:pointer;opacity:.5;margin-left:.3rem;font-size:.65rem"></i>` : ''}</div>
           </div>
         </div>`;
       }).join('');
@@ -599,34 +603,36 @@ window.sendChatMessage = async () => {
   if (!text) return;
   input.value = '';
   await addDoc(collection(db,'messages'), {
-    classId:   currentClass.id,
-    fromUid:   currentUser.uid,
-    fromName:  currentUser.displayName,
-    fromRole:  'student',
+    convId:     getConvId(),
+    classId:    currentClass.id,
+    studentUid: currentUser.uid,
+    fromUid:    currentUser.uid,
+    fromName:   currentUser.displayName,
+    fromRole:   'student',
     text,
-    createdAt: serverTimestamp()
+    createdAt:  serverTimestamp()
   });
 };
 
-// Notificar mensajes nuevos cuando chat no está activo
+window.deleteChatMessage = async (msgId) => {
+  if (!confirm('¿Borrar este mensaje?')) return;
+  await deleteDoc(doc(db,'messages', msgId));
+};
+
+// Notificaciones chat privado
 let _unsubChatNotif = null;
 function startChatNotifications() {
   if (_unsubChatNotif) _unsubChatNotif();
+  const convId = getConvId();
   _unsubChatNotif = onSnapshot(
-    query(collection(db,'messages'), where('classId','==',currentClass.id), orderBy('createdAt','asc')),
+    query(collection(db,'messages'), where('convId','==',convId), where('fromRole','==','teacher'), orderBy('createdAt','desc')),
     (snap) => {
       const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
       if (activeSection === 'nav-chat') return;
       const lastRead = parseInt(localStorage.getItem('ao_chatLastRead_' + currentClass.id) || '0');
-      const newMsgs = snap.docs.filter(d => {
-        const ts = d.data().createdAt?.toMillis?.() || 0;
-        return ts > lastRead && d.data().fromUid !== currentUser.uid;
-      });
+      const newMsgs = snap.docs.filter(d => (d.data().createdAt?.toMillis?.() || 0) > lastRead);
       const badge = document.getElementById('badge-chat');
-      if (badge) {
-        badge.style.display = newMsgs.length > 0 ? '' : 'none';
-        badge.textContent = newMsgs.length;
-      }
+      if (badge) { badge.style.display = newMsgs.length > 0 ? '' : 'none'; badge.textContent = newMsgs.length; }
     }
   );
 }
@@ -670,14 +676,13 @@ window.addEventListener('resize', ()=>{ document.getElementById('sidebar-toggle'
   .chat-messages { flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:.75rem; }
   .chat-msg { display:flex;align-items:flex-end;gap:.6rem; }
   .chat-msg.mine { flex-direction:row-reverse; }
-  .chat-avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700; }
+  .chat-avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700; }
   .chat-bubble-wrap { display:flex;flex-direction:column;max-width:65%; }
   .chat-msg.mine .chat-bubble-wrap { align-items:flex-end; }
   .chat-sender { font-size:.72rem;font-weight:600;color:var(--muted);margin-bottom:.2rem; }
-  .chat-role { font-weight:400;margin-left:.3rem;color:var(--brand); }
   .chat-bubble { padding:.6rem .9rem;border-radius:1rem;font-size:.875rem;line-height:1.5;background:var(--surface);color:var(--text);border-bottom-left-radius:.25rem;word-break:break-word; }
   .chat-msg.mine .chat-bubble { background:var(--brand);color:#fff;border-bottom-right-radius:.25rem;border-bottom-left-radius:1rem; }
-  .chat-time { font-size:.65rem;color:var(--muted);margin-top:.2rem; }
+  .chat-time { font-size:.65rem;color:var(--muted);margin-top:.2rem;display:flex;align-items:center;gap:.2rem; }
   .chat-input-bar { display:flex;gap:.75rem;padding:.875rem 1.25rem;border-top:1px solid var(--border);background:var(--card); }
   .chat-input-bar .form-control { flex:1; }
 </style>
