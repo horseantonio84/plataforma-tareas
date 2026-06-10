@@ -265,6 +265,8 @@ onAuthStateChanged(auth, async (user) => {
   initUI();
   await loadSubmissions();
   startSubmissionsListener();
+  startTasksListener();
+  startAnnouncementsListener();
   startChatNotifications();
   showSection('inicio');
 });
@@ -287,12 +289,63 @@ function startSubmissionsListener() {
     (snap) => {
       submissionsCache = {};
       snap.docs.forEach(d => { const s = d.data(); submissionsCache[s.taskId] = {id:d.id,...s}; });
-      // Refrescar tareas si están visibles
       const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
       if (activeSection === 'nav-tareas') renderTasks();
       if (activeSection === 'nav-inicio') renderHome();
     }
   );
+}
+
+// Cache de tareas
+let tasksCache = [];
+let _unsubTasks = null;
+function startTasksListener() {
+  if (_unsubTasks) _unsubTasks();
+  _unsubTasks = onSnapshot(
+    query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
+    (snap) => {
+      tasksCache = snap.docs.map(d => ({id:d.id,...d.data()}));
+      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (activeSection === 'nav-tareas') renderTasksFromCache();
+      if (activeSection === 'nav-inicio') renderHome();
+      // Actualizar stats inicio
+      updateHomeStats();
+    }
+  );
+}
+
+// Cache de anuncios
+let announcementsCache = [];
+let _unsubAnnouncements = null;
+function startAnnouncementsListener() {
+  if (_unsubAnnouncements) _unsubAnnouncements();
+  _unsubAnnouncements = onSnapshot(
+    query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
+    (snap) => {
+      announcementsCache = snap.docs.map(d => ({id:d.id,...d.data()}));
+      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (activeSection === 'nav-anuncios') renderAnnouncementsFromCache();
+      if (activeSection === 'nav-inicio') renderHome();
+    }
+  );
+}
+
+function updateHomeStats() {
+  const pending  = tasksCache.filter(t => !submissionsCache[t.id]);
+  const submitted = tasksCache.filter(t => submissionsCache[t.id]);
+  const now = new Date(); now.setHours(0,0,0,0);
+  const dueSoon = pending.filter(t => { if(!t.due) return false; const d=new Date(t.due+'T00:00:00'); return (d-now)/86400000<=7 && d>=now; });
+  const el1 = document.getElementById('st-pending');
+  const el2 = document.getElementById('st-done');
+  const el3 = document.getElementById('st-due-soon');
+  if (el1) el1.textContent = pending.length;
+  if (el2) el2.textContent = submitted.length;
+  if (el3) el3.textContent = dueSoon.length;
+  const pct = tasksCache.length ? Math.round(submitted.length/tasksCache.length*100) : 0;
+  const pBar = document.getElementById('progress-bar');
+  const pPct = document.getElementById('progress-pct');
+  if (pBar) pBar.style.width = pct + '%';
+  if (pPct) pPct.textContent = pct + '%';
 }
 
 async function loadSubmissions() {
@@ -420,11 +473,9 @@ async function renderHome() {
 }
 
 // ─── TASKS ────────────────────────────────
-async function renderTasks() {
-  await loadSubmissions();
+function renderTasksFromCache() {
   const filter = document.getElementById('filter-status').value;
-  const snap = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  let tasks = snap.docs.map(d=>({id:d.id,...d.data()}));
+  let tasks = [...tasksCache];
   if (filter==='submitted') tasks = tasks.filter(t=>submissionsCache[t.id]);
   if (filter==='pending')   tasks = tasks.filter(t=>!submissionsCache[t.id]);
 
@@ -433,7 +484,6 @@ async function renderTasks() {
     el.innerHTML = `<div class="empty-state"><i class="bi bi-clipboard"></i><p>No hay tareas en esta categoría.</p></div>`;
     return;
   }
-
   el.innerHTML = tasks.map(t => {
     const sub = submissionsCache[t.id];
     const p = PRIO[t.priority||'media'];
@@ -464,6 +514,14 @@ async function renderTasks() {
       </div>
     </div>`;
   }).join('');
+}
+
+async function renderTasks() {
+  if (tasksCache.length > 0) { renderTasksFromCache(); return; }
+  // Fallback si el listener aún no ha cargado
+  const snap = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
+  tasksCache = snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderTasksFromCache();
 }
 
 window.openSubmit = (taskId, taskTitle) => {
@@ -507,21 +565,24 @@ window.submitTask = async () => {
 };
 
 // ─── ANNOUNCEMENTS ────────────────────────
-async function renderAnnouncements() {
-  const snap = await getDocs(query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
+function renderAnnouncementsFromCache() {
   const el = document.getElementById('annc-container');
-  if (snap.empty) {
+  if (!announcementsCache.length) {
     el.innerHTML = `<div class="empty-state"><i class="bi bi-megaphone"></i><p>No hay anuncios aún.</p></div>`;
     return;
   }
-  el.innerHTML = snap.docs.map(d=>{
-    const a=d.data();
-    return `<div class="annc-card fade-in">
-      <div class="annc-header"><div class="annc-title">${esc(a.title)}</div></div>
-      <div class="annc-body">${esc(a.body)}</div>
-      <div class="annc-meta"><i class="bi bi-clock me-1"></i>${fmtDate(a.createdAt)}</div>
-    </div>`;
-  }).join('');
+  el.innerHTML = announcementsCache.map(a=>`<div class="annc-card fade-in">
+    <div class="annc-header"><div class="annc-title">${esc(a.title)}</div></div>
+    <div class="annc-body">${esc(a.body)}</div>
+    <div class="annc-meta"><i class="bi bi-clock me-1"></i>${fmtDate(a.createdAt)}</div>
+  </div>`).join('');
+}
+
+async function renderAnnouncements() {
+  if (announcementsCache.length > 0) { renderAnnouncementsFromCache(); return; }
+  const snap = await getDocs(query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
+  announcementsCache = snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderAnnouncementsFromCache();
 }
 
 // ─── RESOURCES ────────────────────────────
@@ -591,6 +652,13 @@ function initChat() {
   localStorage.setItem('ao_chatLastRead_' + currentClass.id, Date.now());
 
   const convId = getConvId();
+
+  // Marcar mensajes del profesor como leídos
+  getDocs(query(collection(db,'messages'), where('convId','==',convId), where('fromRole','==','teacher'), where('readAt','==',null)))
+    .then(snap => {
+      snap.docs.forEach(d => updateDoc(doc(db,'messages',d.id), { readAt: serverTimestamp() }));
+    }).catch(()=>{});
+
   _unsubChat = onSnapshot(
     query(collection(db,'messages'), where('convId','==',convId), orderBy('createdAt','asc')),
     (snap) => {
@@ -604,13 +672,16 @@ function initChat() {
         const m = d.data();
         const isMine = m.fromRole === 'student';
         const time = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+        const readStatus = isMine ? (m.readAt
+          ? `<span style="color:#60a5fa" title="Leído">✓✓</span>`
+          : `<span style="opacity:.5" title="Enviado">✓</span>`) : '';
         return `
         <div class="chat-msg ${isMine ? 'mine' : 'theirs'}">
           ${!isMine ? `<div class="chat-avatar"><i class="bi bi-person-fill"></i></div>` : ''}
           <div class="chat-bubble-wrap">
             ${!isMine ? `<div class="chat-sender">Profesor</div>` : ''}
             <div class="chat-bubble">${esc(m.text)}</div>
-            <div class="chat-time">${time}${isMine ? ` <i class="bi bi-trash" onclick="deleteChatMessage('${d.id}')" style="cursor:pointer;opacity:.5;margin-left:.3rem;font-size:.65rem"></i>` : ''}</div>
+            <div class="chat-time">${time} ${readStatus}${isMine ? ` <i class="bi bi-trash" onclick="deleteChatMessage('${d.id}')" style="cursor:pointer;opacity:.4;margin-left:.3rem;font-size:.65rem"></i>` : ''}</div>
           </div>
         </div>`;
       }).join('');
@@ -632,6 +703,7 @@ window.sendChatMessage = async () => {
     fromName:   currentUser.displayName,
     fromRole:   'student',
     text,
+    readAt:     null,
     createdAt:  serverTimestamp()
   });
 };

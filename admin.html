@@ -1564,7 +1564,6 @@ window.openConversation = (studentUid, studentName) => {
   if (_unsubChat) { _unsubChat(); _unsubChat = null; }
   _chatStudentUid = studentUid;
 
-  // Update active state using data-uid
   document.querySelectorAll('.chat-student-item').forEach(el => {
     el.classList.toggle('active', el.dataset.uid === studentUid);
   });
@@ -1579,6 +1578,13 @@ window.openConversation = (studentUid, studentName) => {
     <div style="font-weight:600;font-size:.925rem">${esc(studentName)}</div>`;
 
   const convId = getConvId(studentUid);
+
+  // Marcar mensajes del alumno como leídos
+  getDocs(query(collection(db,'messages'), where('convId','==',convId), where('fromRole','==','student'), where('readAt','==',null)))
+    .then(snap => {
+      snap.docs.forEach(d => updateDoc(doc(db,'messages',d.id), { readAt: serverTimestamp() }));
+    }).catch(()=>{});
+
   _unsubChat = onSnapshot(
     query(collection(db,'messages'), where('convId','==',convId), orderBy('createdAt','asc')),
     (snap) => {
@@ -1592,11 +1598,14 @@ window.openConversation = (studentUid, studentName) => {
         const m = d.data();
         const isMine = m.fromRole === 'teacher';
         const time = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+        const readStatus = isMine ? (m.readAt
+          ? `<span style="color:#60a5fa" title="Leído">✓✓</span>`
+          : `<span style="opacity:.5" title="Enviado">✓</span>`) : '';
         return `
         <div class="chat-msg ${isMine ? 'mine' : 'theirs'}" data-id="${d.id}">
           <div class="chat-bubble-wrap">
-            <div class="chat-bubble" ondblclick="deleteChatMessage('${d.id}')">${esc(m.text)}</div>
-            <div class="chat-time">${time} ${!isMine ? '' : '<i class="bi bi-trash" onclick="deleteChatMessage(\''+d.id+'\')" style="cursor:pointer;opacity:.5;margin-left:.3rem;font-size:.65rem"></i>'}</div>
+            <div class="chat-bubble">${esc(m.text)}</div>
+            <div class="chat-time">${time} ${readStatus}${isMine ? ` <i class="bi bi-trash" onclick="deleteChatMessage('${d.id}')" style="cursor:pointer;opacity:.4;margin-left:.3rem;font-size:.65rem"></i>` : ''}</div>
           </div>
         </div>`;
       }).join('');
@@ -1619,6 +1628,7 @@ window.sendChatMessage = async () => {
     fromName:   currentUser.displayName,
     fromRole:   'teacher',
     text,
+    readAt:     null,
     createdAt:  serverTimestamp()
   });
 };
