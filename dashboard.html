@@ -264,6 +264,7 @@ onAuthStateChanged(auth, async (user) => {
   document.getElementById('topbar-classname').textContent = currentClass.name;
   initUI();
   await loadSubmissions();
+  startSubmissionsListener();
   startChatNotifications();
   showSection('inicio');
 });
@@ -276,6 +277,22 @@ function initUI() {
   const h = new Date().getHours();
   const greet = h < 13 ? '☀️ Buenos días' : h < 20 ? '👋 Buenas tardes' : '🌙 Buenas noches';
   document.getElementById('greeting-sub').textContent = `· ${greet}, ${(currentUser.displayName||'').split(' ')[0]}`;
+}
+
+let _unsubSubmissions = null;
+function startSubmissionsListener() {
+  if (_unsubSubmissions) _unsubSubmissions();
+  _unsubSubmissions = onSnapshot(
+    query(collection(db,'submissions'), where('studentUid','==',currentUser.uid)),
+    (snap) => {
+      submissionsCache = {};
+      snap.docs.forEach(d => { const s = d.data(); submissionsCache[s.taskId] = {id:d.id,...s}; });
+      // Refrescar tareas si están visibles
+      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (activeSection === 'nav-tareas') renderTasks();
+      if (activeSection === 'nav-inicio') renderHome();
+    }
+  );
 }
 
 async function loadSubmissions() {
@@ -327,10 +344,12 @@ function dueBadge(due) {
   if (!due) return '';
   const d=new Date(due+'T00:00:00'), now=new Date(); now.setHours(0,0,0,0);
   const diff=Math.round((d-now)/86400000);
-  if (diff<0) return `<span class="badge badge-danger">Vencida</span>`;
-  if (diff===0) return `<span class="badge badge-warning">Hoy</span>`;
-  if (diff<=3)  return `<span class="badge badge-warning">${diff}d</span>`;
-  return `<span class="badge badge-neutral">${fmtDateShort(due)}</span>`;
+  if (diff<0)   return `<span class="badge badge-danger"><i class="bi bi-x-circle"></i> Vencida</span>`;
+  if (diff===0) return `<span class="badge badge-warning"><i class="bi bi-alarm"></i> Hoy</span>`;
+  if (diff===1) return `<span class="badge badge-warning"><i class="bi bi-clock"></i> Mañana</span>`;
+  if (diff<=3)  return `<span class="badge badge-warning"><i class="bi bi-clock"></i> ${diff} días</span>`;
+  if (diff<=7)  return `<span class="badge badge-accent"><i class="bi bi-calendar"></i> ${diff} días</span>`;
+  return `<span class="badge badge-neutral"><i class="bi bi-calendar"></i> ${fmtDateShort(due)}</span>`;
 }
 function gradeBadge(g) {
   if (g==null) return '<span class="grade-badge grade-na">—</span>';
@@ -458,6 +477,10 @@ window.submitTask = async () => {
   const taskId  = document.getElementById('sub-task-id').value;
   const comment = document.getElementById('sub-comment').value.trim();
   if (!comment) { toast('Escribe un comentario o enlace a tu trabajo.','error'); return; }
+  // Evitar entregas duplicadas
+  if (submissionsCache[taskId]) { toast('Ya has entregado esta tarea.','error'); closeModal('modal-entrega'); return; }
+  const existing = await getDocs(query(collection(db,'submissions'), where('taskId','==',taskId), where('studentUid','==',currentUser.uid)));
+  if (!existing.empty) { toast('Ya has entregado esta tarea.','error'); closeModal('modal-entrega'); return; }
   // Get task title for activity log
   const taskSnap = await getDoc(doc(db,'tasks',taskId));
   const taskTitle = taskSnap.exists() ? taskSnap.data().title : '';
@@ -471,7 +494,6 @@ window.submitTask = async () => {
     feedback:    null,
     submittedAt: serverTimestamp()
   });
-  // Log activity
   await addDoc(collection(db,'activity'), {
     classId:   currentClass.id,
     type:      'submission',
@@ -615,7 +637,7 @@ window.sendChatMessage = async () => {
 };
 
 window.deleteChatMessage = async (msgId) => {
-  if (!confirm('¿Borrar este mensaje?')) return;
+  if (!window.confirm('¿Borrar este mensaje?')) return;
   await deleteDoc(doc(db,'messages', msgId));
 };
 

@@ -1181,18 +1181,34 @@ async function renderStats() {
 
 // ─── NOTIFICACIONES EN TIEMPO REAL ────────
 let _unsubNotif = null;
+let _unsubPending = null;
 function startNotifications() {
   if (_unsubNotif) _unsubNotif();
+  if (_unsubPending) _unsubPending();
+
+  // Entregas sin revisar
   _unsubNotif = onSnapshot(
     query(collection(db,'submissions'), where('classId','==',currentClass.id), where('grade','==',null)),
     (snap) => {
       const count = snap.size;
       const eb = document.getElementById('badge-entregas');
-      if (eb) {
-        eb.style.display = count > 0 ? '' : 'none';
-        eb.textContent = count;
-      }
+      if (eb) { eb.style.display = count > 0 ? '' : 'none'; eb.textContent = count; }
       const stEl = document.getElementById('st-entregas');
+      if (stEl) stEl.textContent = count;
+      // Refrescar entregas si están visibles
+      const active = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (active === 'nav-entregas') renderSubmissions();
+    }
+  );
+
+  // Alumnos pendientes de aprobación
+  _unsubPending = onSnapshot(
+    query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',false)),
+    (snap) => {
+      const count = snap.size;
+      const pb = document.getElementById('badge-pending');
+      if (pb) { pb.style.display = count > 0 ? '' : 'none'; pb.textContent = count; }
+      const stEl = document.getElementById('st-pending-users');
       if (stEl) stEl.textContent = count;
     }
   );
@@ -1523,7 +1539,7 @@ async function initChat() {
     const lastTime = last?.createdAt?.toDate ? last.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
     const active = s.uid === _chatStudentUid ? 'active' : '';
     return `
-    <button class="chat-student-item ${active}" onclick="openConversation('${s.uid}','${esc(s.displayName)}')">
+    <button class="chat-student-item ${active}" data-uid="${s.uid}" onclick="openConversation('${s.uid}','${esc(s.displayName)}')">
       <div class="chat-avatar">${initials}</div>
       <div class="chat-student-info">
         <div class="chat-student-name">${esc(s.displayName)}</div>
@@ -1548,10 +1564,10 @@ window.openConversation = (studentUid, studentName) => {
   if (_unsubChat) { _unsubChat(); _unsubChat = null; }
   _chatStudentUid = studentUid;
 
-  // Update active state in list
-  document.querySelectorAll('.chat-student-item').forEach(el => el.classList.remove('active'));
-  const items = document.querySelectorAll('.chat-student-item');
-  items.forEach(el => { if (el.onclick?.toString().includes(studentUid)) el.classList.add('active'); });
+  // Update active state using data-uid
+  document.querySelectorAll('.chat-student-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.uid === studentUid);
+  });
 
   document.getElementById('chat-no-selection').style.display = 'none';
   const conv = document.getElementById('chat-conversation');
