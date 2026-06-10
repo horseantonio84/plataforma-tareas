@@ -1022,7 +1022,8 @@ window.deleteSubmission = async (id) => {
 };
 
 window.removeGradeFromSubmission = async () => {
-  if (!confirm('¿Quitar la nota de esta entrega? El alumno dejará de verla.')) return;
+  const ok = await showConfirm({ title: 'Quitar nota', message: 'El alumno dejará de ver esta calificación.', confirmText: 'Quitar nota' });
+  if (!ok) return;
   const id = document.getElementById('sub-edit-id').value;
   await updateDoc(doc(db,'submissions',id), { grade: null, feedback: null, gradedAt: null });
   closeModal('modal-grade-submission');
