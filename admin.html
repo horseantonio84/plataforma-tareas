@@ -699,6 +699,7 @@ window.showSection = (id) => {
   if (id === 'chat')      initChat();
   if (id === 'estadisticas') renderStats();
   if (id === 'historial') renderHistorial();
+  else if (_unsubHistorial) { _unsubHistorial(); _unsubHistorial = null; }
   if (id === 'alumnos')   renderStudents();
   if (id === 'ajustes')   loadSettings();
   if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
@@ -1183,11 +1184,16 @@ async function renderStats() {
 // ─── NOTIFICACIONES EN TIEMPO REAL ────────
 let _unsubNotif = null;
 let _unsubPending = null;
+let _unsubStudents = null;
+let _unsubTasks = null;
+
 function startNotifications() {
   if (_unsubNotif) _unsubNotif();
   if (_unsubPending) _unsubPending();
+  if (_unsubStudents) _unsubStudents();
+  if (_unsubTasks) _unsubTasks();
 
-  // Entregas sin revisar
+  // 1. Entregas sin revisar → badge + stat + recarga sección
   _unsubNotif = onSnapshot(
     query(collection(db,'submissions'), where('classId','==',currentClass.id), where('grade','==',null)),
     (snap) => {
@@ -1196,13 +1202,12 @@ function startNotifications() {
       if (eb) { eb.style.display = count > 0 ? '' : 'none'; eb.textContent = count; }
       const stEl = document.getElementById('st-entregas');
       if (stEl) stEl.textContent = count;
-      // Refrescar entregas si están visibles
       const active = document.querySelector('.sidebar .nav-item.active')?.id;
       if (active === 'nav-entregas') renderSubmissions();
     }
   );
 
-  // Alumnos pendientes de aprobación
+  // 2. Alumnos pendientes → badge + stat
   _unsubPending = onSnapshot(
     query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',false)),
     (snap) => {
@@ -1211,6 +1216,28 @@ function startNotifications() {
       if (pb) { pb.style.display = count > 0 ? '' : 'none'; pb.textContent = count; }
       const stEl = document.getElementById('st-pending-users');
       if (stEl) stEl.textContent = count;
+      const active = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (active === 'nav-alumnos') renderStudents();
+    }
+  );
+
+  // 3. Alumnos aprobados → stat inicio
+  _unsubStudents = onSnapshot(
+    query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',true)),
+    (snap) => {
+      const stEl = document.getElementById('st-alumnos');
+      if (stEl) stEl.textContent = snap.size;
+    }
+  );
+
+  // 4. Tareas publicadas → stat inicio
+  _unsubTasks = onSnapshot(
+    query(collection(db,'tasks'), where('classId','==',currentClass.id)),
+    (snap) => {
+      const stEl = document.getElementById('st-tareas');
+      if (stEl) stEl.textContent = snap.size;
+      const active = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (active === 'nav-tareas') renderTasks();
     }
   );
 }
@@ -1369,6 +1396,7 @@ window.saveResource = async () => {
     desc: document.getElementById('res-desc').value.trim(),
     createdAt: serverTimestamp()
   });
+  logActivity('resource', `Nuevo recurso: "${name}"`);
   closeModal('modal-recurso');
   ['res-name','res-url','res-desc'].forEach(i=>document.getElementById(i).value='');
   renderResources(); toast('Recurso añadido.','success');
@@ -1670,52 +1698,56 @@ async function logActivity(type, text, meta = {}) {
   } catch(e) { /* silencioso */ }
 }
 
+let _unsubHistorial = null;
 async function renderHistorial() {
   const filter = document.getElementById('filter-activity').value;
   const el = document.getElementById('historial-container');
-  el.innerHTML = `<div class="empty-state"><i class="bi bi-hourglass-split" style="animation:spin 1s linear infinite"></i><p>Cargando...</p></div>`;
 
-  let q = query(collection(db,'activity'), where('classId','==',currentClass.id), orderBy('createdAt','desc'));
-  const snap = await getDocs(q);
+  if (_unsubHistorial) { _unsubHistorial(); _unsubHistorial = null; }
 
-  let items = snap.docs.map(d => ({id:d.id,...d.data()}));
-  if (filter) items = items.filter(i => i.type === filter);
+  _unsubHistorial = onSnapshot(
+    query(collection(db,'activity'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
+    (snap) => {
+      let items = snap.docs.map(d => ({id:d.id,...d.data()}));
+      if (filter) items = items.filter(i => i.type === filter);
 
-  if (!items.length) {
-    el.innerHTML = `<div class="empty-state"><i class="bi bi-clock-history"></i><p>No hay actividad registrada aún.</p></div>`;
-    return;
-  }
+      if (!items.length) {
+        el.innerHTML = `<div class="empty-state"><i class="bi bi-clock-history"></i><p>No hay actividad registrada aún.</p></div>`;
+        return;
+      }
 
-  const icons = {
-    submission:   { icon: 'bi-upload',            color: 'var(--brand)',   bg: '#dbeafe' },
-    grade:        { icon: 'bi-pencil-square',      color: 'var(--success)', bg: '#dcfce7' },
-    approval:     { icon: 'bi-person-check-fill',  color: 'var(--accent)',  bg: 'var(--accent-light)' },
-    task:         { icon: 'bi-check2-square',      color: 'var(--brand)',   bg: '#dbeafe' },
-    announcement: { icon: 'bi-megaphone-fill',     color: 'var(--warning)', bg: '#fef3c7' },
-    resource:     { icon: 'bi-folder2-open',       color: 'var(--muted)',   bg: 'var(--surface)' },
-    revoke:       { icon: 'bi-person-x-fill',      color: 'var(--danger)',  bg: '#fee2e2' },
-  };
+      const icons = {
+        submission:   { icon: 'bi-upload',            color: 'var(--brand)',   bg: '#dbeafe' },
+        grade:        { icon: 'bi-pencil-square',      color: 'var(--success)', bg: '#dcfce7' },
+        approval:     { icon: 'bi-person-check-fill',  color: 'var(--accent)',  bg: 'var(--accent-light)' },
+        task:         { icon: 'bi-check2-square',      color: 'var(--brand)',   bg: '#dbeafe' },
+        announcement: { icon: 'bi-megaphone-fill',     color: 'var(--warning)', bg: '#fef3c7' },
+        resource:     { icon: 'bi-folder2-open',       color: 'var(--muted)',   bg: 'var(--surface)' },
+        revoke:       { icon: 'bi-person-x-fill',      color: 'var(--danger)',  bg: '#fee2e2' },
+      };
 
-  el.innerHTML = `<div class="card">
-    <div style="padding:0">
-      ${items.map((item, idx) => {
-        const cfg = icons[item.type] || { icon:'bi-circle', color:'var(--muted)', bg:'var(--surface)' };
-        const ts  = item.createdAt?.toDate ? item.createdAt.toDate() : null;
-        const timeStr = ts ? ts.toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
-        return `
-        <div style="display:flex;align-items:center;gap:1rem;padding:.875rem 1.25rem;${idx < items.length-1 ? 'border-bottom:1px solid var(--border)' : ''}">
-          <div style="width:36px;height:36px;border-radius:50%;background:${cfg.bg};color:${cfg.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.95rem">
-            <i class="bi ${cfg.icon}"></i>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:.875rem;font-weight:500">${esc(item.text)}</div>
-            ${item.detail ? `<div style="font-size:.75rem;color:var(--muted);margin-top:.1rem">${esc(item.detail)}</div>` : ''}
-          </div>
-          <div style="font-size:.75rem;color:var(--muted);white-space:nowrap;flex-shrink:0">${timeStr}</div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>`;
+      el.innerHTML = `<div class="card">
+        <div style="padding:0">
+          ${items.map((item, idx) => {
+            const cfg = icons[item.type] || { icon:'bi-circle', color:'var(--muted)', bg:'var(--surface)' };
+            const ts  = item.createdAt?.toDate ? item.createdAt.toDate() : null;
+            const timeStr = ts ? ts.toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+            return `
+            <div style="display:flex;align-items:center;gap:1rem;padding:.875rem 1.25rem;${idx < items.length-1 ? 'border-bottom:1px solid var(--border)' : ''}">
+              <div style="width:36px;height:36px;border-radius:50%;background:${cfg.bg};color:${cfg.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.95rem">
+                <i class="bi ${cfg.icon}"></i>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:.875rem;font-weight:500">${esc(item.text)}</div>
+                ${item.detail ? `<div style="font-size:.75rem;color:var(--muted);margin-top:.1rem">${esc(item.detail)}</div>` : ''}
+              </div>
+              <div style="font-size:.75rem;color:var(--muted);white-space:nowrap;flex-shrink:0">${timeStr}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+  );
 }
 
 // ─── DARK MODE ────────────────────────────

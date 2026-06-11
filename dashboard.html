@@ -55,9 +55,11 @@
     </button>
     <button class="nav-item" onclick="showSection('recursos')" id="nav-recursos">
       <i class="bi bi-folder2-open"></i> Recursos
+      <span class="badge-count" id="badge-recursos" style="display:none">0</span>
     </button>
     <button class="nav-item" onclick="showSection('notas')" id="nav-notas">
       <i class="bi bi-star-fill"></i> Mis notas
+      <span class="badge-count" id="badge-notas" style="display:none">0</span>
     </button>
     <button class="nav-item" onclick="showSection('chat')" id="nav-chat">
       <i class="bi bi-chat-dots-fill"></i> Chat
@@ -269,6 +271,8 @@ onAuthStateChanged(auth, async (user) => {
   startSubmissionsListener();
   startTasksListener();
   startAnnouncementsListener();
+  startResourcesListener();
+  startGradesListener();
   startChatNotifications();
   showSection('inicio');
 });
@@ -415,8 +419,20 @@ window.showSection = (id) => {
     if (badge) badge.style.display = 'none';
     renderAnnouncements();
   }
-  if (id==='recursos')  renderResources();
-  if (id==='notas')     renderGrades();
+  if (id==='recursos') {
+    const seen = resourcesCache.map(r => r.id);
+    localStorage.setItem('ao_seenRes_' + currentClass.id, JSON.stringify(seen));
+    const badge = document.getElementById('badge-recursos');
+    if (badge) badge.style.display = 'none';
+    renderResources();
+  }
+  if (id==='notas') {
+    const seen = gradesCache.map(g => g.id);
+    localStorage.setItem('ao_seenGrades_' + currentClass.id, JSON.stringify(seen));
+    const badge = document.getElementById('badge-notas');
+    if (badge) badge.style.display = 'none';
+    renderGrades();
+  }
   if (id==='chat')      initChat();
   if (id==='perfil')    renderPerfil();
   if (window.innerWidth<768) document.getElementById('sidebar').classList.remove('open');
@@ -637,49 +653,116 @@ async function renderAnnouncements() {
 }
 
 // ─── RESOURCES ────────────────────────────
-async function renderResources() {
-  const snap = await getDocs(query(collection(db,'resources'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
+let resourcesCache = [];
+let _resCacheLoaded = false;
+let _unsubResources = null;
+
+function startResourcesListener() {
+  if (_unsubResources) _unsubResources();
+  _unsubResources = onSnapshot(
+    query(collection(db,'resources'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
+    (snap) => {
+      const newRes = snap.docs.map(d => ({id:d.id,...d.data()}));
+      if (_resCacheLoaded) {
+        const oldIds = new Set(resourcesCache.map(r => r.id));
+        const added = newRes.filter(r => !oldIds.has(r.id));
+        if (added.length > 0) {
+          const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+          if (activeSection !== 'nav-recursos') {
+            const seenStr = localStorage.getItem('ao_seenRes_' + currentClass.id) || '[]';
+            const seen = JSON.parse(seenStr);
+            const unseen = newRes.filter(r => !seen.includes(r.id));
+            const badge = document.getElementById('badge-recursos');
+            if (badge) { badge.style.display = unseen.length > 0 ? '' : 'none'; badge.textContent = unseen.length; }
+            added.forEach(r => toast(`📁 Nuevo recurso: ${r.name}`, 'success'));
+          }
+        }
+      }
+      resourcesCache = newRes;
+      _resCacheLoaded = true;
+      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (activeSection === 'nav-recursos') renderResourcesFromCache();
+    }
+  );
+}
+
+function renderResourcesFromCache() {
   const el = document.getElementById('resources-container');
-  if (snap.empty) {
+  if (!resourcesCache.length) {
     el.innerHTML = `<div class="empty-state"><i class="bi bi-folder-x"></i><p>El profesor no ha subido recursos aún.</p></div>`;
     return;
   }
-  el.innerHTML = snap.docs.map(d=>{
-    const r=d.data();
-    return `<div class="res-card fade-in">
-      <div class="res-icon"><i class="bi ${RES_ICON[r.type]||'bi-box-seam'}"></i></div>
-      <div class="res-info">
-        <div class="res-name">${esc(r.name)}</div>
-        ${r.desc?`<div class="res-desc">${esc(r.desc)}</div>`:''}
-      </div>
-      <a href="${esc(r.url)}" target="_blank" class="btn btn-sm btn-secondary"><i class="bi bi-box-arrow-up-right"></i> Abrir</a>
-    </div>`;
-  }).join('');
+  el.innerHTML = resourcesCache.map(r => `<div class="res-card fade-in">
+    <div class="res-icon"><i class="bi ${RES_ICON[r.type]||'bi-box-seam'}"></i></div>
+    <div class="res-info">
+      <div class="res-name">${esc(r.name)}</div>
+      ${r.desc?`<div class="res-desc">${esc(r.desc)}</div>`:''}
+    </div>
+    <a href="${esc(r.url)}" target="_blank" class="btn btn-sm btn-secondary"><i class="bi bi-box-arrow-up-right"></i> Abrir</a>
+  </div>`).join('');
+}
+
+async function renderResources() {
+  if (resourcesCache.length > 0) { renderResourcesFromCache(); return; }
+  const snap = await getDocs(query(collection(db,'resources'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
+  resourcesCache = snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderResourcesFromCache();
 }
 
 // ─── GRADES ───────────────────────────────
-async function renderGrades() {
-  const snap = await getDocs(query(collection(db,'grades'), where('classId','==',currentClass.id), where('studentUid','==',currentUser.uid), orderBy('createdAt','desc')));
+let gradesCache = [];
+let _gradesCacheLoaded = false;
+let _unsubGrades = null;
+
+function startGradesListener() {
+  if (_unsubGrades) _unsubGrades();
+  _unsubGrades = onSnapshot(
+    query(collection(db,'grades'), where('classId','==',currentClass.id), where('studentUid','==',currentUser.uid), orderBy('createdAt','desc')),
+    (snap) => {
+      const newGrades = snap.docs.map(d => ({id:d.id,...d.data()}));
+      if (_gradesCacheLoaded) {
+        const oldIds = new Set(gradesCache.map(g => g.id));
+        const added = newGrades.filter(g => !oldIds.has(g.id));
+        if (added.length > 0) {
+          const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+          if (activeSection !== 'nav-notas') {
+            const badge = document.getElementById('badge-notas');
+            const seenStr = localStorage.getItem('ao_seenGrades_' + currentClass.id) || '[]';
+            const seen = JSON.parse(seenStr);
+            const unseen = newGrades.filter(g => !seen.includes(g.id));
+            if (badge) { badge.style.display = unseen.length > 0 ? '' : 'none'; badge.textContent = unseen.length; }
+            added.forEach(g => toast(`⭐ Nueva nota: ${g.concept} — ${g.grade}`, 'success'));
+          }
+        }
+      }
+      gradesCache = newGrades;
+      _gradesCacheLoaded = true;
+      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (activeSection === 'nav-notas') renderGradesFromCache();
+    }
+  );
+}
+
+function renderGradesFromCache() {
   const el = document.getElementById('grades-container');
-  if (snap.empty) {
+  if (!gradesCache.length) {
     el.innerHTML = `<div class="empty-state"><i class="bi bi-star"></i><p>Todavía no tienes calificaciones.</p></div>`;
     return;
   }
-  const grades = snap.docs.map(d=>({id:d.id,...d.data()}));
-  const avg = (grades.reduce((a,g)=>a+g.grade,0)/grades.length).toFixed(1);
+  const avg = (gradesCache.reduce((a,g)=>a+g.grade,0)/gradesCache.length).toFixed(1);
   el.innerHTML = `
     <div class="card" style="margin-bottom:1rem;padding:1.25rem;display:flex;align-items:center;gap:1.5rem">
       <div>
         <div style="font-size:.78rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Nota media</div>
         <div style="font-size:2.5rem;font-weight:800;font-family:var(--mono);color:var(--brand)">${avg}</div>
       </div>
-      <div style="flex:1;font-size:.875rem;color:var(--muted)">${grades.length} calificación${grades.length>1?'es':''} registrada${grades.length>1?'s':''}</div>
+      <div style="flex:1;font-size:.875rem;color:var(--muted)">${gradesCache.length} calificación${gradesCache.length>1?'es':''} registrada${gradesCache.length>1?'s':''}</div>
     </div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Concepto</th><th>Nota</th><th>Comentario del profesor</th><th>Fecha</th></tr></thead>
         <tbody>
-          ${grades.map(g=>`<tr>
+          ${gradesCache.map(g=>`<tr>
             <td style="font-weight:600">${esc(g.concept)}</td>
             <td>${gradeBadge(g.grade)}</td>
             <td style="font-size:.82rem;color:var(--muted)">${esc(g.comment||'—')}</td>
@@ -688,6 +771,13 @@ async function renderGrades() {
         </tbody>
       </table>
     </div>`;
+}
+
+async function renderGrades() {
+  if (gradesCache.length > 0) { renderGradesFromCache(); return; }
+  const snap = await getDocs(query(collection(db,'grades'), where('classId','==',currentClass.id), where('studentUid','==',currentUser.uid), orderBy('createdAt','desc')));
+  gradesCache = snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderGradesFromCache();
 }
 
 // ─── CHAT PRIVADO ─────────────────────────
