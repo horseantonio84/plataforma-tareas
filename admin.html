@@ -337,7 +337,8 @@
       <input type="hidden" id="task-edit-id"/>
       <div class="form-group">
         <label class="form-label">Título <span class="req">*</span></label>
-        <input type="text" class="form-control" id="task-title" placeholder="Ej: Ejercicios tema 5"/>
+        <input type="text" class="form-control" id="task-title" placeholder="Ej: Ejercicios tema 5"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();}"/>
       </div>
       <div class="form-group">
         <label class="form-label">Descripción / Instrucciones</label>
@@ -366,8 +367,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-tarea')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveTask()"><i class="bi bi-floppy"></i> Guardar tarea</button>
+      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-tarea')">Cancelar</button>
+      <button type="button" class="btn btn-primary" onclick="saveTask()"><i class="bi bi-floppy"></i> Guardar tarea</button>
     </div>
   </div>
 </div>
@@ -383,7 +384,7 @@
       <input type="hidden" id="annc-edit-id"/>
       <div class="form-group">
         <label class="form-label">Título <span class="req">*</span></label>
-        <input type="text" class="form-control" id="annc-title" placeholder="Ej: Examen aplazado"/>
+        <input type="text" class="form-control" id="annc-title" onkeydown="if(event.key==='Enter'){event.preventDefault();}" placeholder="Ej: Examen aplazado"/>
       </div>
       <div class="form-group">
         <label class="form-label">Contenido</label>
@@ -408,7 +409,7 @@
       <input type="hidden" id="res-edit-id"/>
       <div class="form-group">
         <label class="form-label">Nombre <span class="req">*</span></label>
-        <input type="text" class="form-control" id="res-name" placeholder="Ej: Apuntes Tema 3"/>
+        <input type="text" class="form-control" id="res-name" onkeydown="if(event.key==='Enter'){event.preventDefault();}" placeholder="Ej: Apuntes Tema 3"/>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
         <div class="form-group">
@@ -455,7 +456,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
         <div class="form-group">
           <label class="form-label">Concepto / Evaluación <span class="req">*</span></label>
-          <input type="text" class="form-control" id="grade-concept" placeholder="Ej: Examen Tema 3"/>
+          <input type="text" class="form-control" id="grade-concept" onkeydown="if(event.key==='Enter'){event.preventDefault();}" placeholder="Ej: Examen Tema 3"/>
         </div>
         <div class="form-group">
           <label class="form-label">Nota (0–10) <span class="req">*</span></label>
@@ -518,7 +519,7 @@
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Nombre de la clase <span class="req">*</span></label>
-        <input type="text" class="form-control" id="new-class-name" placeholder="Ej: Programación, Base de Datos..."/>
+        <input type="text" class="form-control" id="new-class-name" onkeydown="if(event.key==='Enter'){event.preventDefault();}" placeholder="Ej: Programación, Base de Datos..."/>
       </div>
       <div class="form-group">
         <label class="form-label">Descripción</label>

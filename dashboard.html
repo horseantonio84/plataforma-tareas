@@ -47,9 +47,11 @@
     </button>
     <button class="nav-item" onclick="showSection('tareas')" id="nav-tareas">
       <i class="bi bi-check2-square"></i> Tareas
+      <span class="badge-count" id="badge-tareas" style="display:none">0</span>
     </button>
     <button class="nav-item" onclick="showSection('anuncios')" id="nav-anuncios">
       <i class="bi bi-megaphone-fill"></i> Anuncios
+      <span class="badge-count" id="badge-anuncios" style="display:none">0</span>
     </button>
     <button class="nav-item" onclick="showSection('recursos')" id="nav-recursos">
       <i class="bi bi-folder2-open"></i> Recursos
@@ -296,33 +298,69 @@ function startSubmissionsListener() {
   );
 }
 
-// Cache de tareas
 let tasksCache = [];
+let _tasksCacheLoaded = false;
 let _unsubTasks = null;
 function startTasksListener() {
   if (_unsubTasks) _unsubTasks();
   _unsubTasks = onSnapshot(
     query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
     (snap) => {
-      tasksCache = snap.docs.map(d => ({id:d.id,...d.data()}));
+      const newTasks = snap.docs.map(d => ({id:d.id,...d.data()}));
+      // Detectar tareas nuevas (solo después de la carga inicial)
+      if (_tasksCacheLoaded) {
+        const oldIds = new Set(tasksCache.map(t => t.id));
+        const added = newTasks.filter(t => !oldIds.has(t.id));
+        if (added.length > 0) {
+          const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+          if (activeSection !== 'nav-tareas') {
+            // Mostrar badge en Tareas
+            const badge = document.getElementById('badge-tareas');
+            const seenStr = localStorage.getItem('ao_seenTasks_' + currentClass.id) || '[]';
+            const seen = JSON.parse(seenStr);
+            const unseen = newTasks.filter(t => !seen.includes(t.id) && !submissionsCache[t.id]);
+            if (badge) { badge.style.display = unseen.length > 0 ? '' : 'none'; badge.textContent = unseen.length; }
+            // Toast de aviso
+            added.forEach(t => toast(`📋 Nueva tarea: ${t.title}`, 'success'));
+          }
+        }
+      }
+      tasksCache = newTasks;
+      _tasksCacheLoaded = true;
       const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
       if (activeSection === 'nav-tareas') renderTasksFromCache();
       if (activeSection === 'nav-inicio') renderHome();
-      // Actualizar stats inicio
       updateHomeStats();
     }
   );
 }
 
-// Cache de anuncios
 let announcementsCache = [];
+let _annCacheLoaded = false;
 let _unsubAnnouncements = null;
 function startAnnouncementsListener() {
   if (_unsubAnnouncements) _unsubAnnouncements();
   _unsubAnnouncements = onSnapshot(
     query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
     (snap) => {
-      announcementsCache = snap.docs.map(d => ({id:d.id,...d.data()}));
+      const newAnns = snap.docs.map(d => ({id:d.id,...d.data()}));
+      if (_annCacheLoaded) {
+        const oldIds = new Set(announcementsCache.map(a => a.id));
+        const added = newAnns.filter(a => !oldIds.has(a.id));
+        if (added.length > 0) {
+          const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+          if (activeSection !== 'nav-anuncios') {
+            const seenStr = localStorage.getItem('ao_seenAnns_' + currentClass.id) || '[]';
+            const seen = JSON.parse(seenStr);
+            const unseen = newAnns.filter(a => !seen.includes(a.id));
+            const badge = document.getElementById('badge-anuncios');
+            if (badge) { badge.style.display = unseen.length > 0 ? '' : 'none'; badge.textContent = unseen.length; }
+            added.forEach(a => toast(`📢 Nuevo anuncio: ${a.title}`, 'success'));
+          }
+        }
+      }
+      announcementsCache = newAnns;
+      _annCacheLoaded = true;
       const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
       if (activeSection === 'nav-anuncios') renderAnnouncementsFromCache();
       if (activeSection === 'nav-inicio') renderHome();
@@ -362,8 +400,21 @@ window.showSection = (id) => {
   const nav = document.getElementById('nav-'+id);
   if (nav) nav.classList.add('active');
   if (id==='inicio')    renderHome();
-  if (id==='tareas')    renderTasks();
-  if (id==='anuncios')  renderAnnouncements();
+  if (id==='tareas') {
+    // Marcar todas las tareas como vistas
+    const seen = tasksCache.map(t => t.id);
+    localStorage.setItem('ao_seenTasks_' + currentClass.id, JSON.stringify(seen));
+    const badge = document.getElementById('badge-tareas');
+    if (badge) badge.style.display = 'none';
+    renderTasks();
+  }
+  if (id==='anuncios') {
+    const seen = announcementsCache.map(a => a.id);
+    localStorage.setItem('ao_seenAnns_' + currentClass.id, JSON.stringify(seen));
+    const badge = document.getElementById('badge-anuncios');
+    if (badge) badge.style.display = 'none';
+    renderAnnouncements();
+  }
   if (id==='recursos')  renderResources();
   if (id==='notas')     renderGrades();
   if (id==='chat')      initChat();
