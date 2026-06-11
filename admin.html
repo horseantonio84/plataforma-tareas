@@ -1608,17 +1608,20 @@ window.openConversation = (studentUid, studentName) => {
 
   const convId = getConvId(studentUid);
 
-  // Marcar mensajes del alumno como leídos
-  getDocs(query(collection(db,'messages'), where('convId','==',convId), where('fromRole','==','student'), where('readAt','==',null)))
-    .then(snap => {
-      snap.docs.forEach(d => updateDoc(doc(db,'messages',d.id), { readAt: serverTimestamp() }));
-    }).catch(()=>{});
-
   _unsubChat = onSnapshot(
     query(collection(db,'messages'), where('convId','==',convId), orderBy('createdAt','asc')),
     (snap) => {
       const el = document.getElementById('chat-messages');
       if (!el) return;
+
+      // Marcar mensajes del alumno como leídos en tiempo real
+      snap.docs.forEach(d => {
+        const m = d.data();
+        if (m.fromRole === 'student' && !m.readAt) {
+          updateDoc(doc(db,'messages',d.id), { readAt: serverTimestamp() }).catch(()=>{});
+        }
+      });
+
       if (snap.empty) {
         el.innerHTML = `<div class="empty-state"><i class="bi bi-chat-dots"></i><p>Sin mensajes aún. Escribe el primero.</p></div>`;
         return;

@@ -288,16 +288,43 @@ function initUI() {
 }
 
 let _unsubSubmissions = null;
+let _submissionsCacheLoaded = false;
 function startSubmissionsListener() {
   if (_unsubSubmissions) _unsubSubmissions();
   _unsubSubmissions = onSnapshot(
     query(collection(db,'submissions'), where('studentUid','==',currentUser.uid)),
     (snap) => {
-      submissionsCache = {};
-      snap.docs.forEach(d => { const s = d.data(); submissionsCache[s.taskId] = {id:d.id,...s}; });
+      const newCache = {};
+      snap.docs.forEach(d => { const s = d.data(); newCache[s.taskId] = {id:d.id,...s}; });
+
+      // Detectar notas nuevas (grade pasó de null a número)
+      if (_submissionsCacheLoaded) {
+        Object.values(newCache).forEach(sub => {
+          const old = submissionsCache[sub.taskId];
+          if (old && old.grade == null && sub.grade != null) {
+            const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+            // Toast siempre
+            toast(`⭐ El profesor ha corregido tu tarea: ${sub.grade}/10`, 'success');
+            // Badge en notas si no está en esa sección
+            if (activeSection !== 'nav-notas' && activeSection !== 'nav-tareas') {
+              const badge = document.getElementById('badge-tareas');
+              if (badge) {
+                const cur = parseInt(badge.textContent || '0');
+                badge.style.display = '';
+                badge.textContent = cur > 0 ? cur : 1;
+              }
+            }
+            if (activeSection === 'nav-tareas') renderTasksFromCache();
+          }
+        });
+      }
+
+      submissionsCache = newCache;
+      _submissionsCacheLoaded = true;
       const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
       if (activeSection === 'nav-tareas') renderTasks();
       if (activeSection === 'nav-inicio') renderHome();
+      updateHomeStats();
     }
   );
 }
@@ -305,33 +332,37 @@ function startSubmissionsListener() {
 let tasksCache = [];
 let _tasksCacheLoaded = false;
 let _unsubTasks = null;
+
+function recalcTasksBadge() {
+  const seenStr = localStorage.getItem('ao_seenTasks_' + currentClass.id) || '[]';
+  const seen = JSON.parse(seenStr);
+  // Solo contar tareas que existen actualmente, no entregadas, y no vistas
+  const unseen = tasksCache.filter(t => !seen.includes(t.id) && !submissionsCache[t.id]);
+  const badge = document.getElementById('badge-tareas');
+  if (badge) { badge.style.display = unseen.length > 0 ? '' : 'none'; badge.textContent = unseen.length; }
+}
+
 function startTasksListener() {
   if (_unsubTasks) _unsubTasks();
   _unsubTasks = onSnapshot(
     query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
     (snap) => {
       const newTasks = snap.docs.map(d => ({id:d.id,...d.data()}));
-      // Detectar tareas nuevas (solo después de la carga inicial)
       if (_tasksCacheLoaded) {
         const oldIds = new Set(tasksCache.map(t => t.id));
         const added = newTasks.filter(t => !oldIds.has(t.id));
         if (added.length > 0) {
           const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
           if (activeSection !== 'nav-tareas') {
-            // Mostrar badge en Tareas
-            const badge = document.getElementById('badge-tareas');
-            const seenStr = localStorage.getItem('ao_seenTasks_' + currentClass.id) || '[]';
-            const seen = JSON.parse(seenStr);
-            const unseen = newTasks.filter(t => !seen.includes(t.id) && !submissionsCache[t.id]);
-            if (badge) { badge.style.display = unseen.length > 0 ? '' : 'none'; badge.textContent = unseen.length; }
-            // Toast de aviso
             added.forEach(t => toast(`📋 Nueva tarea: ${t.title}`, 'success'));
           }
         }
       }
       tasksCache = newTasks;
       _tasksCacheLoaded = true;
+      // Recalcular badge siempre (cubre adiciones Y eliminaciones)
       const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (activeSection !== 'nav-tareas') recalcTasksBadge();
       if (activeSection === 'nav-tareas') renderTasksFromCache();
       if (activeSection === 'nav-inicio') renderHome();
       updateHomeStats();
@@ -606,6 +637,8 @@ window.submitTask = async () => {
   if (submissionsCache[taskId]) { toast('Ya has entregado esta tarea.','error'); closeModal('modal-entrega'); return; }
   const existing = await getDocs(query(collection(db,'submissions'), where('taskId','==',taskId), where('studentUid','==',currentUser.uid)));
   if (!existing.empty) { toast('Ya has entregado esta tarea.','error'); closeModal('modal-entrega'); return; }
+  // Cerrar modal inmediatamente antes de las operaciones async
+  closeModal('modal-entrega');
   // Get task title for activity log
   const taskSnap = await getDoc(doc(db,'tasks',taskId));
   const taskTitle = taskSnap.exists() ? taskSnap.data().title : '';
@@ -627,8 +660,7 @@ window.submitTask = async () => {
     createdAt: serverTimestamp()
   });
   submissionsCache[taskId] = { taskId, comment, grade: null };
-  closeModal('modal-entrega');
-  renderTasks(); toast('¡Tarea entregada!','success');
+  toast('¡Tarea entregada!','success');
 };
 
 // ─── ANNOUNCEMENTS ────────────────────────
@@ -794,17 +826,20 @@ function initChat() {
 
   const convId = getConvId();
 
-  // Marcar mensajes del profesor como leídos
-  getDocs(query(collection(db,'messages'), where('convId','==',convId), where('fromRole','==','teacher'), where('readAt','==',null)))
-    .then(snap => {
-      snap.docs.forEach(d => updateDoc(doc(db,'messages',d.id), { readAt: serverTimestamp() }));
-    }).catch(()=>{});
-
   _unsubChat = onSnapshot(
     query(collection(db,'messages'), where('convId','==',convId), orderBy('createdAt','asc')),
     (snap) => {
       const el = document.getElementById('chat-messages');
       if (!el) return;
+
+      // Marcar mensajes del profesor como leídos en tiempo real
+      snap.docs.forEach(d => {
+        const m = d.data();
+        if (m.fromRole === 'teacher' && !m.readAt) {
+          updateDoc(doc(db,'messages',d.id), { readAt: serverTimestamp() }).catch(()=>{});
+        }
+      });
+
       if (snap.empty) {
         el.innerHTML = `<div class="empty-state"><i class="bi bi-chat-dots"></i><p>Sin mensajes aún. ¡Escribe al profesor!</p></div>`;
         return;
