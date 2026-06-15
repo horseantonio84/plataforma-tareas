@@ -9,6 +9,13 @@
 </head>
 <body>
 
+<!-- ══ LOADING ══ -->
+<div id="app-loading">
+  <div class="loading-logo">Aula<em>Online</em></div>
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Cargando panel...</div>
+</div>
+
 <!-- ══ TOPBAR ══ -->
 <header class="topbar">
   <button class="btn btn-ghost btn-icon" id="sidebar-toggle" onclick="toggleSidebar()" style="color:#fff;display:none">
@@ -586,6 +593,8 @@ onAuthStateChanged(auth, async (user) => {
     startNotifications();
     startChatNotifications();
     _initialized = true;
+    const loader = document.getElementById('app-loading');
+    if (loader) { loader.classList.add('hiding'); setTimeout(() => loader.remove(), 350); }
     showSection('inicio');
   } catch (err) {
     console.error('Error al inicializar:', err);
@@ -729,6 +738,19 @@ function fmtDateShort(str) {
   if (!str) return '';
   const d = new Date(str + 'T00:00:00');
   return d.toLocaleDateString('es-ES', {day:'numeric',month:'short'});
+}
+function fmtLastSeen(ts) {
+  if (!ts) return '<span style="font-size:.75rem;color:var(--muted)">Nunca</span>';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const diffMs = Date.now() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffH   = Math.floor(diffMs / 3600000);
+  const diffD   = Math.floor(diffMs / 86400000);
+  if (diffMin < 5)  return `<span class="last-seen online"><span class="dot"></span> En línea</span>`;
+  if (diffMin < 60) return `<span class="last-seen"><span class="dot"></span> Hace ${diffMin} min</span>`;
+  if (diffH < 24)   return `<span class="last-seen"><span class="dot"></span> Hace ${diffH}h</span>`;
+  if (diffD < 7)    return `<span class="last-seen"><span class="dot"></span> Hace ${diffD}d</span>`;
+  return `<span class="last-seen"><span class="dot"></span> ${d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>`;
 }
 function dueBadge(due) {
   if (!due) return '';
@@ -1440,7 +1462,7 @@ function renderStudentList(containerId, students, isApproved) {
   }
   el.innerHTML = `<div class="table-wrap">
     <table>
-      <thead><tr><th>Nombre</th><th>Correo</th><th>Fecha registro</th><th>Estado</th><th></th></tr></thead>
+      <thead><tr><th>Nombre</th><th>Correo</th><th>Registro</th><th>Última conexión</th><th>Estado</th><th></th></tr></thead>
       <tbody>
         ${students.map(u=>`<tr>
           <td>
@@ -1451,6 +1473,7 @@ function renderStudentList(containerId, students, isApproved) {
           </td>
           <td style="color:var(--muted);font-size:.85rem">${esc(u.email)}</td>
           <td style="font-size:.8rem">${fmtDate(u.createdAt)}</td>
+          <td>${fmtLastSeen(u.lastSeen)}</td>
           <td>${isApproved ? '<span class="badge badge-success"><i class="bi bi-check-circle"></i> Aprobado</span>' : '<span class="badge badge-warning"><i class="bi bi-clock"></i> Pendiente</span>'}</td>
           <td style="display:flex;gap:.4rem">
             ${!isApproved ? `<button class="btn btn-sm btn-success" onclick="approveStudent('${u.uid}')"><i class="bi bi-check-lg"></i> Aprobar</button>` : ''}
@@ -1673,17 +1696,30 @@ window.deleteChatMessage = async (msgId) => {
 
 // Notificaciones chat privado
 let _unsubChatNotif = null;
+let _chatNotifShown = new Set(); // evitar toasts repetidos
 function startChatNotifications() {
   if (_unsubChatNotif) _unsubChatNotif();
+  _chatNotifShown = new Set();
   _unsubChatNotif = onSnapshot(
     query(collection(db,'messages'), where('classId','==',currentClass.id), where('fromRole','==','student'), orderBy('createdAt','desc')),
     (snap) => {
       const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (activeSection === 'nav-chat') return;
       const lastRead = parseInt(localStorage.getItem('ao_chatLastRead_' + currentClass.id) || '0');
       const newMsgs = snap.docs.filter(d => (d.data().createdAt?.toMillis?.() || 0) > lastRead);
+
       const badge = document.getElementById('badge-chat');
       if (badge) { badge.style.display = newMsgs.length > 0 ? '' : 'none'; badge.textContent = newMsgs.length; }
+
+      // Toast con nombre del alumno (solo una vez por mensaje nuevo)
+      if (activeSection !== 'nav-chat') {
+        newMsgs.forEach(d => {
+          if (!_chatNotifShown.has(d.id)) {
+            _chatNotifShown.add(d.id);
+            const m = d.data();
+            toast(`💬 ${m.fromName}: ${m.text.slice(0,40)}${m.text.length>40?'…':''}`, 'success');
+          }
+        });
+      }
     }
   );
 }

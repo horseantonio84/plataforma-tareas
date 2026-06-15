@@ -518,3 +518,37 @@ tbody tr:hover { background: var(--surface); }
   flex-shrink: 0;
 }
 .dark-toggle:hover { background: rgba(255,255,255,.25); }
+
+/* ═══════════════════════════════════════════════
+   PANTALLA DE CARGA
+═══════════════════════════════════════════════ */
+#app-loading {
+  position: fixed; inset: 0; z-index: 9998;
+  background: var(--surface);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1.5rem;
+  transition: opacity .35s ease;
+}
+#app-loading.hiding { opacity: 0; pointer-events: none; }
+#app-loading .loading-logo { font-size: 1.6rem; font-weight: 700; color: var(--brand); letter-spacing: -.3px; }
+#app-loading .loading-logo em { color: var(--accent); font-style: normal; }
+#app-loading .loading-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--brand);
+  animation: spin .7s linear infinite;
+}
+#app-loading .loading-text { font-size: .85rem; color: var(--muted); font-weight: 500; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Skeleton stat cards */
+.skeleton-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:1.75rem; }
+.skeleton-stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.25rem; display:flex; align-items:center; gap:1rem; }
+.skeleton-icon { width:48px; height:48px; border-radius:.75rem; flex-shrink:0; }
+.skeleton-line { border-radius:.3rem; }
+.skeleton-line.lg { height:28px; width:60px; margin-bottom:.4rem; }
+.skeleton-line.sm { height:12px; width:90px; }
+
+/* Last seen badge */
+.last-seen { font-size:.72rem; color:var(--muted); display:flex; align-items:center; gap:.3rem; }
+.last-seen.online { color:var(--success); }
+.last-seen .dot { width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; }

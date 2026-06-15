@@ -9,6 +9,13 @@
 </head>
 <body>
 
+<!-- ══ LOADING ══ -->
+<div id="app-loading">
+  <div class="loading-logo">Aula<em>Online</em></div>
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Cargando tu clase...</div>
+</div>
+
 <!-- ══ TOPBAR ══ -->
 <header class="topbar">
   <button class="btn btn-ghost btn-icon" id="sidebar-toggle" onclick="toggleSidebar()" style="color:#fff;display:none">
@@ -274,6 +281,11 @@ onAuthStateChanged(auth, async (user) => {
   startResourcesListener();
   startGradesListener();
   startChatNotifications();
+  // Guardar última conexión
+  updateDoc(doc(db,'users', user.uid), { lastSeen: serverTimestamp() }).catch(()=>{});
+  // Ocultar pantalla de carga
+  const loader = document.getElementById('app-loading');
+  if (loader) { loader.classList.add('hiding'); setTimeout(() => loader.remove(), 350); }
   showSection('inicio');
 });
 
