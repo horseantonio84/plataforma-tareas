@@ -22,7 +22,21 @@
     <i class="bi bi-list" style="font-size:1.4rem"></i>
   </button>
   <div class="brand">Aula<em>Online</em></div>
-  <span class="class-chip" id="topbar-classname">Cargando...</span>
+  <div class="class-switcher" id="class-switcher">
+    <button class="class-switcher-btn" onclick="toggleClassMenu()">
+      <i class="bi bi-mortarboard-fill"></i>
+      <span id="topbar-classname">Cargando...</span>
+      <i class="bi bi-chevron-down" style="font-size:.7rem;opacity:.7"></i>
+    </button>
+    <div class="class-switcher-menu" id="class-switcher-menu">
+      <div class="csm-header">Mis clases</div>
+      <div id="csm-list"></div>
+      <div class="csm-divider"></div>
+      <button class="csm-new" onclick="openJoinClassModal()">
+        <i class="bi bi-plus-circle"></i> Unirse a otra clase
+      </button>
+    </div>
+  </div>
   <div class="spacer"></div>
   <div class="topbar-actions">
     <button class="dark-toggle" id="dark-toggle" onclick="toggleDark()" title="Modo oscuro">
@@ -219,6 +233,9 @@
 
 </div>
 
+<!-- Panel de todas las clases (fuera del grid, ocupa ancho completo) -->
+<div id="perfil-all-classes" style="display:none;max-width:760px;margin:0 2rem 2rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem"></div>
+
 <!-- ════════════ MODAL ENTREGA ════════════ -->
 <div class="modal-overlay" id="modal-entrega" onclick="closeModalOutside(event,'modal-entrega')">
   <div class="modal-box">
@@ -243,6 +260,33 @@
   </div>
 </div>
 
+<!-- UNIRSE A CLASE -->
+<div class="modal-overlay" id="modal-join-class" onclick="closeModalOutside(event,'modal-join-class')">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <h3><i class="bi bi-mortarboard-fill"></i> Unirse a otra clase</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-join-class')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Código de clase <span class="req">*</span></label>
+        <div class="input-icon">
+          <i class="bi bi-hash"></i>
+          <input type="text" class="form-control" id="join-code" placeholder="Ej: MAT3A" maxlength="10"
+            oninput="this.value=this.value.toUpperCase()"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();joinClass();}"/>
+        </div>
+        <div class="form-hint">Pídele el código al profesor de la nueva clase.</div>
+      </div>
+      <div id="join-alert" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-join-class')">Cancelar</button>
+      <button type="button" class="btn btn-primary" onclick="joinClass()"><i class="bi bi-plus-lg"></i> Solicitar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 
 <script type="module">
@@ -256,7 +300,8 @@ import {
 // ─── STATE ───────────────────────────────
 let currentUser = null;
 let currentClass = null;
-let submissionsCache = {};  // taskId -> submission
+let allMyClasses = [];
+let submissionsCache = {};
 
 // ─── INIT / AUTH GUARD ───────────────────
 onAuthStateChanged(auth, async (user) => {
@@ -268,12 +313,30 @@ onAuthStateChanged(auth, async (user) => {
   if (!data.approved)            { window.location.href = 'pending.html'; return; }
   currentUser = { ...data, uid: user.uid };
 
-  // Load class
-  const classSnap = await getDoc(doc(db,'classes', currentUser.classId));
-  currentClass = { id: classSnap.id, ...classSnap.data() };
+  // Migrar classId → classIds si hace falta
+  if (!currentUser.classIds || !currentUser.classIds.length) {
+    currentUser.classIds = currentUser.classId ? [currentUser.classId] : [];
+    await updateDoc(doc(db,'users', user.uid), { classIds: currentUser.classIds }).catch(()=>{});
+  }
 
-  document.getElementById('topbar-classname').textContent = currentClass.name;
+  // Cargar todas las clases del alumno
+  allMyClasses = [];
+  for (const cid of currentUser.classIds) {
+    try {
+      const cs = await getDoc(doc(db,'classes', cid));
+      if (cs.exists()) allMyClasses.push({ id: cs.id, ...cs.data() });
+    } catch(e) {}
+  }
+  if (!allMyClasses.length) { window.location.href = 'index.html'; return; }
+
+  // Recuperar última clase activa
+  const savedId = localStorage.getItem('ao_activeClassId_student');
+  currentClass = allMyClasses.find(c => c.id === savedId) || allMyClasses[0];
+
+  renderClassSwitcher();
   initUI();
+  // Guardar última conexión
+  updateDoc(doc(db,'users', user.uid), { lastSeen: serverTimestamp() }).catch(()=>{});
   await loadSubmissions();
   startSubmissionsListener();
   startTasksListener();
@@ -281,9 +344,7 @@ onAuthStateChanged(auth, async (user) => {
   startResourcesListener();
   startGradesListener();
   startChatNotifications();
-  // Guardar última conexión
-  updateDoc(doc(db,'users', user.uid), { lastSeen: serverTimestamp() }).catch(()=>{});
-  // Ocultar pantalla de carga
+  // Ocultar loading screen
   const loader = document.getElementById('app-loading');
   if (loader) { loader.classList.add('hiding'); setTimeout(() => loader.remove(), 350); }
   showSection('inicio');
@@ -298,6 +359,95 @@ function initUI() {
   const greet = h < 13 ? '☀️ Buenos días' : h < 20 ? '👋 Buenas tardes' : '🌙 Buenas noches';
   document.getElementById('greeting-sub').textContent = `· ${greet}, ${(currentUser.displayName||'').split(' ')[0]}`;
 }
+
+// ─── CLASS SWITCHER ───────────────────────
+function renderClassSwitcher() {
+  document.getElementById('topbar-classname').textContent = currentClass.name;
+  document.getElementById('csm-list').innerHTML = allMyClasses.map(c => `
+    <button class="csm-item ${c.id === currentClass.id ? 'active' : ''}" data-cid="${c.id}" onclick="switchClass('${c.id}')">
+      <div class="csm-item-icon">${c.name[0].toUpperCase()}</div>
+      <div class="csm-item-info">
+        <div class="csm-item-name">${esc(c.name)}</div>
+        <div class="csm-item-code">${c.code||''}</div>
+      </div>
+      ${c.id === currentClass.id ? '<i class="bi bi-check2" style="color:var(--brand);margin-left:auto;flex-shrink:0"></i>' : ''}
+    </button>`).join('');
+}
+
+window.toggleClassMenu = () => document.getElementById('class-switcher-menu').classList.toggle('open');
+window.closeClassMenu  = () => document.getElementById('class-switcher-menu').classList.remove('open');
+document.addEventListener('click', e => {
+  const sw = document.getElementById('class-switcher');
+  if (sw && !sw.contains(e.target)) closeClassMenu();
+});
+
+window.switchClass = async (classId) => {
+  if (currentClass?.id === classId) { closeClassMenu(); return; }
+  currentClass = allMyClasses.find(c => c.id === classId);
+  localStorage.setItem('ao_activeClassId_student', classId);
+  renderClassSwitcher();
+  closeClassMenu();
+  // Reset caches
+  tasksCache = []; _tasksCacheLoaded = false;
+  announcementsCache = []; _annCacheLoaded = false;
+  resourcesCache = []; _resCacheLoaded = false;
+  gradesCache = []; _gradesCacheLoaded = false;
+  submissionsCache = {}; _submissionsCacheLoaded = false;
+  // Detener listeners anteriores
+  [_unsubSubmissions,_unsubTasks,_unsubAnnouncements,_unsubResources,_unsubGrades,_unsubChatNotif,_unsubChat]
+    .forEach(u => { if(u) u(); });
+  await loadSubmissions();
+  startSubmissionsListener();
+  startTasksListener();
+  startAnnouncementsListener();
+  startResourcesListener();
+  startGradesListener();
+  startChatNotifications();
+  showSection('inicio');
+  toast(`Cambiado a: ${currentClass.name}`, 'success');
+};
+
+// ─── JOIN CLASS ───────────────────────────
+window.openJoinClassModal = () => {
+  closeClassMenu();
+  document.getElementById('join-code').value = '';
+  document.getElementById('join-alert').style.display = 'none';
+  openModal('modal-join-class');
+};
+
+window.joinClass = async () => {
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  const alertEl = document.getElementById('join-alert');
+  if (!code) {
+    alertEl.className='alert alert-error';
+    alertEl.innerHTML='<i class="bi bi-exclamation-circle"></i> Introduce un código.';
+    alertEl.style.display='flex'; return;
+  }
+  const classQ = query(collection(db,'classes'), where('code','==',code));
+  const classSnap = await getDocs(classQ);
+  if (classSnap.empty) {
+    alertEl.className='alert alert-error';
+    alertEl.innerHTML='<i class="bi bi-exclamation-circle"></i> Código no válido.';
+    alertEl.style.display='flex'; return;
+  }
+  const newClass = { id: classSnap.docs[0].id, ...classSnap.docs[0].data() };
+  if (allMyClasses.some(c => c.id === newClass.id)) {
+    alertEl.className='alert alert-warning';
+    alertEl.innerHTML='<i class="bi bi-info-circle"></i> Ya perteneces a esta clase.';
+    alertEl.style.display='flex'; return;
+  }
+  // Crear solicitud de unión
+  await addDoc(collection(db,'classRequests'), {
+    classId:     newClass.id,
+    studentUid:  currentUser.uid,
+    studentName: currentUser.displayName,
+    email:       currentUser.email,
+    status:      'pending',
+    createdAt:   serverTimestamp()
+  });
+  closeModal('modal-join-class');
+  toast(`✅ Solicitud enviada a "${newClass.name}". El profesor debe aprobarte.`, 'success');
+};
 
 let _unsubSubmissions = null;
 let _submissionsCacheLoaded = false;
@@ -928,6 +1078,27 @@ function renderPerfil() {
   document.getElementById('perfil-classname').textContent = currentClass.name || '—';
   document.getElementById('perfil-classdesc').textContent = currentClass.description || 'Sin descripción';
   document.getElementById('perfil-code').textContent      = currentClass.code || '—';
+
+  // Lista de todas las clases (si hay más de una)
+  const el = document.getElementById('perfil-all-classes');
+  if (!el) return;
+  if (allMyClasses.length <= 1) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = `
+    <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.75rem">
+      Todas mis clases (${allMyClasses.length})
+    </div>
+    ${allMyClasses.map(c => `
+      <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--border)">
+        <div style="width:30px;height:30px;border-radius:.4rem;background:var(--brand);color:#fff;font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">${c.name[0].toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:.875rem">${esc(c.name)}</div>
+          <div style="font-size:.7rem;color:var(--muted);font-family:var(--mono)">${c.code||''}</div>
+        </div>
+        ${c.id === currentClass.id
+          ? '<span class="badge badge-brand">Activa</span>'
+          : `<button class="btn btn-sm btn-secondary" onclick="switchClass('${c.id}')">Cambiar</button>`}
+      </div>`).join('')}`;
 }
 
 // ─── DARK MODE ────────────────────────────
@@ -967,6 +1138,35 @@ window.addEventListener('resize', ()=>{ document.getElementById('sidebar-toggle'
   .chat-time { font-size:.65rem;color:var(--muted);margin-top:.2rem;display:flex;align-items:center;gap:.2rem; }
   .chat-input-bar { display:flex;gap:.75rem;padding:.875rem 1.25rem;border-top:1px solid var(--border);background:var(--card); }
   .chat-input-bar .form-control { flex:1; }
+
+  /* ── CLASS SWITCHER ── */
+  .class-switcher { position:relative; }
+  .class-switcher-btn { display:flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:2rem;padding:.3rem .85rem .3rem .65rem;font-family:var(--font);font-size:.8rem;font-weight:600;cursor:pointer;transition:background var(--transition);max-width:220px;white-space:nowrap; }
+  .class-switcher-btn:hover { background:rgba(255,255,255,.25); }
+  .class-switcher-btn span { overflow:hidden;text-overflow:ellipsis;max-width:140px; }
+  .class-switcher-menu { position:absolute;top:calc(100% + 10px);left:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);min-width:240px;overflow:hidden;z-index:2000;display:none; }
+  .class-switcher-menu.open { display:block; }
+  .csm-header { padding:.6rem 1rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border); }
+  .csm-item { display:flex;align-items:center;gap:.75rem;padding:.65rem 1rem;width:100%;background:none;border:none;cursor:pointer;text-align:left;transition:background var(--transition);font-family:var(--font); }
+  .csm-item:hover { background:var(--surface); }
+  .csm-item.active { background:var(--brand-light); }
+  .csm-item-icon { width:30px;height:30px;border-radius:.4rem;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0; }
+  .csm-item.active .csm-item-icon { background:var(--brand-dark); }
+  .csm-item-info { flex:1;min-width:0; }
+  .csm-item-name { font-size:.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .csm-item-code { font-size:.7rem;color:var(--muted);font-family:var(--mono); }
+  .csm-divider { height:1px;background:var(--border); }
+  .csm-new { display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;width:100%;background:none;border:none;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--brand);font-family:var(--font);transition:background var(--transition); }
+  .csm-new:hover { background:var(--brand-light); }
+
+  /* ── LOADING ── */
+  #app-loading { position:fixed;inset:0;z-index:9998;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;transition:opacity .35s ease; }
+  #app-loading.hiding { opacity:0;pointer-events:none; }
+  #app-loading .loading-logo { font-size:1.6rem;font-weight:700;color:var(--brand);letter-spacing:-.3px; }
+  #app-loading .loading-logo em { color:var(--accent);font-style:normal; }
+  #app-loading .loading-spinner { width:40px;height:40px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--brand);animation:spin .7s linear infinite; }
+  #app-loading .loading-text { font-size:.85rem;color:var(--muted);font-weight:500; }
+  @keyframes spin { to { transform:rotate(360deg); } }
 </style>
 
 </body>
