@@ -6,6 +6,7 @@
   <title>AulaOnline — Mi Clase</title>
   <link rel="stylesheet" href="assets/css/app.css"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 </head>
 <body>
 
@@ -18,34 +19,37 @@
 
 <!-- ══ TOPBAR ══ -->
 <header class="topbar">
-  <button class="btn btn-ghost btn-icon" id="sidebar-toggle" onclick="toggleSidebar()" style="color:#fff;display:none">
-    <i class="bi bi-list" style="font-size:1.4rem"></i>
+  <button class="btn btn-ghost btn-icon d-none" id="sidebar-toggle">
+    <i class="bi bi-list fs-4 text-white"></i>
   </button>
   <div class="brand">Aula<em>Online</em></div>
+
   <div class="class-switcher" id="class-switcher">
-    <button class="class-switcher-btn" onclick="toggleClassMenu()">
+    <button class="class-switcher-btn" id="class-switcher-btn">
       <i class="bi bi-mortarboard-fill"></i>
       <span id="topbar-classname">Cargando...</span>
-      <i class="bi bi-chevron-down" style="font-size:.7rem;opacity:.7"></i>
+      <i class="bi bi-chevron-down csm-chevron"></i>
     </button>
     <div class="class-switcher-menu" id="class-switcher-menu">
       <div class="csm-header">Mis clases</div>
       <div id="csm-list"></div>
       <div class="csm-divider"></div>
-      <button class="csm-new" onclick="openJoinClassModal()">
+      <button class="csm-new" id="btn-open-join-class">
         <i class="bi bi-plus-circle"></i> Unirse a otra clase
       </button>
     </div>
   </div>
+
   <div class="spacer"></div>
+
   <div class="topbar-actions">
-    <button class="dark-toggle" id="dark-toggle" onclick="toggleDark()" title="Modo oscuro">
+    <button class="dark-toggle" id="dark-toggle" title="Modo oscuro">
       <i class="bi bi-moon-fill" id="dark-icon"></i>
     </button>
-    <span class="badge" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)">
+    <span class="badge topbar-role-badge">
       <i class="bi bi-mortarboard"></i> Alumno
     </span>
-    <div class="avatar" id="avatar-btn" onclick="toggleAvatarMenu()">
+    <div class="avatar" id="avatar-btn">
       <span id="avatar-initials">?</span>
       <div class="avatar-menu" id="avatar-menu">
         <div class="menu-header">
@@ -53,7 +57,7 @@
           <span id="menu-email">—</span>
         </div>
         <div class="menu-divider"></div>
-        <button onclick="doLogout()"><i class="bi bi-box-arrow-left"></i> Cerrar sesión</button>
+        <button id="btn-logout"><i class="bi bi-box-arrow-left"></i> Cerrar sesión</button>
       </div>
     </div>
   </div>
@@ -63,30 +67,30 @@
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-section">
     <div class="sidebar-label">Principal</div>
-    <button class="nav-item active" onclick="showSection('inicio')" id="nav-inicio">
+    <button class="nav-item active" data-section="inicio" id="nav-inicio">
       <i class="bi bi-house-door-fill"></i> Inicio
     </button>
-    <button class="nav-item" onclick="showSection('tareas')" id="nav-tareas">
+    <button class="nav-item" data-section="tareas" id="nav-tareas">
       <i class="bi bi-check2-square"></i> Tareas
-      <span class="badge-count" id="badge-tareas" style="display:none">0</span>
+      <span class="badge-count d-none" id="badge-tareas">0</span>
     </button>
-    <button class="nav-item" onclick="showSection('anuncios')" id="nav-anuncios">
+    <button class="nav-item" data-section="anuncios" id="nav-anuncios">
       <i class="bi bi-megaphone-fill"></i> Anuncios
-      <span class="badge-count" id="badge-anuncios" style="display:none">0</span>
+      <span class="badge-count d-none" id="badge-anuncios">0</span>
     </button>
-    <button class="nav-item" onclick="showSection('recursos')" id="nav-recursos">
+    <button class="nav-item" data-section="recursos" id="nav-recursos">
       <i class="bi bi-folder2-open"></i> Recursos
-      <span class="badge-count" id="badge-recursos" style="display:none">0</span>
+      <span class="badge-count d-none" id="badge-recursos">0</span>
     </button>
-    <button class="nav-item" onclick="showSection('notas')" id="nav-notas">
+    <button class="nav-item" data-section="notas" id="nav-notas">
       <i class="bi bi-star-fill"></i> Mis notas
-      <span class="badge-count" id="badge-notas" style="display:none">0</span>
+      <span class="badge-count d-none" id="badge-notas">0</span>
     </button>
-    <button class="nav-item" onclick="showSection('chat')" id="nav-chat">
+    <button class="nav-item" data-section="chat" id="nav-chat">
       <i class="bi bi-chat-dots-fill"></i> Chat
-      <span class="badge-count" id="badge-chat" style="display:none">0</span>
+      <span class="badge-count d-none" id="badge-chat">0</span>
     </button>
-    <button class="nav-item" onclick="showSection('perfil')" id="nav-perfil">
+    <button class="nav-item" data-section="perfil" id="nav-perfil">
       <i class="bi bi-person-circle"></i> Mi perfil
     </button>
   </div>
@@ -104,46 +108,77 @@
       <h1 class="page-title">Mi clase <span id="greeting-sub"></span></h1>
     </div>
 
+    <!-- Stats -->
     <div class="stat-grid">
       <div class="stat-card fade-in">
-        <div class="stat-icon" style="background:#dbeafe"><i class="bi bi-check2-square" style="color:var(--brand)"></i></div>
-        <div><div class="stat-value" id="st-pending">—</div><div class="stat-label">Tareas pendientes</div></div>
+        <div class="stat-icon stat-icon-blue">
+          <i class="bi bi-check2-square icon-brand"></i>
+        </div>
+        <div>
+          <div class="stat-value" id="st-pending">—</div>
+          <div class="stat-label">Tareas pendientes</div>
+        </div>
       </div>
       <div class="stat-card fade-in fade-in-delay-1">
-        <div class="stat-icon" style="background:#dcfce7"><i class="bi bi-check-circle-fill" style="color:var(--success)"></i></div>
-        <div><div class="stat-value" id="st-done">—</div><div class="stat-label">Entregadas</div></div>
+        <div class="stat-icon stat-icon-green">
+          <i class="bi bi-check-circle-fill icon-success"></i>
+        </div>
+        <div>
+          <div class="stat-value" id="st-done">—</div>
+          <div class="stat-label">Entregadas</div>
+        </div>
       </div>
       <div class="stat-card fade-in fade-in-delay-2">
-        <div class="stat-icon" style="background:var(--accent-light)"><i class="bi bi-star-fill" style="color:var(--accent)"></i></div>
-        <div><div class="stat-value" id="st-avg">—</div><div class="stat-label">Nota media</div></div>
+        <div class="stat-icon stat-icon-amber">
+          <i class="bi bi-star-fill icon-accent"></i>
+        </div>
+        <div>
+          <div class="stat-value" id="st-avg">—</div>
+          <div class="stat-label">Nota media</div>
+        </div>
       </div>
       <div class="stat-card fade-in fade-in-delay-3">
-        <div class="stat-icon" style="background:#fee2e2"><i class="bi bi-clock-fill" style="color:var(--danger)"></i></div>
-        <div><div class="stat-value" id="st-due-soon">—</div><div class="stat-label">Entregas esta semana</div></div>
-      </div>
-    </div>
-
-    <!-- Progreso -->
-    <div class="card" style="padding:1.25rem;margin-bottom:1.25rem;fade-in">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
-        <span style="font-weight:600;font-size:.875rem">Progreso general</span>
-        <span style="font-weight:700;font-size:.875rem" id="progress-pct">0%</span>
-      </div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
-    </div>
-
-    <!-- Últimas tareas + último anuncio -->
-    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem" id="home-grid">
-      <div class="card fade-in">
-        <div class="card-header">
-          <span><i class="bi bi-lightning-fill me-2" style="color:var(--accent)"></i>Próximas entregas</span>
-          <button class="btn btn-sm btn-secondary" onclick="showSection('tareas')">Ver todas</button>
+        <div class="stat-icon stat-icon-red">
+          <i class="bi bi-clock-fill icon-danger"></i>
         </div>
-        <div id="home-upcoming" style="padding:0"></div>
+        <div>
+          <div class="stat-value" id="st-due-soon">—</div>
+          <div class="stat-label">Entregas esta semana</div>
+        </div>
       </div>
-      <div class="card fade-in fade-in-delay-1">
-        <div class="card-header"><span><i class="bi bi-megaphone-fill me-2" style="color:var(--brand)"></i>Últimos anuncios</span></div>
-        <div id="home-anncs" style="padding:0"></div>
+    </div>
+
+    <!-- Progreso general -->
+    <div class="card mb-4 fade-in">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-semibold text-sm">Progreso general</span>
+          <span class="fw-bold text-sm" id="progress-pct">0%</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Próximas entregas + últimos anuncios -->
+    <div class="row g-4" id="home-grid">
+      <div class="col-12 col-lg-7">
+        <div class="card fade-in h-100">
+          <div class="card-header">
+            <span><i class="bi bi-lightning-fill me-2 icon-accent"></i>Próximas entregas</span>
+            <button class="btn btn-sm btn-secondary" data-nav-to="tareas">Ver todas</button>
+          </div>
+          <div id="home-upcoming"></div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-5">
+        <div class="card fade-in fade-in-delay-1 h-100">
+          <div class="card-header">
+            <span><i class="bi bi-megaphone-fill me-2 icon-brand"></i>Últimos anuncios</span>
+          </div>
+          <div id="home-anncs"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -152,8 +187,8 @@
   <section class="page d-none" id="s-tareas">
     <div class="page-header">
       <h1 class="page-title">Tareas</h1>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <select class="form-control" id="filter-status" onchange="renderTasks()" style="width:auto">
+      <div class="d-flex gap-2 flex-wrap">
+        <select class="form-control w-auto" id="filter-status">
           <option value="">Todas</option>
           <option value="pending">Pendientes</option>
           <option value="submitted">Entregadas</option>
@@ -186,12 +221,17 @@
     <div class="page-header"><h1 class="page-title">Chat con el profesor</h1></div>
     <div class="chat-wrap">
       <div class="chat-messages" id="chat-messages">
-        <div class="empty-state"><i class="bi bi-chat-dots"></i><p>Sin mensajes aún. ¡Escribe al profesor!</p></div>
+        <div class="empty-state">
+          <i class="bi bi-chat-dots"></i>
+          <p>Sin mensajes aún. ¡Escribe al profesor!</p>
+        </div>
       </div>
       <div class="chat-input-bar">
-        <input type="text" class="form-control" id="chat-input" placeholder="Escribe un mensaje..." maxlength="500"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"/>
-        <button class="btn btn-primary" onclick="sendChatMessage()"><i class="bi bi-send-fill"></i></button>
+        <input type="text" class="form-control" id="chat-input"
+          placeholder="Escribe un mensaje..." maxlength="500"/>
+        <button class="btn btn-primary" id="btn-send-chat">
+          <i class="bi bi-send-fill"></i>
+        </button>
       </div>
     </div>
   </section>
@@ -199,53 +239,59 @@
   <!-- ░░ MI PERFIL ░░ -->
   <section class="page d-none" id="s-perfil">
     <div class="page-header"><h1 class="page-title">Mi perfil</h1></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;max-width:760px" id="perfil-grid">
-      <div class="card">
-        <div class="card-header"><i class="bi bi-person-circle me-2"></i>Mis datos</div>
-        <div class="card-body" style="display:flex;flex-direction:column;align-items:center;gap:1rem;padding:2rem">
-          <div style="width:72px;height:72px;border-radius:50%;background:var(--brand);color:#fff;font-size:1.8rem;font-weight:700;display:flex;align-items:center;justify-content:center" id="perfil-avatar">?</div>
-          <div style="text-align:center">
-            <div style="font-size:1.1rem;font-weight:700" id="perfil-name">—</div>
-            <div style="font-size:.85rem;color:var(--muted)" id="perfil-email">—</div>
+    <div class="row g-4 perfil-grid-wrap" id="perfil-grid">
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-header"><i class="bi bi-person-circle me-2"></i>Mis datos</div>
+          <div class="card-body d-flex flex-column align-items-center gap-3 py-4">
+            <div class="perfil-avatar-circle" id="perfil-avatar">?</div>
+            <div class="text-center">
+              <div class="fw-bold text-2xl" id="perfil-name">—</div>
+              <div class="text-muted text-sm" id="perfil-email">—</div>
+            </div>
+            <span class="role-badge role-student"><i class="bi bi-mortarboard"></i> Alumno</span>
           </div>
-          <span class="role-badge role-student"><i class="bi bi-mortarboard"></i> Alumno</span>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header"><i class="bi bi-mortarboard-fill me-2"></i>Mi clase</div>
-        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem;padding:1.5rem">
-          <div>
-            <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.3rem">Nombre</div>
-            <div style="font-weight:700;font-size:1rem" id="perfil-classname">—</div>
-          </div>
-          <div>
-            <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.3rem">Descripción</div>
-            <div style="font-size:.875rem;color:var(--muted)" id="perfil-classdesc">—</div>
-          </div>
-          <div>
-            <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.5rem">Código de clase</div>
-            <div class="class-code" style="font-size:1.2rem;padding:.5rem 1.25rem;letter-spacing:.15em" id="perfil-code">—</div>
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-header"><i class="bi bi-mortarboard-fill me-2"></i>Mi clase</div>
+          <div class="card-body d-flex flex-column gap-3 py-3">
+            <div>
+              <div class="perfil-field-label">Nombre</div>
+              <div class="fw-bold" id="perfil-classname">—</div>
+            </div>
+            <div>
+              <div class="perfil-field-label">Descripción</div>
+              <div class="text-muted text-sm" id="perfil-classdesc">—</div>
+            </div>
+            <div>
+              <div class="perfil-field-label">Código de clase</div>
+              <div class="class-code class-code-sm mt-1" id="perfil-code">—</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-</div>
+</div><!-- /app-layout -->
 
-<!-- Panel de todas las clases (fuera del grid, ocupa ancho completo) -->
-<div id="perfil-all-classes" style="display:none;max-width:760px;margin:0 2rem 2rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem"></div>
+<!-- Panel de todas las clases -->
+<div id="perfil-all-classes" class="perfil-all-classes-panel d-none"></div>
 
-<!-- ════════════ MODAL ENTREGA ════════════ -->
-<div class="modal-overlay" id="modal-entrega" onclick="closeModalOutside(event,'modal-entrega')">
+<!-- ════ MODAL: ENTREGAR TAREA ════ -->
+<div class="modal-overlay" id="modal-entrega">
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="bi bi-upload"></i> Entregar tarea</h3>
-      <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-entrega')"><i class="bi bi-x-lg"></i></button>
+      <button class="btn btn-ghost btn-icon" data-close-modal="modal-entrega">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="sub-task-id"/>
-      <div class="alert alert-info" id="sub-task-title" style="margin-bottom:1rem"></div>
+      <div class="alert alert-info mb-3" id="sub-task-title"></div>
       <div class="form-group">
         <label class="form-label">Comentario / enlace a tu trabajo</label>
         <textarea class="form-control" id="sub-comment" rows="4"
@@ -254,35 +300,40 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-entrega')">Cancelar</button>
-      <button class="btn btn-primary" onclick="submitTask()"><i class="bi bi-send-fill"></i> Entregar</button>
+      <button class="btn btn-secondary" data-close-modal="modal-entrega">Cancelar</button>
+      <button class="btn btn-primary" id="btn-submit-task">
+        <i class="bi bi-send-fill"></i> Entregar
+      </button>
     </div>
   </div>
 </div>
 
-<!-- UNIRSE A CLASE -->
-<div class="modal-overlay" id="modal-join-class" onclick="closeModalOutside(event,'modal-join-class')">
-  <div class="modal-box" style="max-width:420px">
+<!-- ════ MODAL: UNIRSE A CLASE ════ -->
+<div class="modal-overlay" id="modal-join-class">
+  <div class="modal-box modal-box-sm">
     <div class="modal-header">
       <h3><i class="bi bi-mortarboard-fill"></i> Unirse a otra clase</h3>
-      <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-join-class')"><i class="bi bi-x-lg"></i></button>
+      <button class="btn btn-ghost btn-icon" data-close-modal="modal-join-class">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Código de clase <span class="req">*</span></label>
         <div class="input-icon">
           <i class="bi bi-hash"></i>
-          <input type="text" class="form-control" id="join-code" placeholder="Ej: MAT3A" maxlength="10"
-            oninput="this.value=this.value.toUpperCase()"
-            onkeydown="if(event.key==='Enter'){event.preventDefault();joinClass();}"/>
+          <input type="text" class="form-control" id="join-code"
+            placeholder="Ej: MAT3A" maxlength="10"/>
         </div>
         <div class="form-hint">Pídele el código al profesor de la nueva clase.</div>
       </div>
-      <div id="join-alert" style="display:none"></div>
+      <div id="join-alert" class="d-none"></div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-join-class')">Cancelar</button>
-      <button type="button" class="btn btn-primary" onclick="joinClass()"><i class="bi bi-plus-lg"></i> Solicitar</button>
+      <button type="button" class="btn btn-secondary" data-close-modal="modal-join-class">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="btn-join-class">
+        <i class="bi bi-plus-lg"></i> Solicitar
+      </button>
     </div>
   </div>
 </div>
@@ -297,46 +348,123 @@ import {
   collection, query, where, orderBy, serverTimestamp, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ─── STATE ───────────────────────────────
-let currentUser = null;
-let currentClass = null;
-let allMyClasses = [];
-let submissionsCache = {};
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentUser        = null;
+let currentClass       = null;
+let allMyClasses       = [];
+let submissionsCache   = {};
+let tasksCache         = [];
+let announcementsCache = [];
+let resourcesCache     = [];
+let gradesCache        = [];
 
-// ─── INIT / AUTH GUARD ───────────────────
-onAuthStateChanged(auth, async (user) => {
+let _tasksCacheLoaded       = false;
+let _annCacheLoaded         = false;
+let _resCacheLoaded         = false;
+let _gradesCacheLoaded      = false;
+let _submissionsCacheLoaded = false;
+
+let _unsubSubmissions   = null;
+let _unsubTasks         = null;
+let _unsubAnnouncements = null;
+let _unsubResources     = null;
+let _unsubGrades        = null;
+let _unsubChatNotif     = null;
+let _unsubChat          = null;
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmtDate(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+}
+function fmtDateShort(str) {
+  if (!str) return '';
+  return new Date(str + 'T00:00:00').toLocaleDateString('es-ES', { day:'numeric', month:'short' });
+}
+function dueBadge(due) {
+  if (!due) return '';
+  const d = new Date(due + 'T00:00:00'), now = new Date(); now.setHours(0,0,0,0);
+  const diff = Math.round((d - now) / 86400000);
+  if (diff < 0)   return `<span class="badge badge-danger"><i class="bi bi-x-circle"></i> Vencida</span>`;
+  if (diff === 0) return `<span class="badge badge-warning"><i class="bi bi-alarm"></i> Hoy</span>`;
+  if (diff === 1) return `<span class="badge badge-warning"><i class="bi bi-clock"></i> Mañana</span>`;
+  if (diff <= 3)  return `<span class="badge badge-warning"><i class="bi bi-clock"></i> ${diff} días</span>`;
+  if (diff <= 7)  return `<span class="badge badge-accent"><i class="bi bi-calendar"></i> ${diff} días</span>`;
+  return `<span class="badge badge-neutral"><i class="bi bi-calendar"></i> ${fmtDateShort(due)}</span>`;
+}
+function gradeBadge(g) {
+  if (g == null) return '<span class="grade-badge grade-na">—</span>';
+  const n = parseFloat(g);
+  const cls = n >= 9 ? 'grade-a' : n >= 7 ? 'grade-b' : n >= 5 ? 'grade-c' : 'grade-d';
+  return `<span class="grade-badge ${cls}">${n.toFixed(1)}</span>`;
+}
+const PRIO = {
+  alta:  { cls: 'badge-danger',  label: 'Alta'  },
+  media: { cls: 'badge-warning', label: 'Media' },
+  baja:  { cls: 'badge-success', label: 'Baja'  },
+};
+const RES_ICON = {
+  pdf:'bi-file-earmark-pdf-fill', video:'bi-play-circle-fill',
+  link:'bi-link-45deg', ejercicio:'bi-pencil-square',
+  presentacion:'bi-easel-fill', otro:'bi-box-seam',
+};
+
+// show/hide helpers usando d-none (BS5) en vez de style.display
+function show(el) { el.classList.remove('d-none'); }
+function hide(el) { el.classList.add('d-none'); }
+
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = `toast${type ? ' toast-' + type : ''}`;
+  el.innerHTML = `<i class="bi bi-${type==='success'?'check-circle':type==='error'?'exclamation-circle':'info-circle'}"></i> ${msg}`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ─── MODALS ───────────────────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
+  const closer = e.target.closest('[data-close-modal]');
+  if (closer) closeModal(closer.dataset.closeModal);
+});
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
   if (!user) { window.location.href = 'index.html'; return; }
   const snap = await getDoc(doc(db, 'users', user.uid));
   if (!snap.exists()) { window.location.href = 'index.html'; return; }
   const data = snap.data();
-  if (data.role === 'teacher')  { window.location.href = 'admin.html';   return; }
-  if (!data.approved)            { window.location.href = 'pending.html'; return; }
+  if (data.role === 'teacher') { window.location.href = 'admin.html';   return; }
+  if (!data.approved)          { window.location.href = 'pending.html'; return; }
   currentUser = { ...data, uid: user.uid };
 
-  // Migrar classId → classIds si hace falta
-  if (!currentUser.classIds || !currentUser.classIds.length) {
+  if (!currentUser.classIds?.length) {
     currentUser.classIds = currentUser.classId ? [currentUser.classId] : [];
-    await updateDoc(doc(db,'users', user.uid), { classIds: currentUser.classIds }).catch(()=>{});
+    await updateDoc(doc(db, 'users', user.uid), { classIds: currentUser.classIds }).catch(() => {});
   }
 
-  // Cargar todas las clases del alumno
   allMyClasses = [];
   for (const cid of currentUser.classIds) {
     try {
-      const cs = await getDoc(doc(db,'classes', cid));
+      const cs = await getDoc(doc(db, 'classes', cid));
       if (cs.exists()) allMyClasses.push({ id: cs.id, ...cs.data() });
     } catch(e) {}
   }
   if (!allMyClasses.length) { window.location.href = 'index.html'; return; }
 
-  // Recuperar última clase activa
   const savedId = localStorage.getItem('ao_activeClassId_student');
   currentClass = allMyClasses.find(c => c.id === savedId) || allMyClasses[0];
 
   renderClassSwitcher();
   initUI();
-  // Guardar última conexión
-  updateDoc(doc(db,'users', user.uid), { lastSeen: serverTimestamp() }).catch(()=>{});
+  updateDoc(doc(db, 'users', user.uid), { lastSeen: serverTimestamp() }).catch(() => {});
   await loadSubmissions();
   startSubmissionsListener();
   startTasksListener();
@@ -344,14 +472,14 @@ onAuthStateChanged(auth, async (user) => {
   startResourcesListener();
   startGradesListener();
   startChatNotifications();
-  // Ocultar loading screen
+
   const loader = document.getElementById('app-loading');
   if (loader) { loader.classList.add('hiding'); setTimeout(() => loader.remove(), 350); }
   showSection('inicio');
 });
 
 function initUI() {
-  const initials = (currentUser.displayName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const initials = (currentUser.displayName || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('avatar-initials').textContent = initials;
   document.getElementById('menu-name').textContent  = currentUser.displayName || '—';
   document.getElementById('menu-email').textContent = currentUser.email || '—';
@@ -360,384 +488,251 @@ function initUI() {
   document.getElementById('greeting-sub').textContent = `· ${greet}, ${(currentUser.displayName||'').split(' ')[0]}`;
 }
 
-// ─── CLASS SWITCHER ───────────────────────
+// ─── NAVEGACIÓN ───────────────────────────────────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('.app-layout > section').forEach(s => s.classList.add('d-none'));
+  document.getElementById('s-' + id).classList.remove('d-none');
+  document.querySelectorAll('.sidebar .nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-' + id)?.classList.add('active');
+
+  if (id === 'inicio') renderHome();
+
+  if (id === 'tareas') {
+    localStorage.setItem('ao_seenTasks_' + currentClass.id, JSON.stringify(tasksCache.map(t => t.id)));
+    hide(document.getElementById('badge-tareas'));
+    renderTasks();
+  }
+  if (id === 'anuncios') {
+    localStorage.setItem('ao_seenAnns_' + currentClass.id, JSON.stringify(announcementsCache.map(a => a.id)));
+    hide(document.getElementById('badge-anuncios'));
+    renderAnnouncementsFromCache();
+  }
+  if (id === 'recursos') {
+    localStorage.setItem('ao_seenRes_' + currentClass.id, JSON.stringify(resourcesCache.map(r => r.id)));
+    hide(document.getElementById('badge-recursos'));
+    renderResourcesFromCache();
+  }
+  if (id === 'notas') {
+    localStorage.setItem('ao_seenGrades_' + currentClass.id, JSON.stringify(gradesCache.map(g => g.id)));
+    hide(document.getElementById('badge-notas'));
+    renderGradesFromCache();
+  }
+  if (id === 'chat')   initChat();
+  if (id === 'perfil') renderPerfil();
+
+  if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
+}
+
+document.querySelectorAll('.sidebar .nav-item[data-section]').forEach(btn => {
+  btn.addEventListener('click', () => showSection(btn.dataset.section));
+});
+document.querySelectorAll('[data-nav-to]').forEach(btn => {
+  btn.addEventListener('click', () => showSection(btn.dataset.navTo));
+});
+
+// Sidebar toggle responsive
+const sidebarToggle = document.getElementById('sidebar-toggle');
+sidebarToggle.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+function updateToggle() {
+  window.innerWidth < 768 ? show(sidebarToggle) : hide(sidebarToggle);
+}
+updateToggle();
+window.addEventListener('resize', updateToggle);
+
+// ─── CLASS SWITCHER ───────────────────────────────────────────────────────────
 function renderClassSwitcher() {
   document.getElementById('topbar-classname').textContent = currentClass.name;
   document.getElementById('csm-list').innerHTML = allMyClasses.map(c => `
-    <button class="csm-item ${c.id === currentClass.id ? 'active' : ''}" data-cid="${c.id}" onclick="switchClass('${c.id}')">
+    <button class="csm-item ${c.id === currentClass.id ? 'active' : ''}" data-switch-class="${c.id}">
       <div class="csm-item-icon">${c.name[0].toUpperCase()}</div>
       <div class="csm-item-info">
         <div class="csm-item-name">${esc(c.name)}</div>
-        <div class="csm-item-code">${c.code||''}</div>
+        <div class="csm-item-code">${c.code || ''}</div>
       </div>
-      ${c.id === currentClass.id ? '<i class="bi bi-check2" style="color:var(--brand);margin-left:auto;flex-shrink:0"></i>' : ''}
+      ${c.id === currentClass.id ? '<i class="bi bi-check2 ms-auto icon-brand"></i>' : ''}
     </button>`).join('');
+  document.querySelectorAll('[data-switch-class]').forEach(btn => {
+    btn.addEventListener('click', () => switchClass(btn.dataset.switchClass));
+  });
 }
 
-window.toggleClassMenu = () => document.getElementById('class-switcher-menu').classList.toggle('open');
-window.closeClassMenu  = () => document.getElementById('class-switcher-menu').classList.remove('open');
-document.addEventListener('click', e => {
-  const sw = document.getElementById('class-switcher');
-  if (sw && !sw.contains(e.target)) closeClassMenu();
+document.getElementById('class-switcher-btn').addEventListener('click', () => {
+  document.getElementById('class-switcher-menu').classList.toggle('open');
 });
+document.addEventListener('click', e => {
+  if (!document.getElementById('class-switcher').contains(e.target))
+    document.getElementById('class-switcher-menu').classList.remove('open');
+});
+function closeClassMenu() { document.getElementById('class-switcher-menu').classList.remove('open'); }
 
-window.switchClass = async (classId) => {
+async function switchClass(classId) {
   if (currentClass?.id === classId) { closeClassMenu(); return; }
   currentClass = allMyClasses.find(c => c.id === classId);
   localStorage.setItem('ao_activeClassId_student', classId);
-  renderClassSwitcher();
-  closeClassMenu();
-  // Reset caches
+  renderClassSwitcher(); closeClassMenu();
+
   tasksCache = []; _tasksCacheLoaded = false;
   announcementsCache = []; _annCacheLoaded = false;
   resourcesCache = []; _resCacheLoaded = false;
   gradesCache = []; _gradesCacheLoaded = false;
   submissionsCache = {}; _submissionsCacheLoaded = false;
-  // Detener listeners anteriores
-  [_unsubSubmissions,_unsubTasks,_unsubAnnouncements,_unsubResources,_unsubGrades,_unsubChatNotif,_unsubChat]
-    .forEach(u => { if(u) u(); });
+
+  [_unsubSubmissions,_unsubTasks,_unsubAnnouncements,
+   _unsubResources,_unsubGrades,_unsubChatNotif,_unsubChat]
+    .forEach(u => u?.());
+
   await loadSubmissions();
-  startSubmissionsListener();
-  startTasksListener();
-  startAnnouncementsListener();
-  startResourcesListener();
-  startGradesListener();
-  startChatNotifications();
+  startSubmissionsListener(); startTasksListener();
+  startAnnouncementsListener(); startResourcesListener();
+  startGradesListener(); startChatNotifications();
   showSection('inicio');
   toast(`Cambiado a: ${currentClass.name}`, 'success');
-};
+}
 
-// ─── JOIN CLASS ───────────────────────────
-window.openJoinClassModal = () => {
+// ─── JOIN CLASS ───────────────────────────────────────────────────────────────
+document.getElementById('btn-open-join-class').addEventListener('click', () => {
   closeClassMenu();
   document.getElementById('join-code').value = '';
-  document.getElementById('join-alert').style.display = 'none';
+  hide(document.getElementById('join-alert'));
   openModal('modal-join-class');
-};
+});
+document.getElementById('join-code').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
+document.getElementById('join-code').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); joinClass(); } });
+document.getElementById('btn-join-class').addEventListener('click', joinClass);
 
-window.joinClass = async () => {
-  const code = document.getElementById('join-code').value.trim().toUpperCase();
+async function joinClass() {
+  const code    = document.getElementById('join-code').value.trim().toUpperCase();
   const alertEl = document.getElementById('join-alert');
   if (!code) {
-    alertEl.className='alert alert-error';
-    alertEl.innerHTML='<i class="bi bi-exclamation-circle"></i> Introduce un código.';
-    alertEl.style.display='flex'; return;
+    alertEl.className = 'alert alert-error';
+    alertEl.innerHTML = '<i class="bi bi-exclamation-circle"></i> Introduce un código.';
+    show(alertEl); return;
   }
-  const classQ = query(collection(db,'classes'), where('code','==',code));
-  const classSnap = await getDocs(classQ);
+  const classSnap = await getDocs(query(collection(db,'classes'), where('code','==',code)));
   if (classSnap.empty) {
-    alertEl.className='alert alert-error';
-    alertEl.innerHTML='<i class="bi bi-exclamation-circle"></i> Código no válido.';
-    alertEl.style.display='flex'; return;
+    alertEl.className = 'alert alert-error';
+    alertEl.innerHTML = '<i class="bi bi-exclamation-circle"></i> Código no válido.';
+    show(alertEl); return;
   }
   const newClass = { id: classSnap.docs[0].id, ...classSnap.docs[0].data() };
   if (allMyClasses.some(c => c.id === newClass.id)) {
-    alertEl.className='alert alert-warning';
-    alertEl.innerHTML='<i class="bi bi-info-circle"></i> Ya perteneces a esta clase.';
-    alertEl.style.display='flex'; return;
+    alertEl.className = 'alert alert-warning';
+    alertEl.innerHTML = '<i class="bi bi-info-circle"></i> Ya perteneces a esta clase.';
+    show(alertEl); return;
   }
-  // Crear solicitud de unión
   await addDoc(collection(db,'classRequests'), {
-    classId:     newClass.id,
-    studentUid:  currentUser.uid,
-    studentName: currentUser.displayName,
-    email:       currentUser.email,
-    status:      'pending',
-    createdAt:   serverTimestamp()
+    classId: newClass.id, studentUid: currentUser.uid,
+    studentName: currentUser.displayName, email: currentUser.email,
+    status: 'pending', createdAt: serverTimestamp(),
   });
   closeModal('modal-join-class');
   toast(`✅ Solicitud enviada a "${newClass.name}". El profesor debe aprobarte.`, 'success');
-};
+}
 
-let _unsubSubmissions = null;
-let _submissionsCacheLoaded = false;
+// ─── AVATAR ───────────────────────────────────────────────────────────────────
+document.getElementById('avatar-btn').addEventListener('click', () => {
+  document.getElementById('avatar-menu').classList.toggle('open');
+});
+document.addEventListener('click', e => {
+  if (!document.getElementById('avatar-btn').contains(e.target))
+    document.getElementById('avatar-menu').classList.remove('open');
+});
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  await signOut(auth); window.location.href = 'index.html';
+});
+
+// ─── SUBMISSIONS ─────────────────────────────────────────────────────────────
+async function loadSubmissions() {
+  const snap = await getDocs(query(collection(db,'submissions'), where('studentUid','==',currentUser.uid)));
+  submissionsCache = {};
+  snap.docs.forEach(d => { const s = d.data(); submissionsCache[s.taskId] = { id:d.id,...s }; });
+}
+
 function startSubmissionsListener() {
   if (_unsubSubmissions) _unsubSubmissions();
   _unsubSubmissions = onSnapshot(
     query(collection(db,'submissions'), where('studentUid','==',currentUser.uid)),
-    (snap) => {
+    snap => {
       const newCache = {};
-      snap.docs.forEach(d => { const s = d.data(); newCache[s.taskId] = {id:d.id,...s}; });
-
-      // Detectar notas nuevas (grade pasó de null a número)
+      snap.docs.forEach(d => { const s = d.data(); newCache[s.taskId] = { id:d.id,...s }; });
       if (_submissionsCacheLoaded) {
         Object.values(newCache).forEach(sub => {
           const old = submissionsCache[sub.taskId];
           if (old && old.grade == null && sub.grade != null) {
-            const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-            // Toast siempre
             toast(`⭐ El profesor ha corregido tu tarea: ${sub.grade}/10`, 'success');
-            // Badge en notas si no está en esa sección
+            const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
             if (activeSection !== 'nav-notas' && activeSection !== 'nav-tareas') {
               const badge = document.getElementById('badge-tareas');
-              if (badge) {
-                const cur = parseInt(badge.textContent || '0');
-                badge.style.display = '';
-                badge.textContent = cur > 0 ? cur : 1;
-              }
+              const cur = parseInt(badge.textContent || '0');
+              show(badge); badge.textContent = cur > 0 ? cur : 1;
             }
             if (activeSection === 'nav-tareas') renderTasksFromCache();
           }
         });
       }
-
       submissionsCache = newCache;
       _submissionsCacheLoaded = true;
-      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (activeSection === 'nav-tareas') renderTasks();
-      if (activeSection === 'nav-inicio') renderHome();
+      const active = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (active === 'nav-tareas') renderTasks();
+      if (active === 'nav-inicio') renderHome();
       updateHomeStats();
     }
   );
 }
 
-let tasksCache = [];
-let _tasksCacheLoaded = false;
-let _unsubTasks = null;
-
+// ─── TASKS ────────────────────────────────────────────────────────────────────
 function recalcTasksBadge() {
-  const seenStr = localStorage.getItem('ao_seenTasks_' + currentClass.id) || '[]';
-  const seen = JSON.parse(seenStr);
-  // Solo contar tareas que existen actualmente, no entregadas, y no vistas
+  const seen   = JSON.parse(localStorage.getItem('ao_seenTasks_' + currentClass.id) || '[]');
   const unseen = tasksCache.filter(t => !seen.includes(t.id) && !submissionsCache[t.id]);
-  const badge = document.getElementById('badge-tareas');
-  if (badge) { badge.style.display = unseen.length > 0 ? '' : 'none'; badge.textContent = unseen.length; }
+  const badge  = document.getElementById('badge-tareas');
+  unseen.length > 0 ? show(badge) : hide(badge);
+  badge.textContent = unseen.length;
 }
 
 function startTasksListener() {
   if (_unsubTasks) _unsubTasks();
   _unsubTasks = onSnapshot(
     query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
-    (snap) => {
-      const newTasks = snap.docs.map(d => ({id:d.id,...d.data()}));
+    snap => {
+      const newTasks = snap.docs.map(d => ({ id:d.id,...d.data() }));
       if (_tasksCacheLoaded) {
         const oldIds = new Set(tasksCache.map(t => t.id));
-        const added = newTasks.filter(t => !oldIds.has(t.id));
-        if (added.length > 0) {
-          const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-          if (activeSection !== 'nav-tareas') {
-            added.forEach(t => toast(`📋 Nueva tarea: ${t.title}`, 'success'));
-          }
-        }
+        newTasks.filter(t => !oldIds.has(t.id)).forEach(t => {
+          if (document.querySelector('.sidebar .nav-item.active')?.id !== 'nav-tareas')
+            toast(`📋 Nueva tarea: ${t.title}`, 'success');
+        });
       }
-      tasksCache = newTasks;
-      _tasksCacheLoaded = true;
-      // Recalcular badge siempre (cubre adiciones Y eliminaciones)
-      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (activeSection !== 'nav-tareas') recalcTasksBadge();
-      if (activeSection === 'nav-tareas') renderTasksFromCache();
-      if (activeSection === 'nav-inicio') renderHome();
+      tasksCache = newTasks; _tasksCacheLoaded = true;
+      const active = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (active !== 'nav-tareas') recalcTasksBadge();
+      if (active === 'nav-tareas') renderTasksFromCache();
+      if (active === 'nav-inicio') renderHome();
       updateHomeStats();
     }
   );
 }
 
-let announcementsCache = [];
-let _annCacheLoaded = false;
-let _unsubAnnouncements = null;
-function startAnnouncementsListener() {
-  if (_unsubAnnouncements) _unsubAnnouncements();
-  _unsubAnnouncements = onSnapshot(
-    query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
-    (snap) => {
-      const newAnns = snap.docs.map(d => ({id:d.id,...d.data()}));
-      if (_annCacheLoaded) {
-        const oldIds = new Set(announcementsCache.map(a => a.id));
-        const added = newAnns.filter(a => !oldIds.has(a.id));
-        if (added.length > 0) {
-          const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-          if (activeSection !== 'nav-anuncios') {
-            const seenStr = localStorage.getItem('ao_seenAnns_' + currentClass.id) || '[]';
-            const seen = JSON.parse(seenStr);
-            const unseen = newAnns.filter(a => !seen.includes(a.id));
-            const badge = document.getElementById('badge-anuncios');
-            if (badge) { badge.style.display = unseen.length > 0 ? '' : 'none'; badge.textContent = unseen.length; }
-            added.forEach(a => toast(`📢 Nuevo anuncio: ${a.title}`, 'success'));
-          }
-        }
-      }
-      announcementsCache = newAnns;
-      _annCacheLoaded = true;
-      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (activeSection === 'nav-anuncios') renderAnnouncementsFromCache();
-      if (activeSection === 'nav-inicio') renderHome();
-    }
-  );
-}
-
 function updateHomeStats() {
-  const pending  = tasksCache.filter(t => !submissionsCache[t.id]);
-  const submitted = tasksCache.filter(t => submissionsCache[t.id]);
+  const pending   = tasksCache.filter(t => !submissionsCache[t.id]);
+  const submitted = tasksCache.filter(t =>  submissionsCache[t.id]);
   const now = new Date(); now.setHours(0,0,0,0);
-  const dueSoon = pending.filter(t => { if(!t.due) return false; const d=new Date(t.due+'T00:00:00'); return (d-now)/86400000<=7 && d>=now; });
-  const el1 = document.getElementById('st-pending');
-  const el2 = document.getElementById('st-done');
-  const el3 = document.getElementById('st-due-soon');
-  if (el1) el1.textContent = pending.length;
-  if (el2) el2.textContent = submitted.length;
-  if (el3) el3.textContent = dueSoon.length;
-  const pct = tasksCache.length ? Math.round(submitted.length/tasksCache.length*100) : 0;
+  const dueSoon = pending.filter(t => { if (!t.due) return false; const d = new Date(t.due+'T00:00:00'); return (d-now)/86400000<=7 && d>=now; });
+  const set = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('st-pending', pending.length);
+  set('st-done',    submitted.length);
+  set('st-due-soon',dueSoon.length);
+  const pct  = tasksCache.length ? Math.round(submitted.length/tasksCache.length*100) : 0;
   const pBar = document.getElementById('progress-bar');
   const pPct = document.getElementById('progress-pct');
   if (pBar) pBar.style.width = pct + '%';
   if (pPct) pPct.textContent = pct + '%';
 }
 
-async function loadSubmissions() {
-  const snap = await getDocs(query(collection(db,'submissions'), where('studentUid','==',currentUser.uid)));
-  submissionsCache = {};
-  snap.docs.forEach(d => { const s = d.data(); submissionsCache[s.taskId] = {id:d.id,...s}; });
-}
-
-// ─── NAVIGATION ──────────────────────────
-window.showSection = (id) => {
-  document.querySelectorAll('.app-layout > section').forEach(s=>s.classList.add('d-none'));
-  document.getElementById('s-'+id).classList.remove('d-none');
-  document.querySelectorAll('.sidebar .nav-item').forEach(n=>n.classList.remove('active'));
-  const nav = document.getElementById('nav-'+id);
-  if (nav) nav.classList.add('active');
-  if (id==='inicio')    renderHome();
-  if (id==='tareas') {
-    // Marcar todas las tareas como vistas
-    const seen = tasksCache.map(t => t.id);
-    localStorage.setItem('ao_seenTasks_' + currentClass.id, JSON.stringify(seen));
-    const badge = document.getElementById('badge-tareas');
-    if (badge) badge.style.display = 'none';
-    renderTasks();
-  }
-  if (id==='anuncios') {
-    const seen = announcementsCache.map(a => a.id);
-    localStorage.setItem('ao_seenAnns_' + currentClass.id, JSON.stringify(seen));
-    const badge = document.getElementById('badge-anuncios');
-    if (badge) badge.style.display = 'none';
-    renderAnnouncements();
-  }
-  if (id==='recursos') {
-    const seen = resourcesCache.map(r => r.id);
-    localStorage.setItem('ao_seenRes_' + currentClass.id, JSON.stringify(seen));
-    const badge = document.getElementById('badge-recursos');
-    if (badge) badge.style.display = 'none';
-    renderResources();
-  }
-  if (id==='notas') {
-    const seen = gradesCache.map(g => g.id);
-    localStorage.setItem('ao_seenGrades_' + currentClass.id, JSON.stringify(seen));
-    const badge = document.getElementById('badge-notas');
-    if (badge) badge.style.display = 'none';
-    renderGrades();
-  }
-  if (id==='chat')      initChat();
-  if (id==='perfil')    renderPerfil();
-  if (window.innerWidth<768) document.getElementById('sidebar').classList.remove('open');
-};
-
-window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
-window.openModal  = (id) => document.getElementById(id).classList.add('open');
-window.closeModal = (id) => document.getElementById(id).classList.remove('open');
-window.closeModalOutside = (e,id) => { if(e.target.id===id) closeModal(id); };
-window.toggleAvatarMenu  = () => document.getElementById('avatar-menu').classList.toggle('open');
-document.addEventListener('click', e => {
-  if (!document.getElementById('avatar-btn').contains(e.target))
-    document.getElementById('avatar-menu').classList.remove('open');
-});
-window.doLogout = async () => { await signOut(auth); window.location.href='index.html'; };
-
-// ─── HELPERS ─────────────────────────────
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function fmtDate(ts) {
-  if (!ts) return '—';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
-}
-function fmtDateShort(str) {
-  if (!str) return '';
-  return new Date(str+'T00:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
-}
-function dueBadge(due) {
-  if (!due) return '';
-  const d=new Date(due+'T00:00:00'), now=new Date(); now.setHours(0,0,0,0);
-  const diff=Math.round((d-now)/86400000);
-  if (diff<0)   return `<span class="badge badge-danger"><i class="bi bi-x-circle"></i> Vencida</span>`;
-  if (diff===0) return `<span class="badge badge-warning"><i class="bi bi-alarm"></i> Hoy</span>`;
-  if (diff===1) return `<span class="badge badge-warning"><i class="bi bi-clock"></i> Mañana</span>`;
-  if (diff<=3)  return `<span class="badge badge-warning"><i class="bi bi-clock"></i> ${diff} días</span>`;
-  if (diff<=7)  return `<span class="badge badge-accent"><i class="bi bi-calendar"></i> ${diff} días</span>`;
-  return `<span class="badge badge-neutral"><i class="bi bi-calendar"></i> ${fmtDateShort(due)}</span>`;
-}
-function gradeBadge(g) {
-  if (g==null) return '<span class="grade-badge grade-na">—</span>';
-  const n=parseFloat(g);
-  const cls = n>=9?'grade-a':n>=7?'grade-b':n>=5?'grade-c':'grade-d';
-  return `<span class="grade-badge ${cls}">${n.toFixed(1)}</span>`;
-}
-const PRIO = {alta:{cls:'badge-danger',label:'Alta'},media:{cls:'badge-warning',label:'Media'},baja:{cls:'badge-success',label:'Baja'}};
-const RES_ICON = {pdf:'bi-file-earmark-pdf-fill',video:'bi-play-circle-fill',link:'bi-link-45deg',ejercicio:'bi-pencil-square',presentacion:'bi-easel-fill',otro:'bi-box-seam'};
-window.toast = (msg,type='') => {
-  const el=document.createElement('div');
-  el.className=`toast${type?' toast-'+type:''}`;
-  el.innerHTML=`<i class="bi bi-${type==='success'?'check-circle':type==='error'?'exclamation-circle':'info-circle'}"></i> ${msg}`;
-  document.getElementById('toast-container').appendChild(el);
-  setTimeout(()=>el.remove(),3500);
-};
-
-// ─── HOME ─────────────────────────────────
-async function renderHome() {
-  await loadSubmissions();
-  const tasksSnap = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  const tasks = tasksSnap.docs.map(d=>({id:d.id,...d.data()}));
-
-  const submitted = tasks.filter(t=>submissionsCache[t.id]);
-  const pending   = tasks.filter(t=>!submissionsCache[t.id]);
-  const now = new Date(); now.setHours(0,0,0,0);
-  const dueSoon   = pending.filter(t=>{ if(!t.due) return false; const d=new Date(t.due+'T00:00:00'); return (d-now)/86400000<=7 && d>=now; });
-
-  document.getElementById('st-pending').textContent  = pending.length;
-  document.getElementById('st-done').textContent     = submitted.length;
-  document.getElementById('st-due-soon').textContent = dueSoon.length;
-
-  // Nota media
-  const gradesSnap = await getDocs(query(collection(db,'grades'), where('classId','==',currentClass.id), where('studentUid','==',currentUser.uid)));
-  const grades = gradesSnap.docs.map(d=>d.data().grade).filter(g=>g!=null);
-  const avg = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
-  document.getElementById('st-avg').textContent = avg;
-
-  // Progress
-  const pct = tasks.length ? Math.round(submitted.length/tasks.length*100) : 0;
-  document.getElementById('progress-pct').textContent = pct + '%';
-  document.getElementById('progress-bar').style.width = pct + '%';
-
-  // Upcoming
-  const upcoming = pending.filter(t=>t.due).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5);
-  const upEl = document.getElementById('home-upcoming');
-  upEl.innerHTML = !upcoming.length
-    ? `<div class="empty-state" style="padding:2rem"><i class="bi bi-check-all" style="font-size:2rem"></i><p>¡Todo entregado!</p></div>`
-    : upcoming.map(t=>`
-      <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--border)">
-        <span class="badge ${PRIO[t.priority||'media'].cls}">${PRIO[t.priority||'media'].label}</span>
-        <span style="flex:1;font-size:.875rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.title)}</span>
-        ${dueBadge(t.due)}
-      </div>`).join('');
-
-  // Announcements
-  const annSnap = await getDocs(query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  const annEl = document.getElementById('home-anncs');
-  annEl.innerHTML = !annSnap.size
-    ? `<div class="empty-state" style="padding:2rem"><i class="bi bi-megaphone" style="font-size:2rem"></i><p>Sin anuncios recientes</p></div>`
-    : annSnap.docs.slice(0,3).map(d=>{
-        const a=d.data();
-        return `<div style="padding:.875rem 1.25rem;border-bottom:1px solid var(--border)">
-          <div style="font-weight:600;font-size:.875rem">${esc(a.title)}</div>
-          <div style="font-size:.78rem;color:var(--muted);margin-top:.2rem">${fmtDate(a.createdAt)}</div>
-        </div>`;
-      }).join('');
-}
-
-// ─── TASKS ────────────────────────────────
 function renderTasksFromCache() {
   const filter = document.getElementById('filter-status').value;
   let tasks = [...tasksCache];
-  if (filter==='submitted') tasks = tasks.filter(t=>submissionsCache[t.id]);
-  if (filter==='pending')   tasks = tasks.filter(t=>!submissionsCache[t.id]);
+  if (filter === 'submitted') tasks = tasks.filter(t =>  submissionsCache[t.id]);
+  if (filter === 'pending')   tasks = tasks.filter(t => !submissionsCache[t.id]);
 
   const el = document.getElementById('tasks-container');
   if (!tasks.length) {
@@ -746,11 +741,11 @@ function renderTasksFromCache() {
   }
   el.innerHTML = tasks.map(t => {
     const sub = submissionsCache[t.id];
-    const p = PRIO[t.priority||'media'];
+    const p   = PRIO[t.priority || 'media'];
     return `
     <div class="task-item priority-${t.priority||'media'} ${sub?'done':''} fade-in">
       <div class="task-body">
-        <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.35rem">
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
           <span class="task-title">${esc(t.title)}</span>
           <span class="badge ${p.cls}">${p.label}</span>
           ${dueBadge(t.due)}
@@ -761,178 +756,166 @@ function renderTasksFromCache() {
           ${t.link ? `<a href="${esc(t.link)}" target="_blank" class="badge badge-brand"><i class="bi bi-link-45deg"></i> Material adjunto</a>` : ''}
         </div>
         ${sub ? `
-        <div style="margin-top:.75rem;background:var(--surface);border-radius:.5rem;padding:.75rem;font-size:.82rem">
-          <div style="font-weight:600;margin-bottom:.25rem;color:var(--muted)"><i class="bi bi-upload me-1"></i>Tu entrega:</div>
+        <div class="task-submission-detail">
+          <div class="task-submission-label"><i class="bi bi-upload me-1"></i>Tu entrega:</div>
           <div>${esc(sub.comment||'(sin comentario)')}</div>
-          ${sub.grade!=null ? `<div style="margin-top:.5rem">Nota del profesor: ${gradeBadge(sub.grade)} ${sub.feedback?`<span style="color:var(--muted);font-size:.78rem;margin-left:.5rem">${esc(sub.feedback)}</span>`:''}` : ''}
+          ${sub.grade != null ? `<div class="mt-2">Nota: ${gradeBadge(sub.grade)}${sub.feedback?`<span class="task-feedback">${esc(sub.feedback)}</span>`:''}` : ''}
         </div>` : ''}
       </div>
       <div class="task-actions">
-        ${!sub ? `<button class="btn btn-sm btn-primary" onclick="openSubmit('${t.id}','${esc(t.title)}')">
+        ${!sub ? `<button class="btn btn-sm btn-primary btn-open-submit" data-task-id="${t.id}" data-task-title="${esc(t.title)}">
           <i class="bi bi-send-fill"></i> Entregar
         </button>` : ''}
       </div>
     </div>`;
   }).join('');
+
+  el.querySelectorAll('.btn-open-submit').forEach(btn => {
+    btn.addEventListener('click', () => openSubmit(btn.dataset.taskId, btn.dataset.taskTitle));
+  });
 }
 
 async function renderTasks() {
-  if (tasksCache.length > 0) { renderTasksFromCache(); return; }
-  // Fallback si el listener aún no ha cargado
-  const snap = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  tasksCache = snap.docs.map(d=>({id:d.id,...d.data()}));
+  if (!tasksCache.length) {
+    const snap = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
+    tasksCache = snap.docs.map(d => ({ id:d.id,...d.data() }));
+  }
   renderTasksFromCache();
 }
+document.getElementById('filter-status').addEventListener('change', renderTasks);
 
-window.openSubmit = (taskId, taskTitle) => {
+function openSubmit(taskId, taskTitle) {
   document.getElementById('sub-task-id').value = taskId;
   document.getElementById('sub-task-title').innerHTML = `<i class="bi bi-check2-square"></i> <strong>${taskTitle}</strong>`;
   document.getElementById('sub-comment').value = '';
   openModal('modal-entrega');
-};
+}
 
-window.submitTask = async () => {
+document.getElementById('btn-submit-task').addEventListener('click', async () => {
   const taskId  = document.getElementById('sub-task-id').value;
   const comment = document.getElementById('sub-comment').value.trim();
   if (!comment) { toast('Escribe un comentario o enlace a tu trabajo.','error'); return; }
-  // Evitar entregas duplicadas
   if (submissionsCache[taskId]) { toast('Ya has entregado esta tarea.','error'); closeModal('modal-entrega'); return; }
   const existing = await getDocs(query(collection(db,'submissions'), where('taskId','==',taskId), where('studentUid','==',currentUser.uid)));
   if (!existing.empty) { toast('Ya has entregado esta tarea.','error'); closeModal('modal-entrega'); return; }
-  // Cerrar modal inmediatamente antes de las operaciones async
   closeModal('modal-entrega');
-  // Get task title for activity log
-  const taskSnap = await getDoc(doc(db,'tasks',taskId));
+  const taskSnap  = await getDoc(doc(db,'tasks',taskId));
   const taskTitle = taskSnap.exists() ? taskSnap.data().title : '';
   await addDoc(collection(db,'submissions'), {
-    classId:     currentClass.id,
-    taskId,
-    studentUid:  currentUser.uid,
-    studentName: currentUser.displayName,
-    comment,
-    grade:       null,
-    feedback:    null,
-    submittedAt: serverTimestamp()
+    classId:currentClass.id, taskId, studentUid:currentUser.uid,
+    studentName:currentUser.displayName, comment, grade:null, feedback:null, submittedAt:serverTimestamp(),
   });
   await addDoc(collection(db,'activity'), {
-    classId:   currentClass.id,
-    type:      'submission',
-    text:      `${currentUser.displayName} entregó: "${taskTitle}"`,
-    detail:    comment.slice(0, 80),
-    createdAt: serverTimestamp()
+    classId:currentClass.id, type:'submission',
+    text:`${currentUser.displayName} entregó: "${taskTitle}"`,
+    detail:comment.slice(0,80), createdAt:serverTimestamp(),
   });
-  submissionsCache[taskId] = { taskId, comment, grade: null };
+  submissionsCache[taskId] = { taskId, comment, grade:null };
   toast('¡Tarea entregada!','success');
-};
+});
 
-// ─── ANNOUNCEMENTS ────────────────────────
+// ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────
+function startAnnouncementsListener() {
+  if (_unsubAnnouncements) _unsubAnnouncements();
+  _unsubAnnouncements = onSnapshot(
+    query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
+    snap => {
+      const newAnns = snap.docs.map(d => ({ id:d.id,...d.data() }));
+      if (_annCacheLoaded) {
+        const oldIds = new Set(announcementsCache.map(a => a.id));
+        const added  = newAnns.filter(a => !oldIds.has(a.id));
+        if (added.length && document.querySelector('.sidebar .nav-item.active')?.id !== 'nav-anuncios') {
+          const seen   = JSON.parse(localStorage.getItem('ao_seenAnns_'+currentClass.id)||'[]');
+          const unseen = newAnns.filter(a => !seen.includes(a.id));
+          const badge  = document.getElementById('badge-anuncios');
+          unseen.length ? show(badge) : hide(badge);
+          badge.textContent = unseen.length;
+          added.forEach(a => toast(`📢 Nuevo anuncio: ${a.title}`,'success'));
+        }
+      }
+      announcementsCache = newAnns; _annCacheLoaded = true;
+      const active = document.querySelector('.sidebar .nav-item.active')?.id;
+      if (active === 'nav-anuncios') renderAnnouncementsFromCache();
+      if (active === 'nav-inicio')   renderHome();
+    }
+  );
+}
+
 function renderAnnouncementsFromCache() {
   const el = document.getElementById('annc-container');
-  if (!announcementsCache.length) {
-    el.innerHTML = `<div class="empty-state"><i class="bi bi-megaphone"></i><p>No hay anuncios aún.</p></div>`;
-    return;
-  }
-  el.innerHTML = announcementsCache.map(a=>`<div class="annc-card fade-in">
-    <div class="annc-header"><div class="annc-title">${esc(a.title)}</div></div>
-    <div class="annc-body">${esc(a.body)}</div>
-    <div class="annc-meta"><i class="bi bi-clock me-1"></i>${fmtDate(a.createdAt)}</div>
-  </div>`).join('');
+  el.innerHTML = !announcementsCache.length
+    ? `<div class="empty-state"><i class="bi bi-megaphone"></i><p>No hay anuncios aún.</p></div>`
+    : announcementsCache.map(a => `
+      <div class="annc-card fade-in">
+        <div class="annc-header"><div class="annc-title">${esc(a.title)}</div></div>
+        <div class="annc-body">${esc(a.body)}</div>
+        <div class="annc-meta"><i class="bi bi-clock me-1"></i>${fmtDate(a.createdAt)}</div>
+      </div>`).join('');
 }
 
-async function renderAnnouncements() {
-  if (announcementsCache.length > 0) { renderAnnouncementsFromCache(); return; }
-  const snap = await getDocs(query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  announcementsCache = snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderAnnouncementsFromCache();
-}
-
-// ─── RESOURCES ────────────────────────────
-let resourcesCache = [];
-let _resCacheLoaded = false;
-let _unsubResources = null;
-
+// ─── RESOURCES ────────────────────────────────────────────────────────────────
 function startResourcesListener() {
   if (_unsubResources) _unsubResources();
   _unsubResources = onSnapshot(
     query(collection(db,'resources'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
-    (snap) => {
-      const newRes = snap.docs.map(d => ({id:d.id,...d.data()}));
+    snap => {
+      const newRes = snap.docs.map(d => ({ id:d.id,...d.data() }));
       if (_resCacheLoaded) {
         const oldIds = new Set(resourcesCache.map(r => r.id));
-        const added = newRes.filter(r => !oldIds.has(r.id));
-        if (added.length > 0) {
-          const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-          if (activeSection !== 'nav-recursos') {
-            const seenStr = localStorage.getItem('ao_seenRes_' + currentClass.id) || '[]';
-            const seen = JSON.parse(seenStr);
-            const unseen = newRes.filter(r => !seen.includes(r.id));
-            const badge = document.getElementById('badge-recursos');
-            if (badge) { badge.style.display = unseen.length > 0 ? '' : 'none'; badge.textContent = unseen.length; }
-            added.forEach(r => toast(`📁 Nuevo recurso: ${r.name}`, 'success'));
-          }
+        const added  = newRes.filter(r => !oldIds.has(r.id));
+        if (added.length && document.querySelector('.sidebar .nav-item.active')?.id !== 'nav-recursos') {
+          const seen   = JSON.parse(localStorage.getItem('ao_seenRes_'+currentClass.id)||'[]');
+          const unseen = newRes.filter(r => !seen.includes(r.id));
+          const badge  = document.getElementById('badge-recursos');
+          unseen.length ? show(badge) : hide(badge);
+          badge.textContent = unseen.length;
+          added.forEach(r => toast(`📁 Nuevo recurso: ${r.name}`,'success'));
         }
       }
-      resourcesCache = newRes;
-      _resCacheLoaded = true;
-      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (activeSection === 'nav-recursos') renderResourcesFromCache();
+      resourcesCache = newRes; _resCacheLoaded = true;
+      if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-recursos') renderResourcesFromCache();
     }
   );
 }
 
 function renderResourcesFromCache() {
   const el = document.getElementById('resources-container');
-  if (!resourcesCache.length) {
-    el.innerHTML = `<div class="empty-state"><i class="bi bi-folder-x"></i><p>El profesor no ha subido recursos aún.</p></div>`;
-    return;
-  }
-  el.innerHTML = resourcesCache.map(r => `<div class="res-card fade-in">
-    <div class="res-icon"><i class="bi ${RES_ICON[r.type]||'bi-box-seam'}"></i></div>
-    <div class="res-info">
-      <div class="res-name">${esc(r.name)}</div>
-      ${r.desc?`<div class="res-desc">${esc(r.desc)}</div>`:''}
-    </div>
-    <a href="${esc(r.url)}" target="_blank" class="btn btn-sm btn-secondary"><i class="bi bi-box-arrow-up-right"></i> Abrir</a>
-  </div>`).join('');
+  el.innerHTML = !resourcesCache.length
+    ? `<div class="empty-state"><i class="bi bi-folder-x"></i><p>El profesor no ha subido recursos aún.</p></div>`
+    : resourcesCache.map(r => `
+      <div class="res-card fade-in">
+        <div class="res-icon"><i class="bi ${RES_ICON[r.type]||'bi-box-seam'}"></i></div>
+        <div class="res-info">
+          <div class="res-name">${esc(r.name)}</div>
+          ${r.desc?`<div class="res-desc">${esc(r.desc)}</div>`:''}
+        </div>
+        <a href="${esc(r.url)}" target="_blank" class="btn btn-sm btn-secondary">
+          <i class="bi bi-box-arrow-up-right"></i> Abrir
+        </a>
+      </div>`).join('');
 }
 
-async function renderResources() {
-  if (resourcesCache.length > 0) { renderResourcesFromCache(); return; }
-  const snap = await getDocs(query(collection(db,'resources'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  resourcesCache = snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderResourcesFromCache();
-}
-
-// ─── GRADES ───────────────────────────────
-let gradesCache = [];
-let _gradesCacheLoaded = false;
-let _unsubGrades = null;
-
+// ─── GRADES ───────────────────────────────────────────────────────────────────
 function startGradesListener() {
   if (_unsubGrades) _unsubGrades();
   _unsubGrades = onSnapshot(
     query(collection(db,'grades'), where('classId','==',currentClass.id), where('studentUid','==',currentUser.uid), orderBy('createdAt','desc')),
-    (snap) => {
-      const newGrades = snap.docs.map(d => ({id:d.id,...d.data()}));
+    snap => {
+      const newGrades = snap.docs.map(d => ({ id:d.id,...d.data() }));
       if (_gradesCacheLoaded) {
         const oldIds = new Set(gradesCache.map(g => g.id));
-        const added = newGrades.filter(g => !oldIds.has(g.id));
-        if (added.length > 0) {
-          const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-          if (activeSection !== 'nav-notas') {
-            const badge = document.getElementById('badge-notas');
-            const seenStr = localStorage.getItem('ao_seenGrades_' + currentClass.id) || '[]';
-            const seen = JSON.parse(seenStr);
-            const unseen = newGrades.filter(g => !seen.includes(g.id));
-            if (badge) { badge.style.display = unseen.length > 0 ? '' : 'none'; badge.textContent = unseen.length; }
-            added.forEach(g => toast(`⭐ Nueva nota: ${g.concept} — ${g.grade}`, 'success'));
-          }
+        const added  = newGrades.filter(g => !oldIds.has(g.id));
+        if (added.length && document.querySelector('.sidebar .nav-item.active')?.id !== 'nav-notas') {
+          const seen   = JSON.parse(localStorage.getItem('ao_seenGrades_'+currentClass.id)||'[]');
+          const unseen = newGrades.filter(g => !seen.includes(g.id));
+          const badge  = document.getElementById('badge-notas');
+          unseen.length ? show(badge) : hide(badge);
+          badge.textContent = unseen.length;
+          added.forEach(g => toast(`⭐ Nueva nota: ${g.concept} — ${g.grade}`,'success'));
         }
       }
-      gradesCache = newGrades;
-      _gradesCacheLoaded = true;
-      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (activeSection === 'nav-notas') renderGradesFromCache();
+      gradesCache = newGrades; _gradesCacheLoaded = true;
+      if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-notas') renderGradesFromCache();
     }
   );
 }
@@ -943,133 +926,159 @@ function renderGradesFromCache() {
     el.innerHTML = `<div class="empty-state"><i class="bi bi-star"></i><p>Todavía no tienes calificaciones.</p></div>`;
     return;
   }
-  const avg = (gradesCache.reduce((a,g)=>a+g.grade,0)/gradesCache.length).toFixed(1);
+  const avg = (gradesCache.reduce((a,g) => a+g.grade,0)/gradesCache.length).toFixed(1);
   el.innerHTML = `
-    <div class="card" style="margin-bottom:1rem;padding:1.25rem;display:flex;align-items:center;gap:1.5rem">
+    <div class="card mb-3 p-4 d-flex flex-row align-items-center gap-4">
       <div>
-        <div style="font-size:.78rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Nota media</div>
-        <div style="font-size:2.5rem;font-weight:800;font-family:var(--mono);color:var(--brand)">${avg}</div>
+        <div class="grades-avg-label">Nota media</div>
+        <div class="grades-avg-value">${avg}</div>
       </div>
-      <div style="flex:1;font-size:.875rem;color:var(--muted)">${gradesCache.length} calificación${gradesCache.length>1?'es':''} registrada${gradesCache.length>1?'s':''}</div>
+      <div class="text-muted text-sm">
+        ${gradesCache.length} calificación${gradesCache.length>1?'es':''} registrada${gradesCache.length>1?'s':''}
+      </div>
     </div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Concepto</th><th>Nota</th><th>Comentario del profesor</th><th>Fecha</th></tr></thead>
         <tbody>
           ${gradesCache.map(g=>`<tr>
-            <td style="font-weight:600">${esc(g.concept)}</td>
+            <td class="fw-semibold">${esc(g.concept)}</td>
             <td>${gradeBadge(g.grade)}</td>
-            <td style="font-size:.82rem;color:var(--muted)">${esc(g.comment||'—')}</td>
-            <td style="font-size:.8rem">${fmtDate(g.createdAt)}</td>
+            <td class="text-muted text-xs">${esc(g.comment||'—')}</td>
+            <td class="text-xs">${fmtDate(g.createdAt)}</td>
           </tr>`).join('')}
         </tbody>
       </table>
     </div>`;
 }
 
-async function renderGrades() {
-  if (gradesCache.length > 0) { renderGradesFromCache(); return; }
-  const snap = await getDocs(query(collection(db,'grades'), where('classId','==',currentClass.id), where('studentUid','==',currentUser.uid), orderBy('createdAt','desc')));
-  gradesCache = snap.docs.map(d=>({id:d.id,...d.data()}));
-  renderGradesFromCache();
+// ─── HOME ─────────────────────────────────────────────────────────────────────
+async function renderHome() {
+  await loadSubmissions();
+  const tasksSnap = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
+  const tasks = tasksSnap.docs.map(d => ({ id:d.id,...d.data() }));
+  const submitted = tasks.filter(t =>  submissionsCache[t.id]);
+  const pending   = tasks.filter(t => !submissionsCache[t.id]);
+  const now = new Date(); now.setHours(0,0,0,0);
+  const dueSoon = pending.filter(t => { if(!t.due) return false; const d=new Date(t.due+'T00:00:00'); return (d-now)/86400000<=7 && d>=now; });
+
+  document.getElementById('st-pending').textContent  = pending.length;
+  document.getElementById('st-done').textContent     = submitted.length;
+  document.getElementById('st-due-soon').textContent = dueSoon.length;
+
+  const gradesSnap = await getDocs(query(collection(db,'grades'), where('classId','==',currentClass.id), where('studentUid','==',currentUser.uid)));
+  const grades = gradesSnap.docs.map(d => d.data().grade).filter(g => g != null);
+  document.getElementById('st-avg').textContent = grades.length
+    ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
+
+  const pct = tasks.length ? Math.round(submitted.length/tasks.length*100) : 0;
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-bar').style.width = pct + '%';
+
+  const upcoming = pending.filter(t=>t.due).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5);
+  document.getElementById('home-upcoming').innerHTML = !upcoming.length
+    ? `<div class="empty-state p-4"><i class="bi bi-check-all fs-2"></i><p>¡Todo entregado!</p></div>`
+    : upcoming.map(t=>`
+      <div class="home-list-row">
+        <span class="badge ${PRIO[t.priority||'media'].cls}">${PRIO[t.priority||'media'].label}</span>
+        <span class="home-list-title">${esc(t.title)}</span>
+        ${dueBadge(t.due)}
+      </div>`).join('');
+
+  const annSnap = await getDocs(query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
+  document.getElementById('home-anncs').innerHTML = !annSnap.size
+    ? `<div class="empty-state p-4"><i class="bi bi-megaphone fs-2"></i><p>Sin anuncios recientes</p></div>`
+    : annSnap.docs.slice(0,3).map(d => {
+        const a = d.data();
+        return `<div class="home-list-row flex-column align-items-start">
+          <div class="fw-semibold text-sm">${esc(a.title)}</div>
+          <div class="text-muted text-xs">${fmtDate(a.createdAt)}</div>
+        </div>`;
+      }).join('');
 }
 
-// ─── CHAT PRIVADO ─────────────────────────
-let _unsubChat = null;
-
-function getConvId() {
-  return `${currentClass.id}_${currentUser.uid}`;
-}
+// ─── CHAT ─────────────────────────────────────────────────────────────────────
+function getConvId() { return `${currentClass.id}_${currentUser.uid}`; }
 
 function initChat() {
   if (_unsubChat) { _unsubChat(); _unsubChat = null; }
-  document.getElementById('badge-chat').style.display = 'none';
+  hide(document.getElementById('badge-chat'));
   localStorage.setItem('ao_chatLastRead_' + currentClass.id, Date.now());
 
-  const convId = getConvId();
-
   _unsubChat = onSnapshot(
-    query(collection(db,'messages'), where('convId','==',convId), orderBy('createdAt','asc')),
-    (snap) => {
+    query(collection(db,'messages'), where('convId','==',getConvId()), orderBy('createdAt','asc')),
+    snap => {
       const el = document.getElementById('chat-messages');
       if (!el) return;
-
-      // Marcar mensajes del profesor como leídos en tiempo real
       snap.docs.forEach(d => {
         const m = d.data();
-        if (m.fromRole === 'teacher' && !m.readAt) {
-          updateDoc(doc(db,'messages',d.id), { readAt: serverTimestamp() }).catch(()=>{});
-        }
+        if (m.fromRole==='teacher' && !m.readAt)
+          updateDoc(doc(db,'messages',d.id), { readAt:serverTimestamp() }).catch(()=>{});
       });
-
       if (snap.empty) {
         el.innerHTML = `<div class="empty-state"><i class="bi bi-chat-dots"></i><p>Sin mensajes aún. ¡Escribe al profesor!</p></div>`;
         return;
       }
       el.innerHTML = snap.docs.map(d => {
-        const m = d.data();
+        const m      = d.data();
         const isMine = m.fromRole === 'student';
-        const time = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
-        const readStatus = isMine ? (m.readAt
-          ? `<span style="color:#60a5fa" title="Leído">✓✓</span>`
-          : `<span style="opacity:.5" title="Enviado">✓</span>`) : '';
+        const time   = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+        const read   = isMine ? (m.readAt ? `<span class="chat-read" title="Leído">✓✓</span>` : `<span class="chat-unread" title="Enviado">✓</span>`) : '';
         return `
-        <div class="chat-msg ${isMine ? 'mine' : 'theirs'}">
-          ${!isMine ? `<div class="chat-avatar"><i class="bi bi-person-fill"></i></div>` : ''}
+        <div class="chat-msg ${isMine?'mine':'theirs'}">
+          ${!isMine?`<div class="chat-avatar"><i class="bi bi-person-fill"></i></div>`:''}
           <div class="chat-bubble-wrap">
-            ${!isMine ? `<div class="chat-sender">Profesor</div>` : ''}
+            ${!isMine?`<div class="chat-sender">Profesor</div>`:''}
             <div class="chat-bubble">${esc(m.text)}</div>
-            <div class="chat-time">${time} ${readStatus}${isMine ? ` <i class="bi bi-trash" onclick="deleteChatMessage('${d.id}')" style="cursor:pointer;opacity:.4;margin-left:.3rem;font-size:.65rem"></i>` : ''}</div>
+            <div class="chat-time">${time} ${read}${isMine?` <i class="bi bi-trash chat-delete-msg" data-msg-id="${d.id}"></i>`:''}</div>
           </div>
         </div>`;
       }).join('');
+      el.querySelectorAll('.chat-delete-msg').forEach(i => {
+        i.addEventListener('click', () => deleteChatMessage(i.dataset.msgId));
+      });
       el.scrollTop = el.scrollHeight;
     }
   );
 }
 
-window.sendChatMessage = async () => {
+async function sendChatMessage() {
   const input = document.getElementById('chat-input');
   const text  = input.value.trim();
   if (!text) return;
   input.value = '';
   await addDoc(collection(db,'messages'), {
-    convId:     getConvId(),
-    classId:    currentClass.id,
-    studentUid: currentUser.uid,
-    fromUid:    currentUser.uid,
-    fromName:   currentUser.displayName,
-    fromRole:   'student',
-    text,
-    readAt:     null,
-    createdAt:  serverTimestamp()
+    convId:getConvId(), classId:currentClass.id,
+    studentUid:currentUser.uid, fromUid:currentUser.uid,
+    fromName:currentUser.displayName, fromRole:'student',
+    text, readAt:null, createdAt:serverTimestamp(),
   });
-};
+}
+async function deleteChatMessage(msgId) {
+  if (!confirm('¿Borrar este mensaje?')) return;
+  await deleteDoc(doc(db,'messages',msgId));
+}
+document.getElementById('btn-send-chat').addEventListener('click', sendChatMessage);
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
+});
 
-window.deleteChatMessage = async (msgId) => {
-  if (!window.confirm('¿Borrar este mensaje?')) return;
-  await deleteDoc(doc(db,'messages', msgId));
-};
-
-// Notificaciones chat privado
-let _unsubChatNotif = null;
 function startChatNotifications() {
   if (_unsubChatNotif) _unsubChatNotif();
-  const convId = getConvId();
   _unsubChatNotif = onSnapshot(
-    query(collection(db,'messages'), where('convId','==',convId), where('fromRole','==','teacher'), orderBy('createdAt','desc')),
-    (snap) => {
-      const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (activeSection === 'nav-chat') return;
-      const lastRead = parseInt(localStorage.getItem('ao_chatLastRead_' + currentClass.id) || '0');
-      const newMsgs = snap.docs.filter(d => (d.data().createdAt?.toMillis?.() || 0) > lastRead);
-      const badge = document.getElementById('badge-chat');
-      if (badge) { badge.style.display = newMsgs.length > 0 ? '' : 'none'; badge.textContent = newMsgs.length; }
+    query(collection(db,'messages'), where('convId','==',getConvId()), where('fromRole','==','teacher'), orderBy('createdAt','desc')),
+    snap => {
+      if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-chat') return;
+      const lastRead = parseInt(localStorage.getItem('ao_chatLastRead_'+currentClass.id)||'0');
+      const newMsgs  = snap.docs.filter(d => (d.data().createdAt?.toMillis?.()||0) > lastRead);
+      const badge    = document.getElementById('badge-chat');
+      newMsgs.length ? show(badge) : hide(badge);
+      badge.textContent = newMsgs.length;
     }
   );
 }
 
-// ─── PERFIL ───────────────────────────────
+// ─── PERFIL ───────────────────────────────────────────────────────────────────
 function renderPerfil() {
   const initials = (currentUser.displayName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('perfil-avatar').textContent    = initials;
@@ -1079,95 +1088,40 @@ function renderPerfil() {
   document.getElementById('perfil-classdesc').textContent = currentClass.description || 'Sin descripción';
   document.getElementById('perfil-code').textContent      = currentClass.code || '—';
 
-  // Lista de todas las clases (si hay más de una)
   const el = document.getElementById('perfil-all-classes');
   if (!el) return;
-  if (allMyClasses.length <= 1) { el.style.display = 'none'; return; }
-  el.style.display = '';
+  if (allMyClasses.length <= 1) { hide(el); return; }
+  show(el);
   el.innerHTML = `
-    <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.75rem">
-      Todas mis clases (${allMyClasses.length})
-    </div>
-    ${allMyClasses.map(c => `
-      <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--border)">
-        <div style="width:30px;height:30px;border-radius:.4rem;background:var(--brand);color:#fff;font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">${c.name[0].toUpperCase()}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:.875rem">${esc(c.name)}</div>
-          <div style="font-size:.7rem;color:var(--muted);font-family:var(--mono)">${c.code||''}</div>
+    <div class="perfil-all-label">Todas mis clases (${allMyClasses.length})</div>
+    ${allMyClasses.map(c=>`
+      <div class="perfil-class-row">
+        <div class="perfil-class-icon">${c.name[0].toUpperCase()}</div>
+        <div class="perfil-class-info">
+          <div class="perfil-class-name">${esc(c.name)}</div>
+          <div class="perfil-class-code">${c.code||''}</div>
         </div>
-        ${c.id === currentClass.id
+        ${c.id===currentClass.id
           ? '<span class="badge badge-brand">Activa</span>'
-          : `<button class="btn btn-sm btn-secondary" onclick="switchClass('${c.id}')">Cambiar</button>`}
+          : `<button class="btn btn-sm btn-secondary btn-switch-perfil" data-cid="${c.id}">Cambiar</button>`}
       </div>`).join('')}`;
+  el.querySelectorAll('.btn-switch-perfil').forEach(btn => {
+    btn.addEventListener('click', () => switchClass(btn.dataset.cid));
+  });
 }
 
-// ─── DARK MODE ────────────────────────────
+// ─── DARK MODE ────────────────────────────────────────────────────────────────
 function applyTheme(dark) {
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
-  const icon = document.getElementById('dark-icon');
-  if (icon) icon.className = dark ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+  document.getElementById('dark-icon').className = dark ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
 }
-window.toggleDark = () => {
+document.getElementById('dark-toggle').addEventListener('click', () => {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   localStorage.setItem('ao_theme', isDark ? 'light' : 'dark');
   applyTheme(!isDark);
-};
+});
 applyTheme(localStorage.getItem('ao_theme') === 'dark');
-
-// ─── RESPONSIVE ───────────────────────────
-if (window.innerWidth<768) document.getElementById('sidebar-toggle').style.display='';
-window.addEventListener('resize', ()=>{ document.getElementById('sidebar-toggle').style.display=window.innerWidth<768?'':'none'; });
 </script>
-
-<style>
-  .d-none { display: none !important; }
-  @media (max-width: 860px) { #home-grid { grid-template-columns: 1fr !important; } }
-  @media (max-width: 600px) { #perfil-grid { grid-template-columns: 1fr !important; } }
-
-  /* ── CHAT ── */
-  .chat-wrap { display:flex;flex-direction:column;height:calc(100vh - var(--topbar-h) - 130px);background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden; }
-  .chat-messages { flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:.75rem; }
-  .chat-msg { display:flex;align-items:flex-end;gap:.6rem; }
-  .chat-msg.mine { flex-direction:row-reverse; }
-  .chat-avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700; }
-  .chat-bubble-wrap { display:flex;flex-direction:column;max-width:65%; }
-  .chat-msg.mine .chat-bubble-wrap { align-items:flex-end; }
-  .chat-sender { font-size:.72rem;font-weight:600;color:var(--muted);margin-bottom:.2rem; }
-  .chat-bubble { padding:.6rem .9rem;border-radius:1rem;font-size:.875rem;line-height:1.5;background:var(--surface);color:var(--text);border-bottom-left-radius:.25rem;word-break:break-word; }
-  .chat-msg.mine .chat-bubble { background:var(--brand);color:#fff;border-bottom-right-radius:.25rem;border-bottom-left-radius:1rem; }
-  .chat-time { font-size:.65rem;color:var(--muted);margin-top:.2rem;display:flex;align-items:center;gap:.2rem; }
-  .chat-input-bar { display:flex;gap:.75rem;padding:.875rem 1.25rem;border-top:1px solid var(--border);background:var(--card); }
-  .chat-input-bar .form-control { flex:1; }
-
-  /* ── CLASS SWITCHER ── */
-  .class-switcher { position:relative; }
-  .class-switcher-btn { display:flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:2rem;padding:.3rem .85rem .3rem .65rem;font-family:var(--font);font-size:.8rem;font-weight:600;cursor:pointer;transition:background var(--transition);max-width:220px;white-space:nowrap; }
-  .class-switcher-btn:hover { background:rgba(255,255,255,.25); }
-  .class-switcher-btn span { overflow:hidden;text-overflow:ellipsis;max-width:140px; }
-  .class-switcher-menu { position:absolute;top:calc(100% + 10px);left:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);min-width:240px;overflow:hidden;z-index:2000;display:none; }
-  .class-switcher-menu.open { display:block; }
-  .csm-header { padding:.6rem 1rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border); }
-  .csm-item { display:flex;align-items:center;gap:.75rem;padding:.65rem 1rem;width:100%;background:none;border:none;cursor:pointer;text-align:left;transition:background var(--transition);font-family:var(--font); }
-  .csm-item:hover { background:var(--surface); }
-  .csm-item.active { background:var(--brand-light); }
-  .csm-item-icon { width:30px;height:30px;border-radius:.4rem;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0; }
-  .csm-item.active .csm-item-icon { background:var(--brand-dark); }
-  .csm-item-info { flex:1;min-width:0; }
-  .csm-item-name { font-size:.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-  .csm-item-code { font-size:.7rem;color:var(--muted);font-family:var(--mono); }
-  .csm-divider { height:1px;background:var(--border); }
-  .csm-new { display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;width:100%;background:none;border:none;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--brand);font-family:var(--font);transition:background var(--transition); }
-  .csm-new:hover { background:var(--brand-light); }
-
-  /* ── LOADING ── */
-  #app-loading { position:fixed;inset:0;z-index:9998;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;transition:opacity .35s ease; }
-  #app-loading.hiding { opacity:0;pointer-events:none; }
-  #app-loading .loading-logo { font-size:1.6rem;font-weight:700;color:var(--brand);letter-spacing:-.3px; }
-  #app-loading .loading-logo em { color:var(--accent);font-style:normal; }
-  #app-loading .loading-spinner { width:40px;height:40px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--brand);animation:spin .7s linear infinite; }
-  #app-loading .loading-text { font-size:.85rem;color:var(--muted);font-weight:500; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-</style>
 
 </body>
 </html>

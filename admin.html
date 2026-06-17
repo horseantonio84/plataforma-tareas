@@ -6,6 +6,7 @@
   <title>AulaOnline — Panel Profesor</title>
   <link rel="stylesheet" href="assets/css/app.css"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 </head>
 <body>
 
@@ -18,43 +19,46 @@
 
 <!-- ══ TOPBAR ══ -->
 <header class="topbar">
-  <button class="btn btn-ghost btn-icon" id="sidebar-toggle" onclick="toggleSidebar()" style="color:#fff;display:none">
-    <i class="bi bi-list" style="font-size:1.4rem"></i>
+  <button class="btn btn-ghost btn-icon d-none" id="sidebar-toggle">
+    <i class="bi bi-list fs-4 text-white"></i>
   </button>
   <div class="brand">Aula<em>Online</em></div>
+
   <div class="class-switcher" id="class-switcher">
-    <button class="class-switcher-btn" id="class-switcher-btn" onclick="toggleClassMenu()">
+    <button class="class-switcher-btn" id="class-switcher-btn">
       <i class="bi bi-mortarboard-fill"></i>
       <span id="topbar-classname">Cargando...</span>
-      <i class="bi bi-chevron-down" style="font-size:.7rem;opacity:.7"></i>
+      <i class="bi bi-chevron-down csm-chevron"></i>
     </button>
     <div class="class-switcher-menu" id="class-switcher-menu">
       <div class="csm-header">Mis clases</div>
       <div id="csm-list"></div>
       <div class="csm-divider"></div>
-      <button class="csm-new" onclick="openNewClassModal()">
+      <button class="csm-new" id="btn-open-new-class">
         <i class="bi bi-plus-circle"></i> Nueva clase
       </button>
     </div>
   </div>
+
   <div class="spacer"></div>
+
   <div class="topbar-actions">
-    <button class="dark-toggle" id="dark-toggle" onclick="toggleDark()" title="Modo oscuro">
+    <button class="dark-toggle" id="dark-toggle" title="Modo oscuro">
       <i class="bi bi-moon-fill" id="dark-icon"></i>
     </button>
-    <span class="badge badge-brand" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)">
+    <span class="badge topbar-role-badge">
       <i class="bi bi-person-fill"></i> Profesor
     </span>
-    <div class="avatar" id="avatar-btn" onclick="toggleAvatarMenu()">
+    <div class="avatar" id="avatar-btn">
       <span id="avatar-initials">?</span>
       <div class="avatar-menu" id="avatar-menu">
         <div class="menu-header">
           <strong id="menu-name">—</strong>
           <span id="menu-email">—</span>
         </div>
-        <a href="#" onclick="showSection('ajustes');toggleAvatarMenu()"><i class="bi bi-gear"></i> Ajustes de clase</a>
+        <a href="#" id="menu-link-ajustes"><i class="bi bi-gear"></i> Ajustes de clase</a>
         <div class="menu-divider"></div>
-        <button onclick="doLogout()"><i class="bi bi-box-arrow-left"></i> Cerrar sesión</button>
+        <button id="btn-logout"><i class="bi bi-box-arrow-left"></i> Cerrar sesión</button>
       </div>
     </div>
   </div>
@@ -64,43 +68,43 @@
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-section">
     <div class="sidebar-label">Principal</div>
-    <button class="nav-item active" onclick="showSection('inicio')" id="nav-inicio">
+    <button class="nav-item active" data-section="inicio" id="nav-inicio">
       <i class="bi bi-house-door-fill"></i> Inicio
     </button>
-    <button class="nav-item" onclick="showSection('tareas')" id="nav-tareas">
+    <button class="nav-item" data-section="tareas" id="nav-tareas">
       <i class="bi bi-check2-square"></i> Tareas
     </button>
-    <button class="nav-item" onclick="showSection('entregas')" id="nav-entregas">
+    <button class="nav-item" data-section="entregas" id="nav-entregas">
       <i class="bi bi-inbox-fill"></i> Entregas
-      <span class="badge-count" id="badge-entregas" style="display:none">0</span>
+      <span class="badge-count d-none" id="badge-entregas">0</span>
     </button>
-    <button class="nav-item" onclick="showSection('notas')" id="nav-notas">
+    <button class="nav-item" data-section="notas" id="nav-notas">
       <i class="bi bi-star-fill"></i> Calificaciones
     </button>
-    <button class="nav-item" onclick="showSection('anuncios')" id="nav-anuncios">
+    <button class="nav-item" data-section="anuncios" id="nav-anuncios">
       <i class="bi bi-megaphone-fill"></i> Anuncios
     </button>
-    <button class="nav-item" onclick="showSection('recursos')" id="nav-recursos">
+    <button class="nav-item" data-section="recursos" id="nav-recursos">
       <i class="bi bi-folder2-open"></i> Recursos
     </button>
   </div>
   <div class="sidebar-section">
     <div class="sidebar-label">Gestión</div>
-    <button class="nav-item" onclick="showSection('chat')" id="nav-chat">
+    <button class="nav-item" data-section="chat" id="nav-chat">
       <i class="bi bi-chat-dots-fill"></i> Chat
-      <span class="badge-count" id="badge-chat" style="display:none">0</span>
+      <span class="badge-count d-none" id="badge-chat">0</span>
     </button>
-    <button class="nav-item" onclick="showSection('estadisticas')" id="nav-estadisticas">
+    <button class="nav-item" data-section="estadisticas" id="nav-estadisticas">
       <i class="bi bi-bar-chart-fill"></i> Estadísticas
     </button>
-    <button class="nav-item" onclick="showSection('historial')" id="nav-historial">
+    <button class="nav-item" data-section="historial" id="nav-historial">
       <i class="bi bi-clock-history"></i> Historial
     </button>
-    <button class="nav-item" onclick="showSection('alumnos')" id="nav-alumnos">
+    <button class="nav-item" data-section="alumnos" id="nav-alumnos">
       <i class="bi bi-people-fill"></i> Alumnos
-      <span class="badge-count" id="badge-pending" style="display:none">0</span>
+      <span class="badge-count d-none" id="badge-pending">0</span>
     </button>
-    <button class="nav-item" onclick="showSection('ajustes')" id="nav-ajustes">
+    <button class="nav-item" data-section="ajustes" id="nav-ajustes">
       <i class="bi bi-gear-fill"></i> Ajustes
     </button>
   </div>
@@ -116,45 +120,56 @@
   <section class="page" id="s-inicio">
     <div class="page-header">
       <h1 class="page-title">Panel del profesor <span id="greeting-time"></span></h1>
-      <button class="btn btn-primary" onclick="openModal('modal-tarea')">
+      <button class="btn btn-primary" id="btn-nueva-tarea-inicio">
         <i class="bi bi-plus-lg"></i> Nueva tarea
       </button>
     </div>
 
     <div class="stat-grid" id="stats-grid">
       <div class="stat-card fade-in">
-        <div class="stat-icon" style="background:#dbeafe"><i class="bi bi-people-fill" style="color:var(--brand)"></i></div>
+        <div class="stat-icon stat-icon-blue">
+          <i class="bi bi-people-fill icon-brand"></i>
+        </div>
         <div><div class="stat-value" id="st-alumnos">—</div><div class="stat-label">Alumnos activos</div></div>
       </div>
       <div class="stat-card fade-in fade-in-delay-1">
-        <div class="stat-icon" style="background:#dcfce7"><i class="bi bi-check2-square" style="color:var(--success)"></i></div>
+        <div class="stat-icon stat-icon-green">
+          <i class="bi bi-check2-square icon-success"></i>
+        </div>
         <div><div class="stat-value" id="st-tareas">—</div><div class="stat-label">Tareas publicadas</div></div>
       </div>
       <div class="stat-card fade-in fade-in-delay-2">
-        <div class="stat-icon" style="background:var(--accent-light)"><i class="bi bi-inbox-fill" style="color:var(--accent)"></i></div>
+        <div class="stat-icon stat-icon-amber">
+          <i class="bi bi-inbox-fill icon-accent"></i>
+        </div>
         <div><div class="stat-value" id="st-entregas">—</div><div class="stat-label">Entregas sin revisar</div></div>
       </div>
       <div class="stat-card fade-in fade-in-delay-3">
-        <div class="stat-icon" style="background:#fee2e2"><i class="bi bi-clock-fill" style="color:var(--danger)"></i></div>
+        <div class="stat-icon stat-icon-red">
+          <i class="bi bi-clock-fill icon-danger"></i>
+        </div>
         <div><div class="stat-value" id="st-pending-users">—</div><div class="stat-label">Alumnos pendientes</div></div>
       </div>
     </div>
 
-    <!-- Próximas entregas + alumnos pendientes en paralelo -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem" id="home-grid">
-      <div class="card fade-in">
-        <div class="card-header">
-          <span><i class="bi bi-lightning-fill me-2" style="color:var(--accent)"></i>Próximas entregas</span>
-          <button class="btn btn-sm btn-secondary" onclick="showSection('tareas')">Ver todas</button>
+    <div class="row g-4" id="home-grid">
+      <div class="col-12 col-lg-6">
+        <div class="card fade-in h-100">
+          <div class="card-header">
+            <span><i class="bi bi-lightning-fill me-2 icon-accent"></i>Próximas entregas</span>
+            <button class="btn btn-sm btn-secondary" data-nav-to="tareas">Ver todas</button>
+          </div>
+          <div class="card-body p-0" id="home-upcoming"></div>
         </div>
-        <div class="card-body" id="home-upcoming" style="padding:0"></div>
       </div>
-      <div class="card fade-in fade-in-delay-1">
-        <div class="card-header">
-          <span><i class="bi bi-person-fill-exclamation me-2" style="color:var(--warning)"></i>Esperando aprobación</span>
-          <button class="btn btn-sm btn-secondary" onclick="showSection('alumnos')">Gestionar</button>
+      <div class="col-12 col-lg-6">
+        <div class="card fade-in fade-in-delay-1 h-100">
+          <div class="card-header">
+            <span><i class="bi bi-person-fill-exclamation me-2 icon-warning"></i>Esperando aprobación</span>
+            <button class="btn btn-sm btn-secondary" data-nav-to="alumnos">Gestionar</button>
+          </div>
+          <div class="card-body p-0" id="home-pending-users"></div>
         </div>
-        <div class="card-body" id="home-pending-users" style="padding:0"></div>
       </div>
     </div>
   </section>
@@ -163,14 +178,14 @@
   <section class="page d-none" id="s-tareas">
     <div class="page-header">
       <h1 class="page-title">Tareas</h1>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <select class="form-control" id="filter-priority" onchange="renderTasks()" style="width:auto">
+      <div class="d-flex gap-2 flex-wrap">
+        <select class="form-control w-auto" id="filter-priority">
           <option value="">Cualquier prioridad</option>
           <option value="alta">Alta</option>
           <option value="media">Media</option>
           <option value="baja">Baja</option>
         </select>
-        <button class="btn btn-primary" onclick="openTaskModal()">
+        <button class="btn btn-primary" id="btn-nueva-tarea">
           <i class="bi bi-plus-lg"></i> Nueva tarea
         </button>
       </div>
@@ -182,7 +197,7 @@
   <section class="page d-none" id="s-entregas">
     <div class="page-header">
       <h1 class="page-title">Entregas de alumnos</h1>
-      <select class="form-control" id="filter-task-submissions" onchange="renderSubmissions()" style="width:auto;max-width:280px">
+      <select class="form-control w-auto" id="filter-task-submissions" style="max-width:280px">
         <option value="">Todas las tareas</option>
       </select>
     </div>
@@ -193,7 +208,7 @@
   <section class="page d-none" id="s-notas">
     <div class="page-header">
       <h1 class="page-title">Calificaciones</h1>
-      <button class="btn btn-primary" onclick="openModal('modal-nota')">
+      <button class="btn btn-primary" id="btn-open-nota">
         <i class="bi bi-plus-lg"></i> Añadir nota
       </button>
     </div>
@@ -204,7 +219,7 @@
   <section class="page d-none" id="s-anuncios">
     <div class="page-header">
       <h1 class="page-title">Anuncios</h1>
-      <button class="btn btn-primary" onclick="openModal('modal-anuncio')">
+      <button class="btn btn-primary" id="btn-open-anuncio">
         <i class="bi bi-plus-lg"></i> Nuevo anuncio
       </button>
     </div>
@@ -215,7 +230,7 @@
   <section class="page d-none" id="s-recursos">
     <div class="page-header">
       <h1 class="page-title">Recursos</h1>
-      <button class="btn btn-primary" onclick="openModal('modal-recurso')">
+      <button class="btn btn-primary" id="btn-open-recurso">
         <i class="bi bi-plus-lg"></i> Añadir recurso
       </button>
     </div>
@@ -228,26 +243,28 @@
       <h1 class="page-title">Mensajes privados</h1>
     </div>
     <div class="chat-layout">
-      <!-- Lista de alumnos -->
-      <div class="chat-sidebar" id="chat-sidebar">
+      <div class="chat-sidebar-panel" id="chat-sidebar-panel">
         <div class="chat-sidebar-header">Conversaciones</div>
         <div id="chat-student-list">
-          <div class="empty-state" style="padding:2rem"><i class="bi bi-people"></i><p>No hay alumnos aún.</p></div>
+          <div class="empty-state p-4">
+            <i class="bi bi-people"></i><p>No hay alumnos aún.</p>
+          </div>
         </div>
       </div>
-      <!-- Ventana de chat -->
       <div class="chat-main" id="chat-main">
         <div class="chat-empty-state" id="chat-no-selection">
-          <i class="bi bi-chat-dots" style="font-size:3rem;opacity:.3"></i>
-          <p style="color:var(--muted);margin-top:.75rem">Selecciona un alumno para ver la conversación</p>
+          <i class="bi bi-chat-dots fs-1 opacity-25"></i>
+          <p class="text-muted mt-3">Selecciona un alumno para ver la conversación</p>
         </div>
-        <div id="chat-conversation" style="display:none;height:100%;flex-direction:column">
+        <div id="chat-conversation" class="chat-conversation-wrap d-none">
           <div class="chat-conv-header" id="chat-conv-header"></div>
           <div class="chat-messages" id="chat-messages"></div>
           <div class="chat-input-bar">
-            <input type="text" class="form-control" id="chat-input" placeholder="Escribe un mensaje..." maxlength="500"
-              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"/>
-            <button class="btn btn-primary" onclick="sendChatMessage()"><i class="bi bi-send-fill"></i></button>
+            <input type="text" class="form-control" id="chat-input"
+              placeholder="Escribe un mensaje..." maxlength="500"/>
+            <button class="btn btn-primary" id="btn-send-chat">
+              <i class="bi bi-send-fill"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -258,11 +275,11 @@
   <section class="page d-none" id="s-estadisticas">
     <div class="page-header">
       <h1 class="page-title">Estadísticas por alumno</h1>
-      <select class="form-control" id="stats-student-filter" onchange="renderStats()" style="width:auto;max-width:240px">
+      <select class="form-control w-auto" id="stats-student-filter" style="max-width:240px">
         <option value="">Todos los alumnos</option>
       </select>
     </div>
-    <div id="stats-overview" style="margin-bottom:1.5rem"></div>
+    <div id="stats-overview" class="mb-4"></div>
     <div id="stats-container"></div>
   </section>
 
@@ -270,7 +287,7 @@
   <section class="page d-none" id="s-historial">
     <div class="page-header">
       <h1 class="page-title">Historial de actividad</h1>
-      <select class="form-control" id="filter-activity" onchange="renderHistorial()" style="width:auto">
+      <select class="form-control w-auto" id="filter-activity">
         <option value="">Todo</option>
         <option value="submission">Entregas</option>
         <option value="grade">Correcciones</option>
@@ -288,42 +305,52 @@
       <h1 class="page-title">Gestión de alumnos</h1>
     </div>
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchStudentTab('approved')">Aprobados</button>
-      <button class="tab-btn" onclick="switchStudentTab('pending')">Pendientes</button>
+      <button class="tab-btn active" data-student-tab="approved">Aprobados</button>
+      <button class="tab-btn" data-student-tab="pending">Pendientes</button>
     </div>
     <div id="students-approved-container"></div>
-    <div id="students-pending-container" style="display:none"></div>
+    <div id="students-pending-container" class="d-none"></div>
   </section>
 
   <!-- ░░ AJUSTES ░░ -->
   <section class="page d-none" id="s-ajustes">
     <div class="page-header"><h1 class="page-title">Ajustes de clase</h1></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;max-width:860px">
-      <div class="card">
-        <div class="card-header"><i class="bi bi-mortarboard me-2"></i>Información de la clase</div>
-        <div class="card-body">
-          <div class="form-group">
-            <label class="form-label">Nombre de la clase</label>
-            <input type="text" class="form-control" id="set-classname"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Descripción</label>
-            <textarea class="form-control" id="set-classdesc" rows="2"></textarea>
-          </div>
-          <div style="display:flex;gap:.75rem;flex-wrap:wrap">
-            <button class="btn btn-primary" onclick="saveClassSettings()"><i class="bi bi-floppy"></i> Guardar</button>
-            <button class="btn btn-danger" onclick="confirmDeleteClass()"><i class="bi bi-trash"></i> Eliminar clase</button>
+    <div class="row g-4" style="max-width:860px">
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-header"><i class="bi bi-mortarboard me-2"></i>Información de la clase</div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Nombre de la clase</label>
+              <input type="text" class="form-control" id="set-classname"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descripción</label>
+              <textarea class="form-control" id="set-classdesc" rows="2"></textarea>
+            </div>
+            <div class="d-flex gap-3 flex-wrap">
+              <button class="btn btn-primary" id="btn-save-settings">
+                <i class="bi bi-floppy"></i> Guardar
+              </button>
+              <button class="btn btn-danger" id="btn-delete-class">
+                <i class="bi bi-trash"></i> Eliminar clase
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header"><i class="bi bi-key me-2"></i>Código de clase</div>
-        <div class="card-body" style="text-align:center;padding:2rem">
-          <p style="color:var(--muted);font-size:.85rem;margin-bottom:1rem">Comparte este código con tus alumnos para que puedan unirse</p>
-          <div class="class-code" id="settings-code">—</div>
-          <button class="btn btn-secondary btn-sm" style="margin-top:1rem" onclick="copyCode()">
-            <i class="bi bi-clipboard"></i> Copiar código
-          </button>
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-header"><i class="bi bi-key me-2"></i>Código de clase</div>
+          <div class="card-body text-center py-4">
+            <p class="text-muted mb-3 text-sm">
+              Comparte este código con tus alumnos para que puedan unirse
+            </p>
+            <div class="class-code" id="settings-code">—</div>
+            <button class="btn btn-secondary btn-sm mt-3" id="btn-copy-code">
+              <i class="bi bi-clipboard"></i> Copiar código
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -331,38 +358,42 @@
 
 </div><!-- /app-layout -->
 
-<!-- ════════════ MODALES ════════════ -->
-
-<!-- TAREA -->
-<div class="modal-overlay" id="modal-tarea" onclick="closeModalOutside(event,'modal-tarea')">
+<!-- ════ MODAL: TAREA ════ -->
+<div class="modal-overlay" id="modal-tarea">
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="bi bi-check2-square"></i> <span id="modal-tarea-title">Nueva tarea</span></h3>
-      <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-tarea')"><i class="bi bi-x-lg"></i></button>
+      <button class="btn btn-ghost btn-icon" data-close-modal="modal-tarea">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="task-edit-id"/>
       <div class="form-group">
         <label class="form-label">Título <span class="req">*</span></label>
-        <input type="text" class="form-control" id="task-title" placeholder="Ej: Ejercicios tema 5"
-          onkeydown="if(event.key==='Enter'){event.preventDefault();}"/>
+        <input type="text" class="form-control" id="task-title" placeholder="Ej: Ejercicios tema 5"/>
       </div>
       <div class="form-group">
         <label class="form-label">Descripción / Instrucciones</label>
-        <textarea class="form-control" id="task-desc" rows="3" placeholder="Detalla qué deben hacer los alumnos..."></textarea>
+        <textarea class="form-control" id="task-desc" rows="3"
+          placeholder="Detalla qué deben hacer los alumnos..."></textarea>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-        <div class="form-group">
-          <label class="form-label">Fecha de entrega</label>
-          <input type="date" class="form-control" id="task-due"/>
+      <div class="row g-3">
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Fecha de entrega</label>
+            <input type="date" class="form-control" id="task-due"/>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Prioridad</label>
-          <select class="form-select" id="task-priority">
-            <option value="media">Media</option>
-            <option value="alta">Alta</option>
-            <option value="baja">Baja</option>
-          </select>
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Prioridad</label>
+            <select class="form-select" id="task-priority">
+              <option value="media">Media</option>
+              <option value="alta">Alta</option>
+              <option value="baja">Baja</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="form-group">
@@ -374,65 +405,78 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-tarea')">Cancelar</button>
-      <button type="button" class="btn btn-primary" onclick="saveTask()"><i class="bi bi-floppy"></i> Guardar tarea</button>
+      <button type="button" class="btn btn-secondary" data-close-modal="modal-tarea">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="btn-save-task">
+        <i class="bi bi-floppy"></i> Guardar tarea
+      </button>
     </div>
   </div>
 </div>
 
-<!-- ANUNCIO -->
-<div class="modal-overlay" id="modal-anuncio" onclick="closeModalOutside(event,'modal-anuncio')">
+<!-- ════ MODAL: ANUNCIO ════ -->
+<div class="modal-overlay" id="modal-anuncio">
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="bi bi-megaphone-fill"></i> Nuevo anuncio</h3>
-      <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-anuncio')"><i class="bi bi-x-lg"></i></button>
+      <button class="btn btn-ghost btn-icon" data-close-modal="modal-anuncio">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="annc-edit-id"/>
       <div class="form-group">
         <label class="form-label">Título <span class="req">*</span></label>
-        <input type="text" class="form-control" id="annc-title" onkeydown="if(event.key==='Enter'){event.preventDefault();}" placeholder="Ej: Examen aplazado"/>
+        <input type="text" class="form-control" id="annc-title" placeholder="Ej: Examen aplazado"/>
       </div>
       <div class="form-group">
         <label class="form-label">Contenido</label>
-        <textarea class="form-control" id="annc-body" rows="4" placeholder="Escribe el mensaje para tus alumnos..."></textarea>
+        <textarea class="form-control" id="annc-body" rows="4"
+          placeholder="Escribe el mensaje para tus alumnos..."></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-anuncio')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveAnnouncement()"><i class="bi bi-megaphone"></i> Publicar</button>
+      <button class="btn btn-secondary" data-close-modal="modal-anuncio">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-annc">
+        <i class="bi bi-megaphone"></i> Publicar
+      </button>
     </div>
   </div>
 </div>
 
-<!-- RECURSO -->
-<div class="modal-overlay" id="modal-recurso" onclick="closeModalOutside(event,'modal-recurso')">
+<!-- ════ MODAL: RECURSO ════ -->
+<div class="modal-overlay" id="modal-recurso">
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="bi bi-folder2-open"></i> Añadir recurso</h3>
-      <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-recurso')"><i class="bi bi-x-lg"></i></button>
+      <button class="btn btn-ghost btn-icon" data-close-modal="modal-recurso">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="res-edit-id"/>
       <div class="form-group">
         <label class="form-label">Nombre <span class="req">*</span></label>
-        <input type="text" class="form-control" id="res-name" onkeydown="if(event.key==='Enter'){event.preventDefault();}" placeholder="Ej: Apuntes Tema 3"/>
+        <input type="text" class="form-control" id="res-name" placeholder="Ej: Apuntes Tema 3"/>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-        <div class="form-group">
-          <label class="form-label">Tipo</label>
-          <select class="form-select" id="res-type">
-            <option value="pdf">📄 PDF / Documento</option>
-            <option value="video">🎥 Vídeo</option>
-            <option value="link">🔗 Enlace web</option>
-            <option value="ejercicio">✏️ Ejercicio</option>
-            <option value="presentacion">🖥️ Presentación</option>
-            <option value="otro">📦 Otro</option>
-          </select>
+      <div class="row g-3">
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select class="form-select" id="res-type">
+              <option value="pdf">📄 PDF / Documento</option>
+              <option value="video">🎥 Vídeo</option>
+              <option value="link">🔗 Enlace web</option>
+              <option value="ejercicio">✏️ Ejercicio</option>
+              <option value="presentacion">🖥️ Presentación</option>
+              <option value="otro">📦 Otro</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">URL <span class="req">*</span></label>
-          <input type="url" class="form-control" id="res-url" placeholder="https://..."/>
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">URL <span class="req">*</span></label>
+            <input type="url" class="form-control" id="res-url" placeholder="https://..."/>
+          </div>
         </div>
       </div>
       <div class="form-group">
@@ -441,18 +485,22 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-recurso')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveResource()"><i class="bi bi-floppy"></i> Guardar</button>
+      <button class="btn btn-secondary" data-close-modal="modal-recurso">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-recurso">
+        <i class="bi bi-floppy"></i> Guardar
+      </button>
     </div>
   </div>
 </div>
 
-<!-- NOTA MANUAL -->
-<div class="modal-overlay" id="modal-nota" onclick="closeModalOutside(event,'modal-nota')">
+<!-- ════ MODAL: NOTA MANUAL ════ -->
+<div class="modal-overlay" id="modal-nota">
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="bi bi-star-fill"></i> Añadir calificación</h3>
-      <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-nota')"><i class="bi bi-x-lg"></i></button>
+      <button class="btn btn-ghost btn-icon" data-close-modal="modal-nota">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="grade-edit-id"/>
@@ -460,100 +508,122 @@
         <label class="form-label">Alumno <span class="req">*</span></label>
         <select class="form-select" id="grade-student"></select>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-        <div class="form-group">
-          <label class="form-label">Concepto / Evaluación <span class="req">*</span></label>
-          <input type="text" class="form-control" id="grade-concept" onkeydown="if(event.key==='Enter'){event.preventDefault();}" placeholder="Ej: Examen Tema 3"/>
+      <div class="row g-3">
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Concepto / Evaluación <span class="req">*</span></label>
+            <input type="text" class="form-control" id="grade-concept" placeholder="Ej: Examen Tema 3"/>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Nota (0–10) <span class="req">*</span></label>
-          <input type="number" class="form-control" id="grade-value" min="0" max="10" step="0.1" placeholder="7.5"/>
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Nota (0–10) <span class="req">*</span></label>
+            <input type="number" class="form-control" id="grade-value"
+              min="0" max="10" step="0.1" placeholder="7.5"/>
+          </div>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Comentario al alumno</label>
-        <textarea class="form-control" id="grade-comment" rows="2" placeholder="Feedback opcional..."></textarea>
+        <textarea class="form-control" id="grade-comment" rows="2"
+          placeholder="Feedback opcional..."></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-nota')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveGrade()"><i class="bi bi-floppy"></i> Guardar nota</button>
+      <button class="btn btn-secondary" data-close-modal="modal-nota">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-grade">
+        <i class="bi bi-floppy"></i> Guardar nota
+      </button>
     </div>
   </div>
 </div>
 
-<!-- CORREGIR ENTREGA -->
-<div class="modal-overlay" id="modal-grade-submission" onclick="closeModalOutside(event,'modal-grade-submission')">
+<!-- ════ MODAL: CORREGIR ENTREGA ════ -->
+<div class="modal-overlay" id="modal-grade-submission">
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="bi bi-pencil-square"></i> Corregir entrega</h3>
-      <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-grade-submission')"><i class="bi bi-x-lg"></i></button>
+      <button class="btn btn-ghost btn-icon" data-close-modal="modal-grade-submission">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="sub-edit-id"/>
-      <div class="alert alert-info" id="sub-detail" style="margin-bottom:1rem"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-        <div class="form-group">
-          <label class="form-label">Nota (0–10)</label>
-          <input type="number" class="form-control" id="sub-grade" min="0" max="10" step="0.1" placeholder="7.5"/>
+      <div class="alert alert-info mb-3" id="sub-detail"></div>
+      <div class="row g-3">
+        <div class="col-6">
+          <div class="form-group">
+            <label class="form-label">Nota (0–10)</label>
+            <input type="number" class="form-control" id="sub-grade"
+              min="0" max="10" step="0.1" placeholder="7.5"/>
+          </div>
         </div>
-        <div></div>
+        <div class="col-6"></div>
       </div>
       <div class="form-group">
         <label class="form-label">Feedback al alumno</label>
-        <textarea class="form-control" id="sub-feedback" rows="3" placeholder="Explica al alumno qué ha hecho bien o puede mejorar..."></textarea>
+        <textarea class="form-control" id="sub-feedback" rows="3"
+          placeholder="Explica al alumno qué ha hecho bien o puede mejorar..."></textarea>
       </div>
     </div>
-    <div class="modal-footer" style="justify-content:space-between">
-      <button class="btn btn-danger" onclick="removeGradeFromSubmission()" id="btn-remove-grade" style="display:none">
+    <div class="modal-footer justify-content-between">
+      <button class="btn btn-danger d-none" id="btn-remove-grade">
         <i class="bi bi-x-circle"></i> Quitar nota
       </button>
-      <div style="display:flex;gap:.75rem">
-        <button class="btn btn-secondary" onclick="closeModal('modal-grade-submission')">Cancelar</button>
-        <button class="btn btn-success" onclick="gradeSubmission()"><i class="bi bi-check-lg"></i> Guardar corrección</button>
+      <div class="d-flex gap-3">
+        <button class="btn btn-secondary" data-close-modal="modal-grade-submission">Cancelar</button>
+        <button class="btn btn-success" id="btn-grade-submission">
+          <i class="bi bi-check-lg"></i> Guardar corrección
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- NUEVA CLASE -->
-<div class="modal-overlay" id="modal-nueva-clase" onclick="closeModalOutside(event,'modal-nueva-clase')">
+<!-- ════ MODAL: NUEVA CLASE ════ -->
+<div class="modal-overlay" id="modal-nueva-clase">
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="bi bi-mortarboard-fill"></i> Nueva clase</h3>
-      <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-nueva-clase')"><i class="bi bi-x-lg"></i></button>
+      <button class="btn btn-ghost btn-icon" data-close-modal="modal-nueva-clase">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Nombre de la clase <span class="req">*</span></label>
-        <input type="text" class="form-control" id="new-class-name" onkeydown="if(event.key==='Enter'){event.preventDefault();}" placeholder="Ej: Programación, Base de Datos..."/>
+        <input type="text" class="form-control" id="new-class-name"
+          placeholder="Ej: Programación, Base de Datos..."/>
       </div>
       <div class="form-group">
         <label class="form-label">Descripción</label>
-        <textarea class="form-control" id="new-class-desc" rows="2" placeholder="Descripción breve opcional..."></textarea>
+        <textarea class="form-control" id="new-class-desc" rows="2"
+          placeholder="Descripción breve opcional..."></textarea>
       </div>
-      <div class="alert alert-info" style="margin-top:.5rem">
+      <div class="alert alert-info mt-2">
         <i class="bi bi-info-circle"></i> Se generará un código único para que los alumnos puedan unirse.
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-nueva-clase')">Cancelar</button>
-      <button class="btn btn-primary" onclick="createNewClass()"><i class="bi bi-plus-lg"></i> Crear clase</button>
+      <button class="btn btn-secondary" data-close-modal="modal-nueva-clase">Cancelar</button>
+      <button class="btn btn-primary" id="btn-create-class">
+        <i class="bi bi-plus-lg"></i> Crear clase
+      </button>
     </div>
   </div>
 </div>
 
-<!-- CONFIRM DIALOG -->
+<!-- ════ MODAL: CONFIRM ════ -->
 <div class="modal-overlay" id="modal-confirm">
-  <div class="modal-box" style="max-width:400px">
+  <div class="modal-box modal-box-sm">
     <div class="modal-header">
-      <h3 style="display:flex;align-items:center;gap:.5rem">
-        <i id="confirm-icon" class="bi bi-exclamation-triangle-fill" style="color:var(--warning)"></i>
+      <h3 class="d-flex align-items-center gap-2">
+        <i id="confirm-icon" class="bi bi-exclamation-triangle-fill icon-warning"></i>
         <span id="confirm-title-text">¿Estás seguro?</span>
       </h3>
     </div>
     <div class="modal-body">
-      <p id="confirm-message" style="font-size:.9rem;color:var(--muted);margin:0;line-height:1.6"></p>
+      <p id="confirm-message" class="text-muted mb-0 text-sm"></p>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" id="confirm-cancel-btn">Cancelar</button>
@@ -572,15 +642,128 @@ import {
   collection, query, where, orderBy, serverTimestamp, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ─── STATE ───────────────────────────────
-let currentUser = null;
-let currentClass = null;
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentUser   = null;
+let currentClass  = null;
+let allClasses    = [];
 let studentsCache = [];
 
-// ─── INIT / AUTH GUARD ───────────────────
+// show/hide helpers usando d-none (BS5)
+function show(el) { el?.classList.remove('d-none'); }
+function hide(el) { el?.classList.add('d-none'); }
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+}
+function fmtDateShort(str) {
+  if (!str) return '';
+  return new Date(str + 'T00:00:00').toLocaleDateString('es-ES', { day:'numeric', month:'short' });
+}
+function fmtLastSeen(ts) {
+  if (!ts) return '<span class="last-seen">Nunca</span>';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const diffMs  = Date.now() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffH   = Math.floor(diffMs / 3600000);
+  const diffD   = Math.floor(diffMs / 86400000);
+  if (diffMin < 5)  return `<span class="last-seen online"><span class="dot"></span> En línea</span>`;
+  if (diffMin < 60) return `<span class="last-seen"><span class="dot"></span> Hace ${diffMin} min</span>`;
+  if (diffH < 24)   return `<span class="last-seen"><span class="dot"></span> Hace ${diffH}h</span>`;
+  if (diffD < 7)    return `<span class="last-seen"><span class="dot"></span> Hace ${diffD}d</span>`;
+  return `<span class="last-seen"><span class="dot"></span> ${d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>`;
+}
+function dueBadge(due) {
+  if (!due) return '';
+  const d = new Date(due + 'T00:00:00'), now = new Date(); now.setHours(0,0,0,0);
+  const diff = Math.round((d - now) / 86400000);
+  if (diff < 0)   return `<span class="badge badge-danger"><i class="bi bi-x-circle"></i> Vencida</span>`;
+  if (diff === 0) return `<span class="badge badge-warning"><i class="bi bi-alarm"></i> Hoy</span>`;
+  if (diff === 1) return `<span class="badge badge-warning"><i class="bi bi-clock"></i> Mañana</span>`;
+  if (diff <= 3)  return `<span class="badge badge-warning"><i class="bi bi-clock"></i> ${diff} días</span>`;
+  if (diff <= 7)  return `<span class="badge badge-accent"><i class="bi bi-calendar"></i> ${diff} días</span>`;
+  return `<span class="badge badge-neutral"><i class="bi bi-calendar"></i> ${fmtDateShort(due)}</span>`;
+}
+function gradeBadge(g) {
+  if (g == null) return '<span class="grade-badge grade-na">—</span>';
+  const n = parseFloat(g);
+  const cls = n >= 9 ? 'grade-a' : n >= 7 ? 'grade-b' : n >= 5 ? 'grade-c' : 'grade-d';
+  return `<span class="grade-badge ${cls}">${n.toFixed(1)}</span>`;
+}
+const PRIO = {
+  alta:  { cls:'badge-danger',  label:'Alta'  },
+  media: { cls:'badge-warning', label:'Media' },
+  baja:  { cls:'badge-success', label:'Baja'  },
+};
+const RES_ICON = {
+  pdf:'bi-file-earmark-pdf-fill', video:'bi-play-circle-fill',
+  link:'bi-link-45deg', ejercicio:'bi-pencil-square',
+  presentacion:'bi-easel-fill', otro:'bi-box-seam',
+};
+const ACTIVITY_ICONS = {
+  submission:   { icon:'bi-upload',           color:'var(--brand)',   bg:'#dbeafe' },
+  grade:        { icon:'bi-pencil-square',     color:'var(--success)', bg:'#dcfce7' },
+  approval:     { icon:'bi-person-check-fill', color:'var(--accent)',  bg:'var(--accent-light)' },
+  task:         { icon:'bi-check2-square',     color:'var(--brand)',   bg:'#dbeafe' },
+  announcement: { icon:'bi-megaphone-fill',    color:'var(--warning)', bg:'#fef3c7' },
+  resource:     { icon:'bi-folder2-open',      color:'var(--muted)',   bg:'var(--surface)' },
+  revoke:       { icon:'bi-person-x-fill',     color:'var(--danger)',  bg:'#fee2e2' },
+};
+
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = `toast${type ? ' toast-' + type : ''}`;
+  el.innerHTML = `<i class="bi bi-${type==='success'?'check-circle':type==='error'?'exclamation-circle':'info-circle'}"></i> ${msg}`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+// ─── MODAL HELPERS ───────────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
+  const closer = e.target.closest('[data-close-modal]');
+  if (closer) closeModal(closer.dataset.closeModal);
+});
+
+// ─── CONFIRM DIALOG ──────────────────────────────────────────────────────────
+function showConfirm({ title='¿Estás seguro?', message='', confirmText='Confirmar', danger=true, icon='exclamation-triangle-fill' } = {}) {
+  return new Promise(resolve => {
+    document.getElementById('confirm-title-text').textContent = title;
+    document.getElementById('confirm-message').textContent    = message;
+    const iconEl = document.getElementById('confirm-icon');
+    iconEl.className = `bi bi-${icon} ${danger ? 'icon-danger' : 'icon-warning'}`;
+    const okBtn = document.getElementById('confirm-ok-btn');
+    okBtn.textContent = confirmText;
+    okBtn.className   = `btn ${danger ? 'btn-danger' : 'btn-primary'}`;
+    openModal('modal-confirm');
+    const cleanup = result => {
+      closeModal('modal-confirm');
+      okBtn.onclick = null;
+      document.getElementById('confirm-cancel-btn').onclick = null;
+      resolve(result);
+    };
+    okBtn.onclick = () => cleanup(true);
+    document.getElementById('confirm-cancel-btn').onclick = () => cleanup(false);
+  });
+}
+
+// ─── INIT / AUTH GUARD ───────────────────────────────────────────────────────
 let _initialized = false;
-onAuthStateChanged(auth, async (user) => {
-  if (_initialized) return;  // evitar bucle si se dispara varias veces
+onAuthStateChanged(auth, async user => {
+  if (_initialized) return;
   if (!user) { window.location.href = 'index.html'; return; }
   try {
     const snap = await getDoc(doc(db, 'users', user.uid));
@@ -598,24 +781,21 @@ onAuthStateChanged(auth, async (user) => {
     showSection('inicio');
   } catch (err) {
     console.error('Error al inicializar:', err);
-    // No redirigir — mostrar error sin bucle
     document.getElementById('topbar-classname').textContent = 'Error de conexión';
   }
 });
 
-let allClasses = [];
-
 async function loadClass() {
-  const q = query(collection(db, 'classes'), where('teacherUid', '==', currentUser.uid));
+  const q    = query(collection(db, 'classes'), where('teacherUid', '==', currentUser.uid));
   const snap = await getDocs(q);
   if (snap.empty) {
     const code = generateCode();
-    const ref = await addDoc(collection(db, 'classes'), {
-      name: 'Mi Clase', description: '',
+    const ref  = await addDoc(collection(db, 'classes'), {
+      name:'Mi Clase', description:'',
       teacherUid: currentUser.uid, teacherName: currentUser.displayName,
-      code, createdAt: serverTimestamp()
+      code, createdAt: serverTimestamp(),
     });
-    allClasses = [{ id: ref.id, name: 'Mi Clase', code, description: '' }];
+    allClasses = [{ id: ref.id, name:'Mi Clase', code, description:'' }];
   } else {
     allClasses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     allClasses.sort((a, b) => (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
@@ -626,20 +806,116 @@ async function loadClass() {
   document.getElementById('settings-code').textContent = currentClass.code;
 }
 
+function initUI() {
+  const initials = (currentUser.displayName || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  document.getElementById('avatar-initials').textContent = initials;
+  document.getElementById('menu-name').textContent  = currentUser.displayName || '—';
+  document.getElementById('menu-email').textContent = currentUser.email || '—';
+  const h = new Date().getHours();
+  const greet = h < 13 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches';
+  document.getElementById('greeting-time').textContent = `· ${greet}, ${(currentUser.displayName || '').split(' ')[0]}`;
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+let _unsubHistorial = null;
+
+function showSection(id) {
+  document.querySelectorAll('.app-layout > section').forEach(s => s.classList.add('d-none'));
+  document.getElementById('s-' + id).classList.remove('d-none');
+  document.querySelectorAll('.sidebar .nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-' + id)?.classList.add('active');
+
+  if (id === 'inicio')       renderHome();
+  if (id === 'tareas')       renderTasks();
+  if (id === 'entregas')     renderSubmissions();
+  if (id === 'notas')        renderGrades();
+  if (id === 'anuncios')     renderAnnouncements();
+  if (id === 'recursos')     renderResources();
+  if (id === 'chat')         initChat();
+  if (id === 'estadisticas') renderStats();
+  if (id === 'historial')    renderHistorial();
+  else if (_unsubHistorial)  { _unsubHistorial(); _unsubHistorial = null; }
+  if (id === 'alumnos')      renderStudents();
+  if (id === 'ajustes')      loadSettings();
+
+  if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
+}
+
+document.querySelectorAll('.sidebar .nav-item[data-section]').forEach(btn => {
+  btn.addEventListener('click', () => showSection(btn.dataset.section));
+});
+document.querySelectorAll('[data-nav-to]').forEach(btn => {
+  btn.addEventListener('click', () => showSection(btn.dataset.navTo));
+});
+document.querySelectorAll('[data-student-tab]').forEach(btn => {
+  btn.addEventListener('click', () => switchStudentTab(btn.dataset.studentTab));
+});
+
+// Sidebar toggle responsive
+const sidebarToggle = document.getElementById('sidebar-toggle');
+sidebarToggle.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+function updateSidebarToggle() {
+  window.innerWidth < 768 ? show(sidebarToggle) : hide(sidebarToggle);
+}
+updateSidebarToggle();
+window.addEventListener('resize', updateSidebarToggle);
+
+// Avatar menu
+document.getElementById('avatar-btn').addEventListener('click', () => {
+  document.getElementById('avatar-menu').classList.toggle('open');
+});
+document.addEventListener('click', e => {
+  if (!document.getElementById('avatar-btn').contains(e.target))
+    document.getElementById('avatar-menu').classList.remove('open');
+});
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  await signOut(auth); window.location.href = 'index.html';
+});
+document.getElementById('menu-link-ajustes').addEventListener('click', e => {
+  e.preventDefault(); showSection('ajustes');
+  document.getElementById('avatar-menu').classList.remove('open');
+});
+
+// Topbar buttons
+document.getElementById('btn-nueva-tarea-inicio').addEventListener('click', () => openTaskModal());
+document.getElementById('btn-nueva-tarea').addEventListener('click', () => openTaskModal());
+document.getElementById('btn-open-anuncio').addEventListener('click', () => openModal('modal-anuncio'));
+document.getElementById('btn-open-recurso').addEventListener('click', () => openModal('modal-recurso'));
+document.getElementById('btn-open-nota').addEventListener('click', openGradeModal);
+document.getElementById('filter-priority').addEventListener('change', renderTasks);
+document.getElementById('filter-task-submissions').addEventListener('change', renderSubmissions);
+document.getElementById('filter-activity').addEventListener('change', renderHistorial);
+document.getElementById('stats-student-filter').addEventListener('change', renderStats);
+
+// ─── CLASS SWITCHER ──────────────────────────────────────────────────────────
 function renderClassSwitcher() {
   document.getElementById('topbar-classname').textContent = currentClass.name;
   document.getElementById('csm-list').innerHTML = allClasses.map(c => `
-    <button class="csm-item ${c.id === currentClass.id ? 'active' : ''}" onclick="switchClass('${c.id}')">
+    <button class="csm-item ${c.id === currentClass.id ? 'active' : ''}" data-switch-class="${c.id}">
       <div class="csm-item-icon">${c.name[0].toUpperCase()}</div>
       <div class="csm-item-info">
         <div class="csm-item-name">${esc(c.name)}</div>
         <div class="csm-item-code">${c.code}</div>
       </div>
-      ${c.id === currentClass.id ? '<i class="bi bi-check2" style="color:var(--brand);margin-left:auto;flex-shrink:0"></i>' : ''}
+      ${c.id === currentClass.id ? '<i class="bi bi-check2 ms-auto icon-brand"></i>' : ''}
     </button>`).join('');
+  document.querySelectorAll('[data-switch-class]').forEach(btn => {
+    btn.addEventListener('click', () => switchClass(btn.dataset.switchClass));
+  });
 }
 
-window.switchClass = (classId) => {
+document.getElementById('class-switcher-btn').addEventListener('click', () => {
+  document.getElementById('class-switcher-menu').classList.toggle('open');
+});
+document.addEventListener('click', e => {
+  const sw = document.getElementById('class-switcher');
+  if (sw && !sw.contains(e.target))
+    document.getElementById('class-switcher-menu').classList.remove('open');
+});
+
+function closeClassMenu() { document.getElementById('class-switcher-menu').classList.remove('open'); }
+
+function switchClass(classId) {
   if (currentClass?.id === classId) { closeClassMenu(); return; }
   currentClass = allClasses.find(c => c.id === classId);
   localStorage.setItem('ao_activeClassId', classId);
@@ -650,224 +926,86 @@ window.switchClass = (classId) => {
   startChatNotifications();
   showSection('inicio');
   toast(`Cambiado a: ${currentClass.name}`, 'success');
-};
+}
 
-window.toggleClassMenu = () => document.getElementById('class-switcher-menu').classList.toggle('open');
-window.closeClassMenu  = () => document.getElementById('class-switcher-menu').classList.remove('open');
-
-window.openNewClassModal = () => {
+document.getElementById('btn-open-new-class').addEventListener('click', () => {
   closeClassMenu();
   document.getElementById('new-class-name').value = '';
   document.getElementById('new-class-desc').value = '';
   openModal('modal-nueva-clase');
-};
+});
 
-window.createNewClass = async () => {
+document.getElementById('btn-create-class').addEventListener('click', async () => {
   const name = document.getElementById('new-class-name').value.trim();
   if (!name) { toast('El nombre es obligatorio.', 'error'); return; }
   const code = generateCode();
-  const ref = await addDoc(collection(db, 'classes'), {
+  const ref  = await addDoc(collection(db, 'classes'), {
     name, description: document.getElementById('new-class-desc').value.trim(),
     teacherUid: currentUser.uid, teacherName: currentUser.displayName,
-    code, createdAt: serverTimestamp()
+    code, createdAt: serverTimestamp(),
   });
   allClasses.push({ id: ref.id, name, code, description: '' });
   closeModal('modal-nueva-clase');
   switchClass(ref.id);
-};
-
-function generateCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
-}
-
-function initUI() {
-  const initials = (currentUser.displayName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  document.getElementById('avatar-initials').textContent = initials;
-  document.getElementById('menu-name').textContent  = currentUser.displayName || '—';
-  document.getElementById('menu-email').textContent = currentUser.email || '—';
-
-  const h = new Date().getHours();
-  const greet = h < 13 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches';
-  document.getElementById('greeting-time').textContent = `· ${greet}, ${(currentUser.displayName||'').split(' ')[0]}`;
-}
-
-// ─── NAVIGATION ──────────────────────────
-window.showSection = (id) => {
-  document.querySelectorAll('.app-layout > section').forEach(s => s.classList.add('d-none'));
-  document.getElementById('s-' + id).classList.remove('d-none');
-  document.querySelectorAll('.sidebar .nav-item').forEach(n => n.classList.remove('active'));
-  const navEl = document.getElementById('nav-' + id);
-  if (navEl) navEl.classList.add('active');
-  if (id === 'inicio')    renderHome();
-  if (id === 'tareas')    renderTasks();
-  if (id === 'entregas')  renderSubmissions();
-  if (id === 'notas')     renderGrades();
-  if (id === 'anuncios')  renderAnnouncements();
-  if (id === 'recursos')  renderResources();
-  if (id === 'chat')      initChat();
-  if (id === 'estadisticas') renderStats();
-  if (id === 'historial') renderHistorial();
-  else if (_unsubHistorial) { _unsubHistorial(); _unsubHistorial = null; }
-  if (id === 'alumnos')   renderStudents();
-  if (id === 'ajustes')   loadSettings();
-  if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
-};
-
-window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
-window.openModal  = (id) => document.getElementById(id).classList.add('open');
-window.closeModal = (id) => document.getElementById(id).classList.remove('open');
-window.closeModalOutside = (e, id) => { if (e.target.id === id) closeModal(id); };
-window.toggleAvatarMenu  = () => document.getElementById('avatar-menu').classList.toggle('open');
-document.addEventListener('click', e => {
-  if (!document.getElementById('avatar-btn').contains(e.target))
-    document.getElementById('avatar-menu').classList.remove('open');
 });
 
-window.doLogout = async () => { await signOut(auth); window.location.href = 'index.html'; };
-
-// ─── HELPERS ─────────────────────────────
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtDate(ts) {
-  if (!ts) return '—';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleDateString('es-ES', {day:'2-digit',month:'short',year:'numeric'});
-}
-function fmtDateShort(str) {
-  if (!str) return '';
-  const d = new Date(str + 'T00:00:00');
-  return d.toLocaleDateString('es-ES', {day:'numeric',month:'short'});
-}
-function fmtLastSeen(ts) {
-  if (!ts) return '<span style="font-size:.75rem;color:var(--muted)">Nunca</span>';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  const diffMs = Date.now() - d.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffH   = Math.floor(diffMs / 3600000);
-  const diffD   = Math.floor(diffMs / 86400000);
-  if (diffMin < 5)  return `<span class="last-seen online"><span class="dot"></span> En línea</span>`;
-  if (diffMin < 60) return `<span class="last-seen"><span class="dot"></span> Hace ${diffMin} min</span>`;
-  if (diffH < 24)   return `<span class="last-seen"><span class="dot"></span> Hace ${diffH}h</span>`;
-  if (diffD < 7)    return `<span class="last-seen"><span class="dot"></span> Hace ${diffD}d</span>`;
-  return `<span class="last-seen"><span class="dot"></span> ${d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>`;
-}
-function dueBadge(due) {
-  if (!due) return '';
-  const d = new Date(due+'T00:00:00'); const now = new Date(); now.setHours(0,0,0,0);
-  const diff = Math.round((d-now)/86400000);
-  if (diff < 0)  return `<span class="badge badge-danger"><i class="bi bi-x-circle"></i> Vencida</span>`;
-  if (diff === 0) return `<span class="badge badge-warning"><i class="bi bi-alarm"></i> Hoy</span>`;
-  if (diff === 1) return `<span class="badge badge-warning"><i class="bi bi-clock"></i> Mañana</span>`;
-  if (diff <= 3)  return `<span class="badge badge-warning"><i class="bi bi-clock"></i> ${diff} días</span>`;
-  if (diff <= 7)  return `<span class="badge badge-accent"><i class="bi bi-calendar"></i> ${diff} días</span>`;
-  return `<span class="badge badge-neutral"><i class="bi bi-calendar"></i> ${fmtDateShort(due)}</span>`;
-}
-function gradeBadge(g) {
-  if (g == null) return '<span class="grade-badge grade-na">—</span>';
-  const n = parseFloat(g);
-  const cls = n >= 9 ? 'grade-a' : n >= 7 ? 'grade-b' : n >= 5 ? 'grade-c' : 'grade-d';
-  return `<span class="grade-badge ${cls}">${n.toFixed(1)}</span>`;
-}
-const PRIO = { alta:{ cls:'badge-danger', label:'Alta' }, media:{ cls:'badge-warning', label:'Media' }, baja:{ cls:'badge-success', label:'Baja' } };
-const RES_ICON = { pdf:'bi-file-earmark-pdf-fill', video:'bi-play-circle-fill', link:'bi-link-45deg', ejercicio:'bi-pencil-square', presentacion:'bi-easel-fill', otro:'bi-box-seam' };
-
-window.toast = (msg, type='') => {
-  const el = document.createElement('div');
-  el.className = `toast${type ? ' toast-'+type : ''}`;
-  el.innerHTML = `<i class="bi bi-${type==='success'?'check-circle':type==='error'?'exclamation-circle':'info-circle'}"></i> ${msg}`;
-  document.getElementById('toast-container').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
-};
-
-// ─── CONFIRM DIALOG ───────────────────────
-function showConfirm({ title='¿Estás seguro?', message='', confirmText='Confirmar', danger=true, icon='exclamation-triangle-fill' } = {}) {
-  return new Promise(resolve => {
-    document.getElementById('confirm-title-text').textContent = title;
-    document.getElementById('confirm-message').textContent    = message;
-    document.getElementById('confirm-icon').className = `bi bi-${icon}`;
-    document.getElementById('confirm-icon').style.color = danger ? 'var(--danger)' : 'var(--warning)';
-    const okBtn = document.getElementById('confirm-ok-btn');
-    okBtn.textContent = confirmText;
-    okBtn.className = `btn ${danger ? 'btn-danger' : 'btn-primary'}`;
-    document.getElementById('modal-confirm').classList.add('open');
-    const cleanup = (result) => {
-      document.getElementById('modal-confirm').classList.remove('open');
-      okBtn.onclick = null;
-      document.getElementById('confirm-cancel-btn').onclick = null;
-      resolve(result);
-    };
-    okBtn.onclick = () => cleanup(true);
-    document.getElementById('confirm-cancel-btn').onclick = () => cleanup(false);
-  });
-}
-
-// ─── HOME ─────────────────────────────────
+// ─── HOME ────────────────────────────────────────────────────────────────────
 async function renderHome() {
-  // Stats
   const [studentsSnap, tasksSnap, submissionsSnap, pendingSnap] = await Promise.all([
     getDocs(query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',true))),
     getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id))),
     getDocs(query(collection(db,'submissions'), where('classId','==',currentClass.id), where('grade','==',null))),
-    getDocs(query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',false)))
+    getDocs(query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',false))),
   ]);
-  document.getElementById('st-alumnos').textContent      = studentsSnap.size;
-  document.getElementById('st-tareas').textContent       = tasksSnap.size;
-  document.getElementById('st-entregas').textContent     = submissionsSnap.size;
+
+  document.getElementById('st-alumnos').textContent       = studentsSnap.size;
+  document.getElementById('st-tareas').textContent        = tasksSnap.size;
+  document.getElementById('st-entregas').textContent      = submissionsSnap.size;
   document.getElementById('st-pending-users').textContent = pendingSnap.size;
 
-  // Badge sidebar
   const pb = document.getElementById('badge-pending');
   const eb = document.getElementById('badge-entregas');
-  pb.style.display = pendingSnap.size > 0 ? '' : 'none';
-  pb.textContent = pendingSnap.size;
-  eb.style.display = submissionsSnap.size > 0 ? '' : 'none';
-  eb.textContent = submissionsSnap.size;
+  pendingSnap.size > 0 ? show(pb) : hide(pb); pb.textContent = pendingSnap.size;
+  submissionsSnap.size > 0 ? show(eb) : hide(eb); eb.textContent = submissionsSnap.size;
 
-  // Upcoming tasks
-  const tasks = tasksSnap.docs.map(d=>({id:d.id,...d.data()}))
-    .filter(t=>t.due).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5);
-  const upEl = document.getElementById('home-upcoming');
-  if (!tasks.length) {
-    upEl.innerHTML = `<div class="empty-state" style="padding:2rem"><i class="bi bi-calendar-check" style="font-size:2rem"></i><p>Sin tareas próximas</p></div>`;
-  } else {
-    upEl.innerHTML = tasks.map(t => `
-      <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--border)">
+  const tasks = tasksSnap.docs.map(d => ({id:d.id,...d.data()}))
+    .filter(t => t.due).sort((a,b) => a.due.localeCompare(b.due)).slice(0,5);
+  document.getElementById('home-upcoming').innerHTML = !tasks.length
+    ? `<div class="empty-state p-4"><i class="bi bi-calendar-check fs-2"></i><p>Sin tareas próximas</p></div>`
+    : tasks.map(t => `
+      <div class="home-list-row">
         <span class="badge ${PRIO[t.priority||'media'].cls}">${PRIO[t.priority||'media'].label}</span>
-        <span style="flex:1;font-size:.875rem;font-weight:600">${esc(t.title)}</span>
+        <span class="home-list-title">${esc(t.title)}</span>
         ${dueBadge(t.due)}
       </div>`).join('');
-  }
 
-  // Pending users
-  const pendingUsers = pendingSnap.docs.map(d=>({id:d.id,...d.data()}));
+  const pendingUsers = pendingSnap.docs.map(d => ({id:d.id,...d.data()}));
   const puEl = document.getElementById('home-pending-users');
-  if (!pendingUsers.length) {
-    puEl.innerHTML = `<div class="empty-state" style="padding:2rem"><i class="bi bi-person-check" style="font-size:2rem"></i><p>Sin alumnos pendientes</p></div>`;
-  } else {
-    puEl.innerHTML = pendingUsers.map(u => `
-      <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--border)">
-        <div style="width:32px;height:32px;border-radius:50%;background:var(--brand-light);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;flex-shrink:0">
-          ${(u.displayName||'?')[0].toUpperCase()}
+  puEl.innerHTML = !pendingUsers.length
+    ? `<div class="empty-state p-4"><i class="bi bi-person-check fs-2"></i><p>Sin alumnos pendientes</p></div>`
+    : pendingUsers.map(u => `
+      <div class="home-list-row">
+        <div class="home-user-avatar">${(u.displayName||'?')[0].toUpperCase()}</div>
+        <div class="flex-fill" style="min-width:0">
+          <div class="text-sm fw-semibold">${esc(u.displayName)}</div>
+          <div class="text-xs text-muted">${esc(u.email)}</div>
         </div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:.875rem;font-weight:600">${esc(u.displayName)}</div>
-          <div style="font-size:.75rem;color:var(--muted)">${esc(u.email)}</div>
-        </div>
-        <button class="btn btn-sm btn-success" onclick="approveStudent('${u.uid}')">
+        <button class="btn btn-sm btn-success btn-approve-student" data-uid="${u.uid}">
           <i class="bi bi-check-lg"></i>
         </button>
       </div>`).join('');
-  }
+
+  puEl.querySelectorAll('.btn-approve-student').forEach(btn => {
+    btn.addEventListener('click', () => approveStudent(btn.dataset.uid));
+  });
 }
 
-// ─── TASKS ────────────────────────────────
+// ─── TASKS ───────────────────────────────────────────────────────────────────
 async function renderTasks() {
-  const pf = document.getElementById('filter-priority').value;
-  let q = query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc'));
-  const snap = await getDocs(q);
-  let tasks = snap.docs.map(d=>({id:d.id,...d.data()}));
-  if (pf) tasks = tasks.filter(t=>(t.priority||'media')===pf);
+  const pf   = document.getElementById('filter-priority').value;
+  const snap = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
+  let tasks  = snap.docs.map(d => ({id:d.id,...d.data()}));
+  if (pf) tasks = tasks.filter(t => (t.priority||'media') === pf);
 
   const el = document.getElementById('tasks-container');
   if (!tasks.length) {
@@ -879,7 +1017,7 @@ async function renderTasks() {
     return `
     <div class="task-item priority-${t.priority||'media'} fade-in">
       <div class="task-body">
-        <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.3rem">
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
           <span class="task-title">${esc(t.title)}</span>
           <span class="badge ${p.cls}">${p.label}</span>
           ${dueBadge(t.due)}
@@ -887,466 +1025,274 @@ async function renderTasks() {
         ${t.desc ? `<div class="task-desc">${esc(t.desc)}</div>` : ''}
         <div class="task-meta">
           ${t.link ? `<a href="${esc(t.link)}" target="_blank" class="badge badge-brand"><i class="bi bi-link-45deg"></i> Enlace adjunto</a>` : ''}
-          <span style="font-size:.75rem;color:var(--muted)">Creada ${fmtDate(t.createdAt)}</span>
+          <span class="text-xs text-muted">Creada ${fmtDate(t.createdAt)}</span>
         </div>
       </div>
       <div class="task-actions">
-        <button class="btn btn-ghost btn-icon" title="Editar" onclick="editTask('${t.id}')"><i class="bi bi-pencil"></i></button>
-        <button class="btn btn-ghost btn-icon" title="Eliminar" style="color:var(--danger)" onclick="deleteTask('${t.id}')"><i class="bi bi-trash"></i></button>
+        <button class="btn btn-ghost btn-icon btn-edit-task" data-task-id="${t.id}" title="Editar"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-ghost btn-icon btn-delete-task icon-danger" data-task-id="${t.id}" title="Eliminar"><i class="bi bi-trash"></i></button>
       </div>
     </div>`;
   }).join('');
+
+  el.querySelectorAll('.btn-edit-task').forEach(btn => {
+    btn.addEventListener('click', () => editTask(btn.dataset.taskId));
+  });
+  el.querySelectorAll('.btn-delete-task').forEach(btn => {
+    btn.addEventListener('click', () => deleteTask(btn.dataset.taskId));
+  });
 }
 
-window.openTaskModal = () => {
+function openTaskModal() {
   document.getElementById('task-edit-id').value = '';
   document.getElementById('modal-tarea-title').textContent = 'Nueva tarea';
-  document.getElementById('task-title').value = '';
-  document.getElementById('task-desc').value  = '';
-  document.getElementById('task-due').value   = '';
+  document.getElementById('task-title').value    = '';
+  document.getElementById('task-desc').value     = '';
+  document.getElementById('task-due').value      = '';
   document.getElementById('task-priority').value = 'media';
-  document.getElementById('task-link').value  = '';
+  document.getElementById('task-link').value     = '';
   openModal('modal-tarea');
-};
+}
 
-window.editTask = async (id) => {
-  const snap = await getDoc(doc(db,'tasks',id));
+async function editTask(id) {
+  const snap = await getDoc(doc(db, 'tasks', id));
   const t = snap.data();
-  document.getElementById('task-edit-id').value     = id;
+  document.getElementById('task-edit-id').value          = id;
   document.getElementById('modal-tarea-title').textContent = 'Editar tarea';
-  document.getElementById('task-title').value       = t.title || '';
-  document.getElementById('task-desc').value        = t.desc  || '';
-  document.getElementById('task-due').value         = t.due   || '';
-  document.getElementById('task-priority').value    = t.priority || 'media';
-  document.getElementById('task-link').value        = t.link  || '';
+  document.getElementById('task-title').value            = t.title    || '';
+  document.getElementById('task-desc').value             = t.desc     || '';
+  document.getElementById('task-due').value              = t.due      || '';
+  document.getElementById('task-priority').value         = t.priority || 'media';
+  document.getElementById('task-link').value             = t.link     || '';
   openModal('modal-tarea');
-};
+}
 
-window.saveTask = async () => {
+document.getElementById('btn-save-task').addEventListener('click', async () => {
   const title = document.getElementById('task-title').value.trim();
-  if (!title) { toast('El título es obligatorio.','error'); return; }
-  const id  = document.getElementById('task-edit-id').value;
+  if (!title) { toast('El título es obligatorio.', 'error'); return; }
+  const id   = document.getElementById('task-edit-id').value;
   const data = {
-    classId:   currentClass.id,
-    title,
+    classId:   currentClass.id, title,
     desc:      document.getElementById('task-desc').value.trim(),
     due:       document.getElementById('task-due').value,
     priority:  document.getElementById('task-priority').value,
     link:      document.getElementById('task-link').value.trim(),
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
   };
   if (id) { await updateDoc(doc(db,'tasks',id), data); logActivity('task', `Tarea editada: "${title}"`); }
   else    { data.createdAt = serverTimestamp(); await addDoc(collection(db,'tasks'), data); logActivity('task', `Nueva tarea creada: "${title}"`); }
-  closeModal('modal-tarea'); renderTasks(); toast('Tarea guardada.','success');
-};
+  closeModal('modal-tarea'); renderTasks(); toast('Tarea guardada.', 'success');
+});
 
-window.deleteTask = async (id) => {
-  // Comprobar si hay entregas corregidas con nota
+async function deleteTask(id) {
   const subsSnap = await getDocs(query(collection(db,'submissions'), where('taskId','==',id)));
-  const graded = subsSnap.docs.filter(d => d.data().grade != null);
+  const graded   = subsSnap.docs.filter(d => d.data().grade != null);
   const ungraded = subsSnap.docs.filter(d => d.data().grade == null);
-
   let msg = '¿Eliminar esta tarea?';
-  if (graded.length > 0) {
-    msg += `\n\n⚠️ Hay ${graded.length} entrega(s) con nota. Se conservarán en "Entregas" marcadas como tarea eliminada.`;
-  }
-  if (ungraded.length > 0) {
-    msg += `\n${ungraded.length} entrega(s) sin nota serán eliminadas.`;
-  }
+  if (graded.length)   msg += `\n\n⚠️ Hay ${graded.length} entrega(s) con nota. Se conservarán marcadas como tarea eliminada.`;
+  if (ungraded.length) msg += `\n${ungraded.length} entrega(s) sin nota serán eliminadas.`;
   if (!confirm(msg)) return;
-
-  // Eliminar solo entregas sin nota
   for (const d of ungraded) await deleteDoc(doc(db,'submissions', d.id));
-  // Marcar entregas con nota como huérfanas (conservar nota)
-  for (const d of graded) {
-    await updateDoc(doc(db,'submissions', d.id), { taskTitle: d.data().taskTitle || '(tarea eliminada)', taskDeleted: true });
-  }
+  for (const d of graded)   await updateDoc(doc(db,'submissions', d.id), { taskTitle: d.data().taskTitle || '(tarea eliminada)', taskDeleted: true });
   await deleteDoc(doc(db,'tasks', id));
-  logActivity('task', `Tarea eliminada`, { detail: `${ungraded.length} entregas borradas, ${graded.length} conservadas` });
+  logActivity('task', `Tarea eliminada`);
   renderTasks(); toast('Tarea eliminada.');
-};
+}
 
-// ─── SUBMISSIONS ──────────────────────────
+// ─── SUBMISSIONS ─────────────────────────────────────────────────────────────
 async function renderSubmissions() {
   const filterTask = document.getElementById('filter-task-submissions').value;
-
-  // Populate filter
-  const tasksSnap = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id)));
+  const tasksSnap  = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id)));
   const sel = document.getElementById('filter-task-submissions');
   const cur = sel.value;
   sel.innerHTML = '<option value="">Todas las tareas</option>' +
-    tasksSnap.docs.map(d=>`<option value="${d.id}" ${d.id===cur?'selected':''}>${esc(d.data().title)}</option>`).join('');
+    tasksSnap.docs.map(d => `<option value="${d.id}" ${d.id===cur?'selected':''}>${esc(d.data().title)}</option>`).join('');
 
-  let q = filterTask
+  const q = filterTask
     ? query(collection(db,'submissions'), where('classId','==',currentClass.id), where('taskId','==',filterTask), orderBy('submittedAt','desc'))
     : query(collection(db,'submissions'), where('classId','==',currentClass.id), orderBy('submittedAt','desc'));
-
   const snap = await getDocs(q);
-  const el = document.getElementById('submissions-container');
+  const el   = document.getElementById('submissions-container');
+
   if (snap.empty) {
     el.innerHTML = `<div class="empty-state"><i class="bi bi-inbox"></i><p>No hay entregas aún.</p></div>`;
     return;
   }
-
   const taskMap = {};
   tasksSnap.docs.forEach(d => { taskMap[d.id] = d.data().title; });
 
-  el.innerHTML = `<div class="table-wrap">
-    <table>
-      <thead><tr>
-        <th>Alumno</th><th>Tarea</th><th>Entregada</th><th>Comentario</th><th>Nota</th><th></th>
-      </tr></thead>
-      <tbody>
-        ${snap.docs.map(d => {
-          const s = d.data();
-          const taskLabel = taskMap[s.taskId]
-            ? esc(taskMap[s.taskId])
-            : s.taskDeleted
-              ? `<span style="color:var(--muted);font-style:italic">${esc(s.taskTitle||'Tarea eliminada')}</span>`
-              : '<span style="color:var(--muted)">—</span>';
-          return `<tr>
-            <td><span style="font-weight:600">${esc(s.studentName)}</span></td>
-            <td style="font-size:.85rem">${taskLabel}</td>
-            <td style="font-size:.8rem">${fmtDate(s.submittedAt)}</td>
-            <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.comment||'—')}</td>
-            <td>${gradeBadge(s.grade)}</td>
-            <td>
-              <button class="btn btn-sm btn-primary" onclick="openGradeSubmission('${d.id}')">
-                <i class="bi bi-pencil-square"></i> Corregir
-              </button>
-              <button class="btn btn-sm btn-ghost" style="color:var(--danger)" onclick="deleteSubmission('${d.id}')" title="Eliminar entrega">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  </div>`;
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Alumno</th><th>Tarea</th><th>Entregada</th><th>Comentario</th><th>Nota</th><th></th></tr></thead>
+    <tbody>
+      ${snap.docs.map(d => {
+        const s = d.data();
+        const taskLabel = taskMap[s.taskId]
+          ? esc(taskMap[s.taskId])
+          : s.taskDeleted
+            ? `<span class="text-muted fst-italic">${esc(s.taskTitle||'Tarea eliminada')}</span>`
+            : '<span class="text-muted">—</span>';
+        return `<tr>
+          <td><span class="fw-semibold">${esc(s.studentName)}</span></td>
+          <td class="text-sm">${taskLabel}</td>
+          <td class="text-xs">${fmtDate(s.submittedAt)}</td>
+          <td class="submission-comment">${esc(s.comment||'—')}</td>
+          <td>${gradeBadge(s.grade)}</td>
+          <td class="d-flex gap-1 flex-wrap">
+            <button class="btn btn-sm btn-primary btn-open-grade-sub" data-sub-id="${d.id}">
+              <i class="bi bi-pencil-square"></i> Corregir
+            </button>
+            <button class="btn btn-sm btn-ghost btn-delete-sub icon-danger" data-sub-id="${d.id}">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table></div>`;
+
+  el.querySelectorAll('.btn-open-grade-sub').forEach(btn => {
+    btn.addEventListener('click', () => openGradeSubmission(btn.dataset.subId));
+  });
+  el.querySelectorAll('.btn-delete-sub').forEach(btn => {
+    btn.addEventListener('click', () => deleteSubmission(btn.dataset.subId));
+  });
 }
 
-window.openGradeSubmission = async (subId) => {
-  const snap = await getDoc(doc(db,'submissions',subId));
+async function openGradeSubmission(subId) {
+  const snap = await getDoc(doc(db, 'submissions', subId));
   const s = snap.data();
-  document.getElementById('sub-edit-id').value = subId;
-  document.getElementById('sub-grade').value = s.grade != null ? s.grade : '';
-  document.getElementById('sub-feedback').value = s.feedback || '';
+  document.getElementById('sub-edit-id').value    = subId;
+  document.getElementById('sub-grade').value      = s.grade != null ? s.grade : '';
+  document.getElementById('sub-feedback').value   = s.feedback || '';
   document.getElementById('sub-detail').innerHTML =
     `<i class="bi bi-person"></i> <strong>${esc(s.studentName)}</strong>${s.comment ? ` · <em>${esc(s.comment)}</em>` : ''}`;
-  // Mostrar "Quitar nota" solo si ya tiene nota
-  document.getElementById('btn-remove-grade').style.display = s.grade != null ? '' : 'none';
+  const removeBtn = document.getElementById('btn-remove-grade');
+  s.grade != null ? show(removeBtn) : hide(removeBtn);
   openModal('modal-grade-submission');
-};
+}
 
-window.deleteSubmission = async (id) => {
-  const ok = await showConfirm({ title: 'Eliminar entrega', message: 'Se eliminará la entrega y su nota si la tuviera.', confirmText: 'Eliminar' });
+async function deleteSubmission(id) {
+  const ok = await showConfirm({ title:'Eliminar entrega', message:'Se eliminará la entrega y su nota si la tuviera.', confirmText:'Eliminar' });
   if (!ok) return;
-  await deleteDoc(doc(db,'submissions', id));
+  await deleteDoc(doc(db, 'submissions', id));
   renderSubmissions(); toast('Entrega eliminada.');
-};
+}
 
-window.removeGradeFromSubmission = async () => {
-  const ok = await showConfirm({ title: 'Quitar nota', message: 'El alumno dejará de ver esta calificación.', confirmText: 'Quitar nota' });
+document.getElementById('btn-remove-grade').addEventListener('click', async () => {
+  const ok = await showConfirm({ title:'Quitar nota', message:'El alumno dejará de ver esta calificación.', confirmText:'Quitar nota' });
   if (!ok) return;
   const id = document.getElementById('sub-edit-id').value;
-  await updateDoc(doc(db,'submissions',id), { grade: null, feedback: null, gradedAt: null });
-  closeModal('modal-grade-submission');
-  renderSubmissions();
-  toast('Nota eliminada.', 'success');
-};
+  await updateDoc(doc(db,'submissions',id), { grade:null, feedback:null, gradedAt:null });
+  closeModal('modal-grade-submission'); renderSubmissions(); toast('Nota eliminada.', 'success');
+});
 
-window.gradeSubmission = async () => {
+document.getElementById('btn-grade-submission').addEventListener('click', async () => {
   const id    = document.getElementById('sub-edit-id').value;
   const grade = parseFloat(document.getElementById('sub-grade').value);
   const fb    = document.getElementById('sub-feedback').value.trim();
-  if (isNaN(grade) || grade < 0 || grade > 10) { toast('Introduce una nota entre 0 y 10.','error'); return; }
-  // Guardar también el título de la tarea como referencia
-  const subSnap = await getDoc(doc(db,'submissions',id));
-  const taskId  = subSnap.data()?.taskId;
-  let taskTitle = '';
+  if (isNaN(grade) || grade < 0 || grade > 10) { toast('Introduce una nota entre 0 y 10.', 'error'); return; }
+  const subSnap  = await getDoc(doc(db,'submissions',id));
+  const taskId   = subSnap.data()?.taskId;
+  let taskTitle  = '';
   if (taskId) {
     const taskSnap = await getDoc(doc(db,'tasks',taskId));
     if (taskSnap.exists()) taskTitle = taskSnap.data().title || '';
   }
-  await updateDoc(doc(db,'submissions',id), { grade, feedback: fb, gradedAt: serverTimestamp(), taskTitle });
-  logActivity('grade', `Entrega corregida: ${subSnap.data()?.studentName || ''}`, { detail: `Nota: ${grade}${fb ? ' · ' + fb.slice(0,60) : ''}` });
-  closeModal('modal-grade-submission'); renderSubmissions(); toast('Corrección guardada.','success');
-};
+  await updateDoc(doc(db,'submissions',id), { grade, feedback:fb, gradedAt:serverTimestamp(), taskTitle });
+  logActivity('grade', `Entrega corregida: ${subSnap.data()?.studentName || ''}`, { detail:`Nota: ${grade}${fb ? ' · '+fb.slice(0,60) : ''}` });
+  closeModal('modal-grade-submission'); renderSubmissions(); toast('Corrección guardada.', 'success');
+});
 
-// ─── ESTADÍSTICAS ─────────────────────────
-async function renderStats() {
-  const studs = await getApprovedStudents();
-
-  // Populate filter
-  const sel = document.getElementById('stats-student-filter');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">Todos los alumnos</option>' +
-    studs.map(s => `<option value="${s.uid}" ${s.uid===cur?'selected':''}>${esc(s.displayName)}</option>`).join('');
-
-  const filtered = cur ? studs.filter(s => s.uid === cur) : studs;
-  if (!filtered.length) {
-    document.getElementById('stats-container').innerHTML = `<div class="empty-state"><i class="bi bi-people"></i><p>No hay alumnos aprobados aún.</p></div>`;
-    return;
-  }
-
-  // Load all tasks, submissions, grades in parallel
-  const [tasksSnap, subsSnap, gradesSnap] = await Promise.all([
-    getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id))),
-    getDocs(query(collection(db,'submissions'), where('classId','==',currentClass.id))),
-    getDocs(query(collection(db,'grades'), where('classId','==',currentClass.id)))
-  ]);
-
-  const tasks   = tasksSnap.docs.map(d => ({id:d.id,...d.data()}));
-  const subs    = subsSnap.docs.map(d => ({id:d.id,...d.data()}));
-  const grades  = gradesSnap.docs.map(d => ({id:d.id,...d.data()}));
-
-  // Overview stats
-  const totalStudents = studs.length;
-  const avgGrades = grades.length ? (grades.reduce((a,g)=>a+g.grade,0)/grades.length).toFixed(1) : '—';
-  const totalSubs = subs.length;
-  const gradedSubs = subs.filter(s=>s.grade!=null).length;
-
-  document.getElementById('stats-overview').innerHTML = `
-    <div class="stat-grid">
-      <div class="stat-card fade-in">
-        <div class="stat-icon" style="background:#dbeafe"><i class="bi bi-people-fill" style="color:var(--brand)"></i></div>
-        <div><div class="stat-value">${filtered.length}</div><div class="stat-label">Alumnos analizados</div></div>
-      </div>
-      <div class="stat-card fade-in fade-in-delay-1">
-        <div class="stat-icon" style="background:var(--accent-light)"><i class="bi bi-star-fill" style="color:var(--accent)"></i></div>
-        <div><div class="stat-value">${avgGrades}</div><div class="stat-label">Nota media clase</div></div>
-      </div>
-      <div class="stat-card fade-in fade-in-delay-2">
-        <div class="stat-icon" style="background:#dcfce7"><i class="bi bi-check2-square" style="color:var(--success)"></i></div>
-        <div><div class="stat-value">${totalSubs}</div><div class="stat-label">Entregas totales</div></div>
-      </div>
-      <div class="stat-card fade-in fade-in-delay-3">
-        <div class="stat-icon" style="background:#f3e8ff"><i class="bi bi-pencil-square" style="color:#7c3aed)"></i></div>
-        <div><div class="stat-value">${gradedSubs}/${totalSubs}</div><div class="stat-label">Entregas corregidas</div></div>
-      </div>
-    </div>`;
-
-  // Per-student cards
-  document.getElementById('stats-container').innerHTML = filtered.map(student => {
-    const studentSubs   = subs.filter(s => s.studentUid === student.uid);
-    const studentGrades = grades.filter(g => g.studentUid === student.uid);
-    const delivered     = studentSubs.length;
-    const pending       = tasks.length - delivered;
-    const gradedList    = studentSubs.filter(s => s.grade != null);
-    const manualGrades  = studentGrades;
-    const allGradeVals  = [...gradedList.map(s=>s.grade), ...manualGrades.map(g=>g.grade)];
-    const avg           = allGradeVals.length ? (allGradeVals.reduce((a,b)=>a+b,0)/allGradeVals.length).toFixed(1) : null;
-    const pct           = tasks.length ? Math.round(delivered/tasks.length*100) : 0;
-    const initials      = student.displayName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-
-    // Grade bars (last 6 grades)
-    const recentGrades = [...gradedList.map(s=>({label:s.taskTitle||'Tarea',val:s.grade})),
-                          ...manualGrades.map(g=>({label:g.concept,val:g.grade}))]
-      .slice(-6);
-
-    const bars = recentGrades.length ? recentGrades.map(g => {
-      const h = Math.round((g.val/10)*60);
-      const cls = g.val>=9?'var(--success)':g.val>=7?'var(--brand)':g.val>=5?'var(--accent)':'var(--danger)';
-      return `<div style="display:flex;flex-direction:column;align-items:center;gap:.3rem;flex:1;min-width:0">
-        <span style="font-size:.65rem;font-weight:700;color:${cls}">${g.val.toFixed(1)}</span>
-        <div style="width:100%;background:var(--border);border-radius:.25rem;height:60px;display:flex;align-items:flex-end;overflow:hidden">
-          <div style="width:100%;height:${h}px;background:${cls};border-radius:.25rem;transition:height .3s"></div>
-        </div>
-        <span style="font-size:.6rem;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">${esc(g.label)}</span>
-      </div>`;
-    }).join('') : `<div style="color:var(--muted);font-size:.8rem;padding:.5rem">Sin calificaciones aún</div>`;
-
-    return `
-    <div class="card fade-in" style="margin-bottom:1rem">
-      <div class="card-header">
-        <div style="display:flex;align-items:center;gap:.75rem">
-          <div style="width:40px;height:40px;border-radius:50%;background:var(--brand);color:#fff;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">${initials}</div>
-          <div>
-            <div style="font-weight:700">${esc(student.displayName)}</div>
-            <div style="font-size:.75rem;color:var(--muted)">${esc(student.email)}</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:.75rem">
-          ${avg != null ? `${gradeBadge(avg)} <span style="font-size:.75rem;color:var(--muted)">media</span>` : '<span class="badge badge-neutral">Sin notas</span>'}
-        </div>
-      </div>
-      <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
-        <!-- Progreso entregas -->
-        <div>
-          <div style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Progreso de entregas</div>
-          <div style="display:flex;gap:1rem;margin-bottom:.75rem">
-            <div style="text-align:center">
-              <div style="font-size:1.5rem;font-weight:800;color:var(--success)">${delivered}</div>
-              <div style="font-size:.72rem;color:var(--muted)">Entregadas</div>
-            </div>
-            <div style="text-align:center">
-              <div style="font-size:1.5rem;font-weight:800;color:var(--danger)">${pending < 0 ? 0 : pending}</div>
-              <div style="font-size:.72rem;color:var(--muted)">Pendientes</div>
-            </div>
-            <div style="text-align:center">
-              <div style="font-size:1.5rem;font-weight:800;color:var(--brand)">${tasks.length}</div>
-              <div style="font-size:.72rem;color:var(--muted)">Total tareas</div>
-            </div>
-          </div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar-fill" style="width:${pct}%;background:${pct>=80?'var(--success)':pct>=50?'var(--brand)':'var(--danger)'}"></div>
-          </div>
-          <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;text-align:right">${pct}% completado</div>
-        </div>
-        <!-- Gráfico notas -->
-        <div>
-          <div style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Últimas calificaciones</div>
-          <div style="display:flex;gap:.5rem;align-items:flex-end;height:80px">${bars}</div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ─── NOTIFICACIONES EN TIEMPO REAL ────────
-let _unsubNotif = null;
-let _unsubPending = null;
-let _unsubStudents = null;
-let _unsubTasks = null;
-
-function startNotifications() {
-  if (_unsubNotif) _unsubNotif();
-  if (_unsubPending) _unsubPending();
-  if (_unsubStudents) _unsubStudents();
-  if (_unsubTasks) _unsubTasks();
-
-  // 1. Entregas sin revisar → badge + stat + recarga sección
-  _unsubNotif = onSnapshot(
-    query(collection(db,'submissions'), where('classId','==',currentClass.id), where('grade','==',null)),
-    (snap) => {
-      const count = snap.size;
-      const eb = document.getElementById('badge-entregas');
-      if (eb) { eb.style.display = count > 0 ? '' : 'none'; eb.textContent = count; }
-      const stEl = document.getElementById('st-entregas');
-      if (stEl) stEl.textContent = count;
-      const active = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (active === 'nav-entregas') renderSubmissions();
-    }
-  );
-
-  // 2. Alumnos pendientes → badge + stat
-  _unsubPending = onSnapshot(
-    query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',false)),
-    (snap) => {
-      const count = snap.size;
-      const pb = document.getElementById('badge-pending');
-      if (pb) { pb.style.display = count > 0 ? '' : 'none'; pb.textContent = count; }
-      const stEl = document.getElementById('st-pending-users');
-      if (stEl) stEl.textContent = count;
-      const active = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (active === 'nav-alumnos') renderStudents();
-    }
-  );
-
-  // 3. Alumnos aprobados → stat inicio
-  _unsubStudents = onSnapshot(
-    query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',true)),
-    (snap) => {
-      const stEl = document.getElementById('st-alumnos');
-      if (stEl) stEl.textContent = snap.size;
-    }
-  );
-
-  // 4. Tareas publicadas → stat inicio
-  _unsubTasks = onSnapshot(
-    query(collection(db,'tasks'), where('classId','==',currentClass.id)),
-    (snap) => {
-      const stEl = document.getElementById('st-tareas');
-      if (stEl) stEl.textContent = snap.size;
-      const active = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (active === 'nav-tareas') renderTasks();
-    }
-  );
-}
-
-
-async function renderGrades() {
-  // Populate student select in modal
+// ─── GRADES ──────────────────────────────────────────────────────────────────
+async function openGradeModal() {
   const studs = await getApprovedStudents();
   studentsCache = studs;
-  const selEl = document.getElementById('grade-student');
-  selEl.innerHTML = studs.map(s=>`<option value="${s.uid}">${esc(s.displayName)}</option>`).join('');
+  document.getElementById('grade-student').innerHTML = studs.map(s => `<option value="${s.uid}">${esc(s.displayName)}</option>`).join('');
+  openModal('modal-nota');
+}
+
+async function renderGrades() {
+  const studs = await getApprovedStudents();
+  studentsCache = studs;
+  document.getElementById('grade-student').innerHTML = studs.map(s => `<option value="${s.uid}">${esc(s.displayName)}</option>`).join('');
 
   const snap = await getDocs(query(collection(db,'grades'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  const el = document.getElementById('grades-container');
+  const el   = document.getElementById('grades-container');
 
   if (snap.empty && !studs.length) {
     el.innerHTML = `<div class="empty-state"><i class="bi bi-star"></i><p>Añade alumnos y empieza a registrar calificaciones.</p></div>`;
     return;
   }
-
-  // Group by student
   const byStudent = {};
-  studs.forEach(s => { byStudent[s.uid] = { name: s.displayName, grades: [] }; });
+  studs.forEach(s => { byStudent[s.uid] = { name:s.displayName, grades:[] }; });
   snap.docs.forEach(d => {
-    const g = {id:d.id,...d.data()};
+    const g = { id:d.id,...d.data() };
     if (byStudent[g.studentUid]) byStudent[g.studentUid].grades.push(g);
   });
 
   el.innerHTML = Object.entries(byStudent).map(([uid, data]) => {
-    const avg = data.grades.length ? (data.grades.reduce((a,g)=>a+g.grade,0)/data.grades.length).toFixed(1) : null;
+    const avg = data.grades.length
+      ? (data.grades.reduce((a,g) => a+g.grade, 0) / data.grades.length).toFixed(1)
+      : null;
     return `
-    <div class="card" style="margin-bottom:1rem">
+    <div class="card mb-3">
       <div class="card-header">
-        <div style="display:flex;align-items:center;gap:.75rem">
-          <div style="width:36px;height:36px;border-radius:50%;background:var(--brand-light);color:var(--brand);font-weight:700;display:flex;align-items:center;justify-content:center">${data.name[0].toUpperCase()}</div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="grade-student-avatar">${data.name[0].toUpperCase()}</div>
           <span>${esc(data.name)}</span>
         </div>
-        <div style="display:flex;align-items:center;gap:.75rem">
-          ${avg != null ? `<span style="font-size:.8rem;color:var(--muted)">Media:</span> ${gradeBadge(avg)}` : '<span class="badge badge-neutral">Sin notas</span>'}
+        <div class="d-flex align-items-center gap-3">
+          ${avg != null ? `<span class="text-muted text-xs">Media:</span> ${gradeBadge(avg)}` : '<span class="badge badge-neutral">Sin notas</span>'}
         </div>
       </div>
       ${data.grades.length ? `
-      <div class="card-body" style="padding:0">
+      <div class="card-body p-0">
         <table style="width:100%">
-          <thead><tr>
-            <th>Concepto</th><th>Nota</th><th>Comentario</th><th>Fecha</th><th></th>
-          </tr></thead>
+          <thead><tr><th>Concepto</th><th>Nota</th><th>Comentario</th><th>Fecha</th><th></th></tr></thead>
           <tbody>
-            ${data.grades.map(g=>`<tr>
-              <td style="font-weight:600">${esc(g.concept)}</td>
+            ${data.grades.map(g => `<tr>
+              <td class="fw-semibold">${esc(g.concept)}</td>
               <td>${gradeBadge(g.grade)}</td>
-              <td style="font-size:.8rem;color:var(--muted)">${esc(g.comment||'—')}</td>
-              <td style="font-size:.8rem">${fmtDate(g.createdAt)}</td>
-              <td><button class="btn btn-ghost btn-icon btn-sm" style="color:var(--danger)" onclick="deleteGrade('${g.id}')"><i class="bi bi-trash"></i></button></td>
+              <td class="text-muted text-xs">${esc(g.comment||'—')}</td>
+              <td class="text-xs">${fmtDate(g.createdAt)}</td>
+              <td><button class="btn btn-ghost btn-icon btn-sm btn-delete-grade icon-danger" data-grade-id="${g.id}"><i class="bi bi-trash"></i></button></td>
             </tr>`).join('')}
           </tbody>
         </table>
       </div>` : ''}
     </div>`;
   }).join('');
+
+  el.querySelectorAll('.btn-delete-grade').forEach(btn => {
+    btn.addEventListener('click', () => deleteGrade(btn.dataset.gradeId));
+  });
 }
 
-window.saveGrade = async () => {
+document.getElementById('btn-save-grade').addEventListener('click', async () => {
   const studentUid = document.getElementById('grade-student').value;
   const concept    = document.getElementById('grade-concept').value.trim();
   const grade      = parseFloat(document.getElementById('grade-value').value);
   const comment    = document.getElementById('grade-comment').value.trim();
-  if (!studentUid || !concept) { toast('Alumno y concepto son obligatorios.','error'); return; }
-  if (isNaN(grade)||grade<0||grade>10) { toast('Nota entre 0 y 10.','error'); return; }
-  const student = studentsCache.find(s=>s.uid===studentUid);
+  if (!studentUid || !concept) { toast('Alumno y concepto son obligatorios.', 'error'); return; }
+  if (isNaN(grade) || grade < 0 || grade > 10) { toast('Nota entre 0 y 10.', 'error'); return; }
+  const student = studentsCache.find(s => s.uid === studentUid);
   await addDoc(collection(db,'grades'), {
-    classId: currentClass.id, studentUid, studentName: student?.displayName||'—',
-    concept, grade, comment, createdAt: serverTimestamp()
+    classId:currentClass.id, studentUid, studentName:student?.displayName||'—',
+    concept, grade, comment, createdAt:serverTimestamp(),
   });
-  closeModal('modal-nota'); renderGrades(); toast('Nota guardada.','success');
-};
+  closeModal('modal-nota'); renderGrades(); toast('Nota guardada.', 'success');
+});
 
-window.deleteGrade = async (id) => {
+async function deleteGrade(id) {
   if (!confirm('¿Eliminar esta nota?')) return;
   await deleteDoc(doc(db,'grades',id));
   renderGrades(); toast('Nota eliminada.');
-};
+}
 
-// ─── ANNOUNCEMENTS ────────────────────────
+// ─── ANNOUNCEMENTS ───────────────────────────────────────────────────────────
 async function renderAnnouncements() {
   const snap = await getDocs(query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  const el = document.getElementById('annc-container');
+  const el   = document.getElementById('annc-container');
   if (snap.empty) {
     el.innerHTML = `<div class="empty-state"><i class="bi bi-megaphone"></i><p>No hay anuncios aún. Comunícate con tu clase.</p></div>`;
     return;
@@ -1357,38 +1303,43 @@ async function renderAnnouncements() {
     <div class="annc-card fade-in">
       <div class="annc-header">
         <div class="annc-title">${esc(a.title)}</div>
-        <button class="btn btn-ghost btn-icon btn-sm" style="color:var(--danger)" onclick="deleteAnnouncement('${d.id}')"><i class="bi bi-trash"></i></button>
+        <button class="btn btn-ghost btn-icon btn-sm btn-delete-annc icon-danger" data-annc-id="${d.id}"><i class="bi bi-trash"></i></button>
       </div>
       <div class="annc-body">${esc(a.body)}</div>
       <div class="annc-meta"><i class="bi bi-clock me-1"></i>${fmtDate(a.createdAt)}</div>
     </div>`;
   }).join('');
+
+  el.querySelectorAll('.btn-delete-annc').forEach(btn => {
+    btn.addEventListener('click', () => deleteAnnouncement(btn.dataset.anncId));
+  });
 }
 
-window.saveAnnouncement = async () => {
+document.getElementById('btn-save-annc').addEventListener('click', async () => {
   const title = document.getElementById('annc-title').value.trim();
   const body  = document.getElementById('annc-body').value.trim();
-  if (!title) { toast('El título es obligatorio.','error'); return; }
+  if (!title) { toast('El título es obligatorio.', 'error'); return; }
   await addDoc(collection(db,'announcements'), {
-    classId: currentClass.id, title, body, teacherName: currentUser.displayName, createdAt: serverTimestamp()
+    classId:currentClass.id, title, body,
+    teacherName:currentUser.displayName, createdAt:serverTimestamp(),
   });
   logActivity('announcement', `Nuevo anuncio: "${title}"`);
   closeModal('modal-anuncio');
   document.getElementById('annc-title').value = '';
   document.getElementById('annc-body').value  = '';
-  renderAnnouncements(); toast('Anuncio publicado.','success');
-};
+  renderAnnouncements(); toast('Anuncio publicado.', 'success');
+});
 
-window.deleteAnnouncement = async (id) => {
+async function deleteAnnouncement(id) {
   if (!confirm('¿Eliminar este anuncio?')) return;
   await deleteDoc(doc(db,'announcements',id));
   renderAnnouncements(); toast('Anuncio eliminado.');
-};
+}
 
-// ─── RESOURCES ────────────────────────────
+// ─── RESOURCES ───────────────────────────────────────────────────────────────
 async function renderResources() {
   const snap = await getDocs(query(collection(db,'resources'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  const el = document.getElementById('resources-container');
+  const el   = document.getElementById('resources-container');
   if (snap.empty) {
     el.innerHTML = `<div class="empty-state"><i class="bi bi-folder-x"></i><p>Añade materiales para tus alumnos.</p></div>`;
     return;
@@ -1403,51 +1354,56 @@ async function renderResources() {
         ${r.desc ? `<div class="res-desc">${esc(r.desc)}</div>` : ''}
       </div>
       <a href="${esc(r.url)}" target="_blank" class="btn btn-sm btn-secondary"><i class="bi bi-box-arrow-up-right"></i> Abrir</a>
-      <button class="btn btn-ghost btn-icon btn-sm" style="color:var(--danger)" onclick="deleteResource('${d.id}')"><i class="bi bi-trash"></i></button>
+      <button class="btn btn-ghost btn-icon btn-sm btn-delete-res icon-danger" data-res-id="${d.id}"><i class="bi bi-trash"></i></button>
     </div>`;
   }).join('');
+
+  el.querySelectorAll('.btn-delete-res').forEach(btn => {
+    btn.addEventListener('click', () => deleteResource(btn.dataset.resId));
+  });
 }
 
-window.saveResource = async () => {
+document.getElementById('btn-save-recurso').addEventListener('click', async () => {
   const name = document.getElementById('res-name').value.trim();
   const url  = document.getElementById('res-url').value.trim();
-  if (!name||!url) { toast('Nombre y URL son obligatorios.','error'); return; }
+  if (!name || !url) { toast('Nombre y URL son obligatorios.', 'error'); return; }
   await addDoc(collection(db,'resources'), {
-    classId: currentClass.id, name, url,
+    classId:currentClass.id, name, url,
     type: document.getElementById('res-type').value,
     desc: document.getElementById('res-desc').value.trim(),
-    createdAt: serverTimestamp()
+    createdAt: serverTimestamp(),
   });
   logActivity('resource', `Nuevo recurso: "${name}"`);
   closeModal('modal-recurso');
-  ['res-name','res-url','res-desc'].forEach(i=>document.getElementById(i).value='');
-  renderResources(); toast('Recurso añadido.','success');
-};
+  ['res-name','res-url','res-desc'].forEach(i => document.getElementById(i).value = '');
+  renderResources(); toast('Recurso añadido.', 'success');
+});
 
-window.deleteResource = async (id) => {
+async function deleteResource(id) {
   if (!confirm('¿Eliminar este recurso?')) return;
   await deleteDoc(doc(db,'resources',id));
   renderResources(); toast('Recurso eliminado.');
-};
+}
 
-// ─── STUDENTS ─────────────────────────────
-let studentTab = 'approved';
-window.switchStudentTab = (tab) => {
-  studentTab = tab;
-  document.querySelectorAll('.tabs .tab-btn').forEach((b,i)=>b.classList.toggle('active', (i===0&&tab==='approved')||(i===1&&tab==='pending')));
-  document.getElementById('students-approved-container').style.display = tab==='approved'?'':'none';
-  document.getElementById('students-pending-container').style.display  = tab==='pending' ?'':'none';
-};
+// ─── STUDENTS ────────────────────────────────────────────────────────────────
+function switchStudentTab(tab) {
+  document.querySelectorAll('[data-student-tab]').forEach(b => {
+    b.classList.toggle('active', b.dataset.studentTab === tab);
+  });
+  const approvedEl = document.getElementById('students-approved-container');
+  const pendingEl  = document.getElementById('students-pending-container');
+  tab === 'approved' ? show(approvedEl) : hide(approvedEl);
+  tab === 'pending'  ? show(pendingEl)  : hide(pendingEl);
+}
 
 async function renderStudents() {
-  const snap = await getDocs(query(collection(db,'users'), where('classId','==',currentClass.id)));
-  const all  = snap.docs.map(d=>({id:d.id,...d.data()}));
-  const approved = all.filter(u=>u.approved);
-  const pending  = all.filter(u=>!u.approved);
+  const snap     = await getDocs(query(collection(db,'users'), where('classId','==',currentClass.id)));
+  const all      = snap.docs.map(d => ({id:d.id,...d.data()}));
+  const approved = all.filter(u =>  u.approved);
+  const pending  = all.filter(u => !u.approved);
 
-  // Badge
   const pb = document.getElementById('badge-pending');
-  pb.style.display = pending.length > 0 ? '' : 'none';
+  pending.length > 0 ? show(pb) : hide(pb);
   pb.textContent = pending.length;
 
   renderStudentList('students-approved-container', approved, true);
@@ -1460,138 +1416,334 @@ function renderStudentList(containerId, students, isApproved) {
     el.innerHTML = `<div class="empty-state"><i class="bi bi-person-${isApproved?'check':'x'}"></i><p>${isApproved?'No hay alumnos aprobados aún.':'No hay solicitudes pendientes.'}</p></div>`;
     return;
   }
-  el.innerHTML = `<div class="table-wrap">
-    <table>
-      <thead><tr><th>Nombre</th><th>Correo</th><th>Registro</th><th>Última conexión</th><th>Estado</th><th></th></tr></thead>
-      <tbody>
-        ${students.map(u=>`<tr>
-          <td>
-            <div style="display:flex;align-items:center;gap:.75rem">
-              <div style="width:34px;height:34px;border-radius:50%;background:var(--brand-light);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">${(u.displayName||'?')[0].toUpperCase()}</div>
-              <span style="font-weight:600">${esc(u.displayName)}</span>
-            </div>
-          </td>
-          <td style="color:var(--muted);font-size:.85rem">${esc(u.email)}</td>
-          <td style="font-size:.8rem">${fmtDate(u.createdAt)}</td>
-          <td>${fmtLastSeen(u.lastSeen)}</td>
-          <td>${isApproved ? '<span class="badge badge-success"><i class="bi bi-check-circle"></i> Aprobado</span>' : '<span class="badge badge-warning"><i class="bi bi-clock"></i> Pendiente</span>'}</td>
-          <td style="display:flex;gap:.4rem">
-            ${!isApproved ? `<button class="btn btn-sm btn-success" onclick="approveStudent('${u.uid}')"><i class="bi bi-check-lg"></i> Aprobar</button>` : ''}
-            <button class="btn btn-sm btn-danger" onclick="removeStudent('${u.uid}')"><i class="bi bi-person-x"></i> ${isApproved?'Revocar':'Rechazar'}</button>
-          </td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
-  </div>`;
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Nombre</th><th>Correo</th><th>Registro</th><th>Última conexión</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      ${students.map(u => `<tr>
+        <td>
+          <div class="d-flex align-items-center gap-3">
+            <div class="student-avatar">${(u.displayName||'?')[0].toUpperCase()}</div>
+            <span class="fw-semibold">${esc(u.displayName)}</span>
+          </div>
+        </td>
+        <td class="text-muted text-sm">${esc(u.email)}</td>
+        <td class="text-xs">${fmtDate(u.createdAt)}</td>
+        <td>${fmtLastSeen(u.lastSeen)}</td>
+        <td>${isApproved
+          ? '<span class="badge badge-success"><i class="bi bi-check-circle"></i> Aprobado</span>'
+          : '<span class="badge badge-warning"><i class="bi bi-clock"></i> Pendiente</span>'}</td>
+        <td class="d-flex gap-1 flex-wrap">
+          ${!isApproved ? `<button class="btn btn-sm btn-success btn-approve-s" data-uid="${u.uid}"><i class="bi bi-check-lg"></i> Aprobar</button>` : ''}
+          <button class="btn btn-sm btn-danger btn-revoke-s" data-uid="${u.uid}">
+            <i class="bi bi-person-x"></i> ${isApproved?'Revocar':'Rechazar'}
+          </button>
+        </td>
+      </tr>`).join('')}
+    </tbody>
+  </table></div>`;
+
+  el.querySelectorAll('.btn-approve-s').forEach(btn => {
+    btn.addEventListener('click', () => approveStudent(btn.dataset.uid));
+  });
+  el.querySelectorAll('.btn-revoke-s').forEach(btn => {
+    btn.addEventListener('click', () => removeStudent(btn.dataset.uid));
+  });
 }
 
-window.approveStudent = async (uid) => {
-  await updateDoc(doc(db,'users',uid), { approved: true });
-  const studs = await getApprovedStudents();
+async function approveStudent(uid) {
+  await updateDoc(doc(db,'users',uid), { approved:true });
+  const studs   = await getApprovedStudents();
   const student = studs.find(s => s.uid === uid);
   logActivity('approval', `Alumno aprobado: ${student?.displayName || uid}`);
-  renderStudents(); renderHome(); toast('Alumno aprobado.','success');
-};
+  renderStudents(); renderHome(); toast('Alumno aprobado.', 'success');
+}
 
-window.removeStudent = async (uid) => {
+async function removeStudent(uid) {
   if (!confirm('¿Revocar el acceso a este alumno?')) return;
-  await updateDoc(doc(db,'users',uid), { approved: false });
+  await updateDoc(doc(db,'users',uid), { approved:false });
   logActivity('revoke', `Acceso revocado a alumno`);
   renderStudents(); renderHome(); toast('Acceso revocado.');
-};
+}
 
 async function getApprovedStudents() {
   const snap = await getDocs(query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',true)));
-  return snap.docs.map(d=>({...d.data()}));
+  return snap.docs.map(d => ({ ...d.data() }));
 }
 
-// ─── SETTINGS ─────────────────────────────
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
 function loadSettings() {
-  document.getElementById('set-classname').value = currentClass.name || '';
+  document.getElementById('set-classname').value = currentClass.name        || '';
   document.getElementById('set-classdesc').value = currentClass.description || '';
-  document.getElementById('settings-code').textContent = currentClass.code || '—';
+  document.getElementById('settings-code').textContent = currentClass.code  || '—';
 }
 
-window.saveClassSettings = async () => {
+document.getElementById('btn-save-settings').addEventListener('click', async () => {
   const name = document.getElementById('set-classname').value.trim();
   const desc = document.getElementById('set-classdesc').value.trim();
-  if (!name) { toast('El nombre es obligatorio.','error'); return; }
-  await updateDoc(doc(db,'classes',currentClass.id), { name, description: desc });
-  currentClass.name = name;
-  currentClass.description = desc;
+  if (!name) { toast('El nombre es obligatorio.', 'error'); return; }
+  await updateDoc(doc(db,'classes',currentClass.id), { name, description:desc });
+  currentClass.name = name; currentClass.description = desc;
   const idx = allClasses.findIndex(c => c.id === currentClass.id);
   if (idx !== -1) allClasses[idx].name = name;
   renderClassSwitcher();
-  toast('Ajustes guardados.','success');
-};
-
-// Cerrar menú de clases al hacer click fuera
-document.addEventListener('click', e => {
-  const sw = document.getElementById('class-switcher');
-  if (sw && !sw.contains(e.target)) closeClassMenu();
+  toast('Ajustes guardados.', 'success');
 });
 
-window.confirmDeleteClass = async () => {
-  if (allClasses.length <= 1) {
-    toast('No puedes eliminar la única clase que tienes.', 'error'); return;
-  }
-  if (!confirm(`¿Eliminar la clase "${currentClass.name}"? Se eliminarán todas sus tareas, anuncios y recursos. Los alumnos perderán el acceso.`)) return;
-  const id = currentClass.id;
+document.getElementById('btn-copy-code').addEventListener('click', () => {
+  navigator.clipboard.writeText(currentClass.code);
+  toast('Código copiado al portapapeles.', 'success');
+});
+
+document.getElementById('btn-delete-class').addEventListener('click', async () => {
+  if (allClasses.length <= 1) { toast('No puedes eliminar la única clase que tienes.', 'error'); return; }
+  if (!confirm(`¿Eliminar la clase "${currentClass.name}"? Se eliminarán todas sus tareas, anuncios y recursos.`)) return;
+  const id   = currentClass.id;
   const cols = ['tasks','announcements','resources','submissions','grades'];
   for (const col of cols) {
-    const snap = await getDocs(query(collection(db, col), where('classId','==', id)));
+    const snap = await getDocs(query(collection(db, col), where('classId','==',id)));
     for (const d of snap.docs) await deleteDoc(doc(db, col, d.id));
   }
-  await deleteDoc(doc(db, 'classes', id));
+  await deleteDoc(doc(db,'classes',id));
   allClasses = allClasses.filter(c => c.id !== id);
   localStorage.removeItem('ao_activeClassId');
   switchClass(allClasses[0].id);
   toast('Clase eliminada.', 'success');
-};
+});
 
-window.copyCode = () => {
-  navigator.clipboard.writeText(currentClass.code);
-  toast('Código copiado al portapapeles.','success');
-};
-
-// ─── CHAT ─────────────────────────────────
-// ─── CHAT PRIVADO ─────────────────────────
-let _unsubChat = null;
-let _chatStudentUid = null;
-
-async function initChat() {
-  if (_unsubChat) { _unsubChat(); _unsubChat = null; }
-  document.getElementById('badge-chat').style.display = 'none';
-  localStorage.setItem('ao_chatLastRead_' + currentClass.id, Date.now());
-
-  // Load student list
+// ─── STATS ───────────────────────────────────────────────────────────────────
+async function renderStats() {
   const studs = await getApprovedStudents();
-  const listEl = document.getElementById('chat-student-list');
-  if (!studs.length) {
-    listEl.innerHTML = `<div class="empty-state" style="padding:2rem"><i class="bi bi-people"></i><p>No hay alumnos aprobados.</p></div>`;
+  const sel   = document.getElementById('stats-student-filter');
+  const cur   = sel.value;
+  sel.innerHTML = '<option value="">Todos los alumnos</option>' +
+    studs.map(s => `<option value="${s.uid}" ${s.uid===cur?'selected':''}>${esc(s.displayName)}</option>`).join('');
+
+  const filtered = cur ? studs.filter(s => s.uid === cur) : studs;
+  if (!filtered.length) {
+    document.getElementById('stats-container').innerHTML = `<div class="empty-state"><i class="bi bi-people"></i><p>No hay alumnos aprobados aún.</p></div>`;
     return;
   }
 
-  // Get last message per student
+  const [tasksSnap, subsSnap, gradesSnap] = await Promise.all([
+    getDocs(query(collection(db,'tasks'),   where('classId','==',currentClass.id))),
+    getDocs(query(collection(db,'submissions'), where('classId','==',currentClass.id))),
+    getDocs(query(collection(db,'grades'),  where('classId','==',currentClass.id))),
+  ]);
+  const tasks  = tasksSnap.docs.map(d => ({id:d.id,...d.data()}));
+  const subs   = subsSnap.docs.map(d => ({id:d.id,...d.data()}));
+  const grades = gradesSnap.docs.map(d => ({id:d.id,...d.data()}));
+
+  const avgGrades  = grades.length ? (grades.reduce((a,g) => a+g.grade,0)/grades.length).toFixed(1) : '—';
+  const totalSubs  = subs.length;
+  const gradedSubs = subs.filter(s => s.grade != null).length;
+
+  document.getElementById('stats-overview').innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card fade-in">
+        <div class="stat-icon stat-icon-blue"><i class="bi bi-people-fill icon-brand"></i></div>
+        <div><div class="stat-value">${filtered.length}</div><div class="stat-label">Alumnos analizados</div></div>
+      </div>
+      <div class="stat-card fade-in fade-in-delay-1">
+        <div class="stat-icon stat-icon-amber"><i class="bi bi-star-fill icon-accent"></i></div>
+        <div><div class="stat-value">${avgGrades}</div><div class="stat-label">Nota media clase</div></div>
+      </div>
+      <div class="stat-card fade-in fade-in-delay-2">
+        <div class="stat-icon stat-icon-green"><i class="bi bi-check2-square icon-success"></i></div>
+        <div><div class="stat-value">${totalSubs}</div><div class="stat-label">Entregas totales</div></div>
+      </div>
+      <div class="stat-card fade-in fade-in-delay-3">
+        <div class="stat-icon stat-icon-purple"><i class="bi bi-pencil-square icon-purple"></i></div>
+        <div><div class="stat-value">${gradedSubs}/${totalSubs}</div><div class="stat-label">Entregas corregidas</div></div>
+      </div>
+    </div>`;
+
+  document.getElementById('stats-container').innerHTML = filtered.map(student => {
+    const studentSubs   = subs.filter(s => s.studentUid === student.uid);
+    const studentGrades = grades.filter(g => g.studentUid === student.uid);
+    const delivered     = studentSubs.length;
+    const pending       = tasks.length - delivered;
+    const gradedList    = studentSubs.filter(s => s.grade != null);
+    const allGradeVals  = [...gradedList.map(s=>s.grade), ...studentGrades.map(g=>g.grade)];
+    const avg           = allGradeVals.length ? (allGradeVals.reduce((a,b)=>a+b,0)/allGradeVals.length).toFixed(1) : null;
+    const pct           = tasks.length ? Math.round(delivered/tasks.length*100) : 0;
+    const initials      = student.displayName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const recentGrades  = [...gradedList.map(s=>({label:s.taskTitle||'Tarea',val:s.grade})),
+                           ...studentGrades.map(g=>({label:g.concept,val:g.grade}))].slice(-6);
+    const bars = recentGrades.length ? recentGrades.map(g => {
+      const h   = Math.round((g.val/10)*60);
+      const cls = g.val>=9?'var(--success)':g.val>=7?'var(--brand)':g.val>=5?'var(--accent)':'var(--danger)';
+      return `<div class="stats-bar-col">
+        <span class="stats-bar-val" style="color:${cls}">${g.val.toFixed(1)}</span>
+        <div class="stats-bar-track">
+          <div class="stats-bar-fill" style="height:${h}px;background:${cls}"></div>
+        </div>
+        <span class="stats-bar-label">${esc(g.label)}</span>
+      </div>`;
+    }).join('') : `<div class="text-muted text-sm p-2">Sin calificaciones aún</div>`;
+
+    return `
+    <div class="card fade-in mb-3">
+      <div class="card-header">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stats-student-avatar">${initials}</div>
+          <div>
+            <div class="fw-bold">${esc(student.displayName)}</div>
+            <div class="text-xs text-muted">${esc(student.email)}</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          ${avg != null ? `${gradeBadge(avg)} <span class="text-muted text-xs">media</span>` : '<span class="badge badge-neutral">Sin notas</span>'}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row g-4">
+          <div class="col-12 col-md-6">
+            <div class="stats-section-label">Progreso de entregas</div>
+            <div class="d-flex gap-4 mb-3">
+              <div class="text-center">
+                <div class="stats-big-num" style="color:var(--success)">${delivered}</div>
+                <div class="stats-num-label">Entregadas</div>
+              </div>
+              <div class="text-center">
+                <div class="stats-big-num" style="color:var(--danger)">${pending < 0 ? 0 : pending}</div>
+                <div class="stats-num-label">Pendientes</div>
+              </div>
+              <div class="text-center">
+                <div class="stats-big-num" style="color:var(--brand)">${tasks.length}</div>
+                <div class="stats-num-label">Total tareas</div>
+              </div>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:${pct}%;background:${pct>=80?'var(--success)':pct>=50?'var(--brand)':'var(--danger)'}"></div>
+            </div>
+            <div class="text-end mt-1 text-xs text-muted">${pct}% completado</div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="stats-section-label">Últimas calificaciones</div>
+            <div class="stats-bars-wrap">${bars}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── NOTIFICATIONS ───────────────────────────────────────────────────────────
+let _unsubNotif = null, _unsubPending = null, _unsubStudents = null, _unsubTasks = null;
+
+function startNotifications() {
+  [_unsubNotif, _unsubPending, _unsubStudents, _unsubTasks].forEach(u => u && u());
+
+  _unsubNotif = onSnapshot(
+    query(collection(db,'submissions'), where('classId','==',currentClass.id), where('grade','==',null)),
+    snap => {
+      const count = snap.size;
+      const eb = document.getElementById('badge-entregas');
+      count > 0 ? show(eb) : hide(eb); eb.textContent = count;
+      const stEl = document.getElementById('st-entregas');
+      if (stEl) stEl.textContent = count;
+      if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-entregas') renderSubmissions();
+    }
+  );
+  _unsubPending = onSnapshot(
+    query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',false)),
+    snap => {
+      const count = snap.size;
+      const pb = document.getElementById('badge-pending');
+      count > 0 ? show(pb) : hide(pb); pb.textContent = count;
+      const stEl = document.getElementById('st-pending-users');
+      if (stEl) stEl.textContent = count;
+      if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-alumnos') renderStudents();
+    }
+  );
+  _unsubStudents = onSnapshot(
+    query(collection(db,'users'), where('classId','==',currentClass.id), where('approved','==',true)),
+    snap => { const stEl = document.getElementById('st-alumnos'); if (stEl) stEl.textContent = snap.size; }
+  );
+  _unsubTasks = onSnapshot(
+    query(collection(db,'tasks'), where('classId','==',currentClass.id)),
+    snap => {
+      const stEl = document.getElementById('st-tareas'); if (stEl) stEl.textContent = snap.size;
+      if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-tareas') renderTasks();
+    }
+  );
+}
+
+// ─── HISTORIAL ───────────────────────────────────────────────────────────────
+async function logActivity(type, text, meta = {}) {
+  try {
+    await addDoc(collection(db,'activity'), { classId:currentClass.id, type, text, ...meta, createdAt:serverTimestamp() });
+  } catch(e) {}
+}
+
+function renderHistorial() {
+  const filter = document.getElementById('filter-activity').value;
+  const el     = document.getElementById('historial-container');
+  if (_unsubHistorial) { _unsubHistorial(); _unsubHistorial = null; }
+
+  _unsubHistorial = onSnapshot(
+    query(collection(db,'activity'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
+    snap => {
+      let items = snap.docs.map(d => ({id:d.id,...d.data()}));
+      if (filter) items = items.filter(i => i.type === filter);
+      if (!items.length) {
+        el.innerHTML = `<div class="empty-state"><i class="bi bi-clock-history"></i><p>No hay actividad registrada aún.</p></div>`;
+        return;
+      }
+      el.innerHTML = `<div class="card">
+        <div>
+          ${items.map((item, idx) => {
+            const cfg = ACTIVITY_ICONS[item.type] || { icon:'bi-circle', color:'var(--muted)', bg:'var(--surface)' };
+            const ts  = item.createdAt?.toDate ? item.createdAt.toDate() : null;
+            const timeStr = ts ? ts.toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+            return `
+            <div class="historial-row${idx < items.length-1 ? ' historial-row-border' : ''}">
+              <div class="historial-icon" style="background:${cfg.bg};color:${cfg.color}">
+                <i class="bi ${cfg.icon}"></i>
+              </div>
+              <div class="flex-fill" style="min-width:0">
+                <div class="text-sm">${esc(item.text)}</div>
+                ${item.detail ? `<div class="text-muted text-xs mt-1">${esc(item.detail)}</div>` : ''}
+              </div>
+              <div class="historial-time">${timeStr}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+  );
+}
+
+// ─── CHAT ────────────────────────────────────────────────────────────────────
+let _unsubChat       = null;
+let _chatStudentUid  = null;
+
+async function initChat() {
+  if (_unsubChat) { _unsubChat(); _unsubChat = null; }
+  hide(document.getElementById('badge-chat'));
+  localStorage.setItem('ao_chatLastRead_' + currentClass.id, Date.now());
+
+  const studs = await getApprovedStudents();
+  const listEl = document.getElementById('chat-student-list');
+  if (!studs.length) {
+    listEl.innerHTML = `<div class="empty-state p-4"><i class="bi bi-people"></i><p>No hay alumnos aprobados.</p></div>`;
+    return;
+  }
+
   const preview = {};
   for (const s of studs) {
     const convId = getConvId(s.uid);
-    const snap = await getDocs(query(
-      collection(db,'messages'),
-      where('convId','==',convId),
-      orderBy('createdAt','desc')
-    ));
+    const snap   = await getDocs(query(collection(db,'messages'), where('convId','==',convId), orderBy('createdAt','desc')));
     if (!snap.empty) preview[s.uid] = snap.docs[0].data();
   }
 
   listEl.innerHTML = studs.map(s => {
-    const last = preview[s.uid];
+    const last     = preview[s.uid];
     const initials = s.displayName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const lastText = last ? esc(last.text.slice(0,35)) + (last.text.length>35?'…':'') : 'Sin mensajes';
     const lastTime = last?.createdAt?.toDate ? last.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
-    const active = s.uid === _chatStudentUid ? 'active' : '';
     return `
-    <button class="chat-student-item ${active}" data-uid="${s.uid}" onclick="openConversation('${s.uid}','${esc(s.displayName)}')">
+    <button class="chat-student-item ${s.uid === _chatStudentUid ? 'active' : ''}" data-student-uid="${s.uid}" data-student-name="${esc(s.displayName)}">
       <div class="chat-avatar">${initials}</div>
       <div class="chat-student-info">
         <div class="chat-student-name">${esc(s.displayName)}</div>
@@ -1601,116 +1753,111 @@ async function initChat() {
     </button>`;
   }).join('');
 
-  // Re-open last conversation if any
+  listEl.querySelectorAll('.chat-student-item').forEach(btn => {
+    btn.addEventListener('click', () => openConversation(btn.dataset.studentUid, btn.dataset.studentName));
+  });
+
   if (_chatStudentUid) {
     const s = studs.find(s => s.uid === _chatStudentUid);
     if (s) openConversation(s.uid, s.displayName);
   }
 }
 
-function getConvId(studentUid) {
-  return `${currentClass.id}_${studentUid}`;
-}
+function getConvId(studentUid) { return `${currentClass.id}_${studentUid}`; }
 
-window.openConversation = (studentUid, studentName) => {
+function openConversation(studentUid, studentName) {
   if (_unsubChat) { _unsubChat(); _unsubChat = null; }
   _chatStudentUid = studentUid;
 
   document.querySelectorAll('.chat-student-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.uid === studentUid);
+    el.classList.toggle('active', el.dataset.studentUid === studentUid);
   });
 
-  document.getElementById('chat-no-selection').style.display = 'none';
-  const conv = document.getElementById('chat-conversation');
-  conv.style.display = 'flex';
+  hide(document.getElementById('chat-no-selection'));
+  show(document.getElementById('chat-conversation'));
 
   const initials = studentName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('chat-conv-header').innerHTML = `
-    <div class="chat-avatar" style="width:36px;height:36px;font-size:.8rem">${initials}</div>
-    <div style="font-weight:600;font-size:.925rem">${esc(studentName)}</div>`;
+    <div class="chat-avatar ao-avatar-md">${initials}</div>
+    <div class="fw-semibold text-sm">${esc(studentName)}</div>`;
 
   const convId = getConvId(studentUid);
-
   _unsubChat = onSnapshot(
     query(collection(db,'messages'), where('convId','==',convId), orderBy('createdAt','asc')),
-    (snap) => {
+    snap => {
       const el = document.getElementById('chat-messages');
       if (!el) return;
-
-      // Marcar mensajes del alumno como leídos en tiempo real
       snap.docs.forEach(d => {
         const m = d.data();
-        if (m.fromRole === 'student' && !m.readAt) {
-          updateDoc(doc(db,'messages',d.id), { readAt: serverTimestamp() }).catch(()=>{});
-        }
+        if (m.fromRole === 'student' && !m.readAt)
+          updateDoc(doc(db,'messages',d.id), { readAt:serverTimestamp() }).catch(()=>{});
       });
-
       if (snap.empty) {
         el.innerHTML = `<div class="empty-state"><i class="bi bi-chat-dots"></i><p>Sin mensajes aún. Escribe el primero.</p></div>`;
         return;
       }
       el.innerHTML = snap.docs.map(d => {
-        const m = d.data();
+        const m      = d.data();
         const isMine = m.fromRole === 'teacher';
-        const time = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
-        const readStatus = isMine ? (m.readAt
-          ? `<span style="color:#60a5fa" title="Leído">✓✓</span>`
-          : `<span style="opacity:.5" title="Enviado">✓</span>`) : '';
+        const time   = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+        const read   = isMine ? (m.readAt ? `<span class="chat-read" title="Leído">✓✓</span>` : `<span class="chat-unread" title="Enviado">✓</span>`) : '';
         return `
-        <div class="chat-msg ${isMine ? 'mine' : 'theirs'}" data-id="${d.id}">
+        <div class="chat-msg ${isMine?'mine':'theirs'}">
           <div class="chat-bubble-wrap">
             <div class="chat-bubble">${esc(m.text)}</div>
-            <div class="chat-time">${time} ${readStatus}${isMine ? ` <i class="bi bi-trash" onclick="deleteChatMessage('${d.id}')" style="cursor:pointer;opacity:.4;margin-left:.3rem;font-size:.65rem"></i>` : ''}</div>
+            <div class="chat-time">${time} ${read}${isMine?` <i class="bi bi-trash chat-delete-msg" data-msg-id="${d.id}"></i>`:''}</div>
           </div>
         </div>`;
       }).join('');
+      el.querySelectorAll('.chat-delete-msg').forEach(icon => {
+        icon.addEventListener('click', () => deleteChatMessage(icon.dataset.msgId));
+      });
       el.scrollTop = el.scrollHeight;
     }
   );
-};
+}
 
-window.sendChatMessage = async () => {
+async function sendChatMessage() {
   const input = document.getElementById('chat-input');
   const text  = input.value.trim();
   if (!text || !_chatStudentUid) return;
   input.value = '';
-  const convId = getConvId(_chatStudentUid);
   await addDoc(collection(db,'messages'), {
-    convId,
+    convId:     getConvId(_chatStudentUid),
     classId:    currentClass.id,
     studentUid: _chatStudentUid,
     fromUid:    currentUser.uid,
     fromName:   currentUser.displayName,
     fromRole:   'teacher',
-    text,
-    readAt:     null,
-    createdAt:  serverTimestamp()
+    text, readAt:null, createdAt:serverTimestamp(),
   });
-};
+}
 
-window.deleteChatMessage = async (msgId) => {
-  const ok = await showConfirm({ title: 'Borrar mensaje', message: 'Este mensaje se eliminará para los dos.', confirmText: 'Borrar', danger: true });
+async function deleteChatMessage(msgId) {
+  const ok = await showConfirm({ title:'Borrar mensaje', message:'Este mensaje se eliminará para los dos.', confirmText:'Borrar' });
   if (!ok) return;
-  await deleteDoc(doc(db,'messages', msgId));
-};
+  await deleteDoc(doc(db,'messages',msgId));
+}
 
-// Notificaciones chat privado
-let _unsubChatNotif = null;
-let _chatNotifShown = new Set(); // evitar toasts repetidos
+document.getElementById('btn-send-chat').addEventListener('click', sendChatMessage);
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
+});
+
+let _unsubChatNotif  = null;
+const _chatNotifShown = new Set();
 function startChatNotifications() {
   if (_unsubChatNotif) _unsubChatNotif();
-  _chatNotifShown = new Set();
+  _chatNotifShown.clear();
   _unsubChatNotif = onSnapshot(
     query(collection(db,'messages'), where('classId','==',currentClass.id), where('fromRole','==','student'), orderBy('createdAt','desc')),
-    (snap) => {
+    snap => {
       const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
       const lastRead = parseInt(localStorage.getItem('ao_chatLastRead_' + currentClass.id) || '0');
-      const newMsgs = snap.docs.filter(d => (d.data().createdAt?.toMillis?.() || 0) > lastRead);
-
-      const badge = document.getElementById('badge-chat');
-      if (badge) { badge.style.display = newMsgs.length > 0 ? '' : 'none'; badge.textContent = newMsgs.length; }
-
-      // Toast con nombre del alumno (solo una vez por mensaje nuevo)
+      const newMsgs  = snap.docs.filter(d => (d.data().createdAt?.toMillis?.() || 0) > lastRead);
+      const badge    = document.getElementById('badge-chat');
+      newMsgs.length > 0 ? show(badge) : hide(badge);
+      badge.textContent = newMsgs.length;
       if (activeSection !== 'nav-chat') {
         newMsgs.forEach(d => {
           if (!_chatNotifShown.has(d.id)) {
@@ -1724,183 +1871,19 @@ function startChatNotifications() {
   );
 }
 
-// ─── HISTORIAL DE ACTIVIDAD ───────────────
-async function logActivity(type, text, meta = {}) {
-  try {
-    await addDoc(collection(db, 'activity'), {
-      classId:   currentClass.id,
-      type,
-      text,
-      ...meta,
-      createdAt: serverTimestamp()
-    });
-  } catch(e) { /* silencioso */ }
-}
-
-let _unsubHistorial = null;
-async function renderHistorial() {
-  const filter = document.getElementById('filter-activity').value;
-  const el = document.getElementById('historial-container');
-
-  if (_unsubHistorial) { _unsubHistorial(); _unsubHistorial = null; }
-
-  _unsubHistorial = onSnapshot(
-    query(collection(db,'activity'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
-    (snap) => {
-      let items = snap.docs.map(d => ({id:d.id,...d.data()}));
-      if (filter) items = items.filter(i => i.type === filter);
-
-      if (!items.length) {
-        el.innerHTML = `<div class="empty-state"><i class="bi bi-clock-history"></i><p>No hay actividad registrada aún.</p></div>`;
-        return;
-      }
-
-      const icons = {
-        submission:   { icon: 'bi-upload',            color: 'var(--brand)',   bg: '#dbeafe' },
-        grade:        { icon: 'bi-pencil-square',      color: 'var(--success)', bg: '#dcfce7' },
-        approval:     { icon: 'bi-person-check-fill',  color: 'var(--accent)',  bg: 'var(--accent-light)' },
-        task:         { icon: 'bi-check2-square',      color: 'var(--brand)',   bg: '#dbeafe' },
-        announcement: { icon: 'bi-megaphone-fill',     color: 'var(--warning)', bg: '#fef3c7' },
-        resource:     { icon: 'bi-folder2-open',       color: 'var(--muted)',   bg: 'var(--surface)' },
-        revoke:       { icon: 'bi-person-x-fill',      color: 'var(--danger)',  bg: '#fee2e2' },
-      };
-
-      el.innerHTML = `<div class="card">
-        <div style="padding:0">
-          ${items.map((item, idx) => {
-            const cfg = icons[item.type] || { icon:'bi-circle', color:'var(--muted)', bg:'var(--surface)' };
-            const ts  = item.createdAt?.toDate ? item.createdAt.toDate() : null;
-            const timeStr = ts ? ts.toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
-            return `
-            <div style="display:flex;align-items:center;gap:1rem;padding:.875rem 1.25rem;${idx < items.length-1 ? 'border-bottom:1px solid var(--border)' : ''}">
-              <div style="width:36px;height:36px;border-radius:50%;background:${cfg.bg};color:${cfg.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.95rem">
-                <i class="bi ${cfg.icon}"></i>
-              </div>
-              <div style="flex:1;min-width:0">
-                <div style="font-size:.875rem;font-weight:500">${esc(item.text)}</div>
-                ${item.detail ? `<div style="font-size:.75rem;color:var(--muted);margin-top:.1rem">${esc(item.detail)}</div>` : ''}
-              </div>
-              <div style="font-size:.75rem;color:var(--muted);white-space:nowrap;flex-shrink:0">${timeStr}</div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>`;
-    }
-  );
-}
-
-// ─── DARK MODE ────────────────────────────
+// ─── DARK MODE ───────────────────────────────────────────────────────────────
 function applyTheme(dark) {
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
   const icon = document.getElementById('dark-icon');
   if (icon) icon.className = dark ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
 }
-window.toggleDark = () => {
+document.getElementById('dark-toggle').addEventListener('click', () => {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   localStorage.setItem('ao_theme', isDark ? 'light' : 'dark');
   applyTheme(!isDark);
-};
-applyTheme(localStorage.getItem('ao_theme') === 'dark');
-
-// ─── RESPONSIVE SIDEBAR TOGGLE ────────────
-if (window.innerWidth < 768) {
-  document.getElementById('sidebar-toggle').style.display = '';
-}
-window.addEventListener('resize', () => {
-  document.getElementById('sidebar-toggle').style.display = window.innerWidth < 768 ? '' : 'none';
 });
+applyTheme(localStorage.getItem('ao_theme') === 'dark');
 </script>
-
-<style>
-  .d-none { display: none !important; }
-  @media (max-width: 860px) {
-    #home-grid { grid-template-columns: 1fr !important; }
-  }
-  [style*="display:flex"][style*="gap:.4rem"] { flex-wrap: wrap; }
-
-  /* ── CHAT PRIVADO ── */
-  .chat-layout { display:flex;gap:0;height:calc(100vh - var(--topbar-h) - 130px);background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden; }
-  .chat-sidebar { width:260px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto; }
-  .chat-sidebar-header { padding:.75rem 1rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border); }
-  .chat-student-item { display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;width:100%;background:none;border:none;cursor:pointer;text-align:left;transition:background var(--transition);font-family:var(--font);border-bottom:1px solid var(--border); }
-  .chat-student-item:hover { background:var(--surface); }
-  .chat-student-item.active { background:var(--brand-light); }
-  .chat-student-info { flex:1;min-width:0; }
-  .chat-student-name { font-size:.85rem;font-weight:600;color:var(--text); }
-  .chat-student-last { font-size:.72rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-  .chat-student-time { font-size:.65rem;color:var(--muted);flex-shrink:0; }
-  .chat-main { flex:1;display:flex;flex-direction:column;min-width:0; }
-  .chat-empty-state { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center; }
-  .chat-conv-header { padding:.75rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem;background:var(--card); }
-  .chat-messages { flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:.75rem; }
-  .chat-msg { display:flex;align-items:flex-end;gap:.6rem; }
-  .chat-msg.mine { flex-direction:row-reverse; }
-  .chat-avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700; }
-  .chat-bubble-wrap { display:flex;flex-direction:column;max-width:65%; }
-  .chat-msg.mine .chat-bubble-wrap { align-items:flex-end; }
-  .chat-bubble { padding:.6rem .9rem;border-radius:1rem;font-size:.875rem;line-height:1.5;background:var(--surface);color:var(--text);border-bottom-left-radius:.25rem;word-break:break-word;cursor:default; }
-  .chat-msg.mine .chat-bubble { background:var(--brand);color:#fff;border-bottom-right-radius:.25rem;border-bottom-left-radius:1rem; }
-  .chat-time { font-size:.65rem;color:var(--muted);margin-top:.2rem;display:flex;align-items:center;gap:.2rem; }
-  .chat-input-bar { display:flex;gap:.75rem;padding:.875rem 1.25rem;border-top:1px solid var(--border);background:var(--card); }
-  .chat-input-bar .form-control { flex:1; }
-  @media (max-width:600px) { .chat-sidebar { width:200px; } }
-
-  /* ── CLASS SWITCHER ── */
-  .class-switcher { position: relative; }
-  .class-switcher-btn {
-    display: flex; align-items: center; gap: .5rem;
-    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
-    color: #fff; border-radius: 2rem;
-    padding: .3rem .85rem .3rem .65rem;
-    font-family: var(--font); font-size: .8rem; font-weight: 600;
-    cursor: pointer; transition: background var(--transition);
-    max-width: 220px; white-space: nowrap;
-  }
-  .class-switcher-btn:hover { background: rgba(255,255,255,.25); }
-  .class-switcher-btn span { overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-  .class-switcher-menu {
-    position: absolute; top: calc(100% + 10px); left: 0;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); box-shadow: var(--shadow-lg);
-    min-width: 240px; overflow: hidden; z-index: 2000; display: none;
-  }
-  .class-switcher-menu.open { display: block; }
-  .csm-header {
-    padding: .6rem 1rem; font-size: .68rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
-    border-bottom: 1px solid var(--border);
-  }
-  .csm-item {
-    display: flex; align-items: center; gap: .75rem;
-    padding: .65rem 1rem; width: 100%;
-    background: none; border: none; cursor: pointer; text-align: left;
-    transition: background var(--transition); font-family: var(--font);
-  }
-  .csm-item:hover { background: var(--surface); }
-  .csm-item.active { background: var(--brand-light); }
-  .csm-item-icon {
-    width: 30px; height: 30px; border-radius: .4rem;
-    background: var(--brand); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: .8rem; flex-shrink: 0;
-  }
-  .csm-item.active .csm-item-icon { background: var(--brand-dark); }
-  .csm-item-info { flex: 1; min-width: 0; }
-  .csm-item-name { font-size: .85rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .csm-item-code { font-size: .7rem; color: var(--muted); font-family: var(--mono); }
-  .csm-divider { height: 1px; background: var(--border); }
-  .csm-new {
-    display: flex; align-items: center; gap: .6rem;
-    padding: .7rem 1rem; width: 100%;
-    background: none; border: none; cursor: pointer;
-    font-size: .85rem; font-weight: 600; color: var(--brand);
-    font-family: var(--font); transition: background var(--transition);
-  }
-  .csm-new:hover { background: var(--brand-light); }
-  @media (max-width: 768px) {
-    .class-switcher-btn span { max-width: 80px; }
-  }
-</style>
 
 </body>
 </html>

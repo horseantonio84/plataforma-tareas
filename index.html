@@ -6,101 +6,9 @@
   <title>AulaOnline — Acceso</title>
   <link rel="stylesheet" href="assets/css/app.css"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
-  <style>
-    /* ── LOGIN PAGE SPECIFIC ── */
-    body { min-height: 100vh; display: flex; }
-
-    .login-split {
-      display: flex; width: 100%; min-height: 100vh;
-    }
-
-    /* Panel izquierdo — ilustración/marca */
-    .login-panel {
-      flex: 1; background: var(--brand);
-      display: flex; flex-direction: column;
-      justify-content: center; align-items: center;
-      padding: 3rem; position: relative; overflow: hidden;
-    }
-    .login-panel::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 30% 40%, rgba(245,158,11,.18) 0%, transparent 60%),
-                  radial-gradient(ellipse at 80% 80%, rgba(96,165,250,.15) 0%, transparent 55%);
-    }
-    .login-panel .grid-bg {
-      position: absolute; inset: 0; opacity: .07;
-      background-image:
-        linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px);
-      background-size: 40px 40px;
-    }
-    .login-panel .panel-content { position: relative; text-align: center; color: #fff; max-width: 400px; }
-    .login-panel .panel-logo { font-size: 2rem; font-weight: 700; letter-spacing: -.5px; margin-bottom: 2rem; }
-    .login-panel .panel-logo em { color: var(--accent); font-style: normal; }
-    .login-panel .panel-title { font-size: 1.75rem; font-weight: 700; line-height: 1.3; margin-bottom: 1rem; }
-    .login-panel .panel-sub   { font-size: .95rem; opacity: .75; line-height: 1.7; }
-    .login-panel .panel-features { margin-top: 2.5rem; display: flex; flex-direction: column; gap: .75rem; text-align: left; }
-    .login-panel .feat-item {
-      display: flex; align-items: center; gap: .75rem;
-      font-size: .875rem; opacity: .85;
-    }
-    .login-panel .feat-item i {
-      width: 32px; height: 32px; border-radius: .5rem;
-      background: rgba(255,255,255,.15); display: flex;
-      align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
-    }
-
-    /* Panel derecho — formulario */
-    .login-form-wrap {
-      width: 460px; flex-shrink: 0;
-      display: flex; flex-direction: column;
-      justify-content: center; padding: 3rem;
-      background: var(--card); overflow-y: auto;
-    }
-    .login-form-wrap .form-title { font-size: 1.5rem; font-weight: 700; margin-bottom: .35rem; }
-    .login-form-wrap .form-sub   { color: var(--muted); font-size: .875rem; margin-bottom: 2rem; }
-
-    /* Tabs de login/register */
-    .auth-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1.75rem; }
-    .auth-tab  {
-      flex: 1; padding: .7rem; text-align: center;
-      font-weight: 600; font-size: .875rem; color: var(--muted);
-      border: none; background: none; cursor: pointer;
-      border-bottom: 2px solid transparent; margin-bottom: -2px;
-      transition: all var(--transition);
-    }
-    .auth-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
-
-    /* Class code pill */
-    .code-preview {
-      display: inline-flex; align-items: center; gap: .5rem;
-      background: var(--brand-light); color: var(--brand);
-      font-family: var(--mono); font-weight: 700; font-size: .9rem;
-      padding: .35rem .85rem; border-radius: 2rem; margin-top: .3rem;
-    }
-
-    /* Loader spinner */
-    .btn .spinner {
-      width: 16px; height: 16px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,.3);
-      border-top-color: #fff;
-      animation: spin .7s linear infinite;
-      display: none;
-    }
-    .btn.loading .spinner { display: block; }
-    .btn.loading .btn-text { display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    @media (max-width: 860px) {
-      .login-panel { display: none; }
-      .login-form-wrap { width: 100%; }
-    }
-    @media (max-width: 480px) {
-      .login-form-wrap { padding: 2rem 1.25rem; }
-    }
-  </style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
 </head>
-<body>
+<body class="login-body">
 
 <div class="login-split">
 
@@ -128,67 +36,72 @@
 
     <!-- Tabs -->
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')" id="tab-login">Iniciar sesión</button>
-      <button class="auth-tab" onclick="switchTab('register')" id="tab-register">Crear cuenta</button>
+      <button class="auth-tab active" id="tab-login" data-tab="login">Iniciar sesión</button>
+      <button class="auth-tab" id="tab-register" data-tab="register">Crear cuenta</button>
     </div>
 
     <!-- Alert global -->
     <div id="auth-alert" class="alert alert-error" style="display:none"></div>
 
     <!-- ── FORM LOGIN ── -->
-    <form id="form-login" autocomplete="on" onsubmit="handleLogin(event)">
+    <form id="form-login" autocomplete="on">
       <div class="form-group">
         <label class="form-label">Correo electrónico</label>
         <div class="input-icon">
           <i class="bi bi-envelope"></i>
-          <input type="email" class="form-control" id="login-email" placeholder="tu@correo.com" required autocomplete="email"/>
+          <input type="email" class="form-control" id="login-email"
+            placeholder="tu@correo.com" required autocomplete="email"/>
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label" style="display:flex;justify-content:space-between">
-          Contraseña
-          <a href="#" onclick="handleResetPassword(event)" style="color:var(--brand);font-size:.8rem;font-weight:500">¿La olvidaste?</a>
+        <label class="form-label login-pass-label">
+          <span>Contraseña</span>
+          <a href="#" id="link-reset" class="login-forgot-link">¿La olvidaste?</a>
         </label>
-        <div style="position:relative">
+        <div class="password-wrap">
           <div class="input-icon">
             <i class="bi bi-lock"></i>
-            <input type="password" class="form-control" id="login-pass" placeholder="••••••••" required autocomplete="current-password" style="padding-right:3rem"/>
+            <input type="password" class="form-control" id="login-pass"
+              placeholder="••••••••" required autocomplete="current-password"/>
           </div>
-          <button type="button" id="eye-login" onclick="togglePass('login-pass','eye-login')" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);padding:.25rem;cursor:pointer;font-size:1rem;line-height:1">
+          <button type="button" class="btn-eye" id="eye-login">
             <i class="bi bi-eye"></i>
           </button>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:.5rem" id="btn-login">
+      <button type="submit" class="btn btn-primary btn-lg btn-block mt-2" id="btn-login">
         <span class="spinner"></span>
         <span class="btn-text"><i class="bi bi-box-arrow-in-right"></i> Entrar</span>
       </button>
     </form>
 
     <!-- ── FORM REGISTRO ── -->
-    <form id="form-register" style="display:none" autocomplete="on" onsubmit="handleRegister(event)">
+    <form id="form-register" style="display:none" autocomplete="on">
       <div class="form-group">
         <label class="form-label">Nombre completo <span class="req">*</span></label>
         <div class="input-icon">
           <i class="bi bi-person"></i>
-          <input type="text" class="form-control" id="reg-name" placeholder="Ana García" required autocomplete="name"/>
+          <input type="text" class="form-control" id="reg-name"
+            placeholder="Ana García" required autocomplete="name"/>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Correo electrónico <span class="req">*</span></label>
         <div class="input-icon">
           <i class="bi bi-envelope"></i>
-          <input type="email" class="form-control" id="reg-email" placeholder="tu@correo.com" required autocomplete="email"/>
+          <input type="email" class="form-control" id="reg-email"
+            placeholder="tu@correo.com" required autocomplete="email"/>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Contraseña <span class="req">*</span></label>
-        <div style="position:relative">
+        <div class="password-wrap">
           <div class="input-icon">
             <i class="bi bi-lock"></i>
-            <input type="password" class="form-control" id="reg-pass" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" style="padding-right:3rem"/>
+            <input type="password" class="form-control" id="reg-pass"
+              placeholder="Mínimo 6 caracteres" required autocomplete="new-password"/>
           </div>
-          <button type="button" id="eye-reg" onclick="togglePass('reg-pass','eye-reg')" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);padding:.25rem;cursor:pointer;font-size:1rem;line-height:1">
+          <button type="button" class="btn-eye" id="eye-reg">
             <i class="bi bi-eye"></i>
           </button>
         </div>
@@ -197,29 +110,26 @@
         <label class="form-label">Código de clase <span class="req">*</span></label>
         <div class="input-icon">
           <i class="bi bi-hash"></i>
-          <input type="text" class="form-control" id="reg-code" placeholder="Ej: MAT3A" required
-            oninput="this.value=this.value.toUpperCase()" maxlength="10" autocomplete="off"/>
+          <input type="text" class="form-control" id="reg-code"
+            placeholder="Ej: MAT3A" required maxlength="10" autocomplete="off"/>
         </div>
         <div class="form-hint">Pídele el código a tu profesor.</div>
       </div>
-      <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:.5rem" id="btn-register">
+      <button type="submit" class="btn btn-primary btn-lg btn-block mt-2" id="btn-register">
         <span class="spinner"></span>
         <span class="btn-text"><i class="bi bi-person-plus"></i> Crear cuenta</span>
       </button>
-      <p style="text-align:center;font-size:.78rem;color:var(--muted);margin-top:1rem">
-        Tu cuenta quedará pendiente de aprobación por el profesor.
-      </p>
+      <p class="register-note">Tu cuenta quedará pendiente de aprobación por el profesor.</p>
     </form>
 
     <!-- Footer -->
-    <div style="margin-top:2.5rem;text-align:center;font-size:.75rem;color:var(--muted)">
-      AulaOnline &copy; <span id="yr"></span> &nbsp;·&nbsp; Hecho con <i class="bi bi-heart-fill" style="color:var(--danger)"></i>
+    <div class="login-footer">
+      AulaOnline &copy; <span id="yr"></span> &nbsp;·&nbsp; Hecho con <i class="bi bi-heart-fill login-heart"></i>
     </div>
   </div>
 
 </div>
 
-<!-- Toast container -->
 <div id="toast-container"></div>
 
 <script type="module">
@@ -229,67 +139,76 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile,
-  onAuthStateChanged
+  onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp
+  doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ── Year ──
+// ── Year ──────────────────────────────────────────────────────────────────────
 document.getElementById('yr').textContent = new Date().getFullYear();
 
-// ── Auth state: si ya está logueado, redirigir ──
-onAuthStateChanged(auth, async (user) => {
+// ── Auth state: redirigir si ya está logueado ─────────────────────────────────
+onAuthStateChanged(auth, async user => {
   if (!user) return;
   const snap = await getDoc(doc(db, 'users', user.uid));
   if (!snap.exists()) return;
   const data = snap.data();
-  if (data.role === 'teacher') {
-    window.location.href = 'admin.html';
-  } else if (data.approved) {
-    window.location.href = 'dashboard.html';
-  } else {
-    window.location.href = 'pending.html';
-  }
+  if (data.role === 'teacher')  window.location.href = 'admin.html';
+  else if (data.approved)       window.location.href = 'dashboard.html';
+  else                          window.location.href = 'pending.html';
 });
 
-// ── Tab switch ──
-window.switchTab = (tab) => {
-  clearAlert();
-  document.getElementById('form-login').style.display    = tab === 'login'    ? 'block' : 'none';
-  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
-  document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
-};
-
-// ── Toggle password visibility ──
-window.togglePass = (inputId, btnId) => {
-  const input = document.getElementById(inputId);
-  const icon  = document.querySelector(`#${btnId} i`);
-  if (!input || !icon) return;
-  if (input.type === 'password') { input.type = 'text';     icon.className = 'bi bi-eye-slash'; }
-  else                           { input.type = 'password'; icon.className = 'bi bi-eye'; }
-};
-
-// ── Alert helpers ──
+// ── Alert helpers ─────────────────────────────────────────────────────────────
 function showAlert(msg, type = 'error') {
   const el = document.getElementById('auth-alert');
   el.className = `alert alert-${type}`;
-  el.innerHTML = `<i class="bi bi-${type==='error'?'exclamation-circle':'check-circle'}"></i> ${msg}`;
+  el.innerHTML = `<i class="bi bi-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${msg}`;
   el.style.display = 'flex';
 }
 function clearAlert() {
   document.getElementById('auth-alert').style.display = 'none';
 }
 
-// ── Loading state ──
+// ── Loading state ─────────────────────────────────────────────────────────────
 function setLoading(btnId, on) {
-  document.getElementById(btnId).classList.toggle('loading', on);
-  document.getElementById(btnId).disabled = on;
+  const btn = document.getElementById(btnId);
+  btn.classList.toggle('loading', on);
+  btn.disabled = on;
 }
 
-// ── LOGIN ──
-window.handleLogin = async (e) => {
+// ── Tab switch ────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  clearAlert();
+  document.getElementById('form-login').style.display    = tab === 'login'    ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+}
+
+document.querySelectorAll('.auth-tab').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// ── Toggle password visibility ────────────────────────────────────────────────
+function togglePass(inputId, btnId) {
+  const input = document.getElementById(inputId);
+  const icon  = document.querySelector(`#${btnId} i`);
+  if (!input || !icon) return;
+  if (input.type === 'password') { input.type = 'text';     icon.className = 'bi bi-eye-slash'; }
+  else                           { input.type = 'password'; icon.className = 'bi bi-eye'; }
+}
+
+document.getElementById('eye-login').addEventListener('click', () => togglePass('login-pass', 'eye-login'));
+document.getElementById('eye-reg').addEventListener('click',   () => togglePass('reg-pass',   'eye-reg'));
+
+// ── Código de clase en mayúsculas automáticamente ─────────────────────────────
+document.getElementById('reg-code').addEventListener('input', e => {
+  e.target.value = e.target.value.toUpperCase();
+});
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+document.getElementById('form-login').addEventListener('submit', async e => {
   e.preventDefault(); clearAlert();
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-pass').value;
@@ -300,18 +219,18 @@ window.handleLogin = async (e) => {
   } catch (err) {
     setLoading('btn-login', false);
     const msgs = {
-      'auth/user-not-found':    'No existe una cuenta con ese correo.',
-      'auth/wrong-password':    'Contraseña incorrecta.',
-      'auth/invalid-credential':'Correo o contraseña incorrectos.',
-      'auth/too-many-requests': 'Demasiados intentos. Espera un momento.',
-      'auth/user-disabled':     'Esta cuenta ha sido desactivada.',
+      'auth/user-not-found':     'No existe una cuenta con ese correo.',
+      'auth/wrong-password':     'Contraseña incorrecta.',
+      'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+      'auth/too-many-requests':  'Demasiados intentos. Espera un momento.',
+      'auth/user-disabled':      'Esta cuenta ha sido desactivada.',
     };
     showAlert(msgs[err.code] || `Error: ${err.message}`);
   }
-};
+});
 
-// ── REGISTER ──
-window.handleRegister = async (e) => {
+// ── REGISTER ──────────────────────────────────────────────────────────────────
+document.getElementById('form-register').addEventListener('submit', async e => {
   e.preventDefault(); clearAlert();
   const name  = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
@@ -319,12 +238,10 @@ window.handleRegister = async (e) => {
   const code  = document.getElementById('reg-code').value.trim().toUpperCase();
 
   if (pass.length < 6) { showAlert('La contraseña debe tener al menos 6 caracteres.'); return; }
-
   setLoading('btn-register', true);
 
   try {
-    // 1. Verificar que el código de clase existe
-    const classQ = query(collection(db, 'classes'), where('code', '==', code));
+    const classQ    = query(collection(db, 'classes'), where('code', '==', code));
     const classSnap = await getDocs(classQ);
     if (classSnap.empty) {
       showAlert('Código de clase no válido. Compruébalo con tu profesor.');
@@ -333,26 +250,15 @@ window.handleRegister = async (e) => {
     const classData = classSnap.docs[0].data();
     const classId   = classSnap.docs[0].id;
 
-    // 2. Crear cuenta en Firebase Auth
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(cred.user, { displayName: name });
-
-    // 3. Guardar usuario en Firestore (pendiente de aprobación)
     await setDoc(doc(db, 'users', cred.user.uid), {
-      uid:         cred.user.uid,
-      email,
-      displayName: name,
-      role:        'student',
-      approved:    false,
-      classId,
-      classCode:   code,
-      className:   classData.name,
-      createdAt:   serverTimestamp()
+      uid: cred.user.uid, email, displayName: name,
+      role: 'student', approved: false,
+      classId, classCode: code, className: classData.name,
+      createdAt: serverTimestamp(),
     });
-
-    // 4. Redirigir a pantalla de espera
     window.location.href = 'pending.html';
-
   } catch (err) {
     setLoading('btn-register', false);
     const msgs = {
@@ -362,20 +268,21 @@ window.handleRegister = async (e) => {
     };
     showAlert(msgs[err.code] || `Error: ${err.message}`);
   }
-};
+});
 
-// ── RESET PASSWORD ──
-window.handleResetPassword = async (e) => {
+// ── RESET PASSWORD ────────────────────────────────────────────────────────────
+document.getElementById('link-reset').addEventListener('click', async e => {
   e.preventDefault();
   const email = document.getElementById('login-email').value.trim();
-  if (!email) { showAlert('Introduce tu correo primero.', 'error'); return; }
+  if (!email) { showAlert('Introduce tu correo primero.'); return; }
   try {
     await sendPasswordResetEmail(auth, email);
     showAlert('Te hemos enviado un correo para restablecer tu contraseña.', 'success');
-  } catch (err) {
+  } catch {
     showAlert('No se pudo enviar el correo. ¿El email es correcto?');
   }
-};
+});
 </script>
+
 </body>
 </html>
