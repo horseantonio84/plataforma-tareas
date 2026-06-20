@@ -10,7 +10,7 @@ import { renderResources } from './resources.js';
 import { initChat } from './chat.js';
 import { renderStats } from './stats.js';
 import { renderHistorial, stopHistorial } from './historial.js';
-import { renderStudents } from './students.js';
+import { renderStudents, renderClassRequests } from './students.js';
 import { loadSettings } from './settings.js';
 import { show, hide } from '../shared/dom.js';
 
@@ -30,7 +30,7 @@ export function showSection(id) {
   if (id === 'estadisticas') renderStats();
   if (id === 'historial')    renderHistorial();
   else                       stopHistorial();
-  if (id === 'alumnos')      renderStudents();
+  if (id === 'alumnos')      { renderStudents(); renderClassRequests(); }
   if (id === 'ajustes')      loadSettings();
 
   if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');

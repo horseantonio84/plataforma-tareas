@@ -5,13 +5,13 @@ import { db, collection, query, where, onSnapshot } from '../lib/firebase.js';
 import { state } from './state.js';
 import { show, hide } from '../shared/dom.js';
 import { renderSubmissions } from './submissions.js';
-import { renderStudents } from './students.js';
+import { renderStudents, renderClassRequests } from './students.js';
 import { renderTasks } from './tasks.js';
 
-let _unsubNotif = null, _unsubPending = null, _unsubStudents = null, _unsubTasks = null;
+let _unsubNotif = null, _unsubPending = null, _unsubStudents = null, _unsubTasks = null, _unsubRequests = null;
 
 export function startNotifications() {
-  [_unsubNotif, _unsubPending, _unsubStudents, _unsubTasks].forEach(u => u && u());
+  [_unsubNotif, _unsubPending, _unsubStudents, _unsubTasks, _unsubRequests].forEach(u => u && u());
 
   _unsubNotif = onSnapshot(
     query(collection(db, 'submissions'), where('classId', '==', state.currentClass.id), where('grade', '==', null)),
@@ -47,6 +47,16 @@ export function startNotifications() {
       const stEl = document.getElementById('st-tareas');
       if (stEl) stEl.textContent = snap.size;
       if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-tareas') renderTasks();
+    }
+  );
+  _unsubRequests = onSnapshot(
+    query(collection(db, 'classRequests'), where('classId', '==', state.currentClass.id), where('status', '==', 'pending')),
+    snap => {
+      const count = snap.size;
+      const rb = document.getElementById('badge-requests');
+      count > 0 ? show(rb) : hide(rb);
+      rb.textContent = count;
+      if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-alumnos') renderClassRequests();
     }
   );
 }

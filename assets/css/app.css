@@ -205,6 +205,8 @@ h1,h2,h3,h4,h5,h6 { font-weight: 700; line-height: 1.25; }
   font-size: .65rem; font-weight: 700; padding: .1rem .45rem;
   border-radius: 2rem; min-width: 18px; text-align: center;
 }
+.sidebar .nav-item .badge-count + .badge-count { margin-left: .25rem; }
+.sidebar .nav-item .badge-count-accent { background: var(--accent); }
 .sidebar-footer {
   margin-top: auto; padding: 1rem; border-top: 1px solid var(--border);
 }

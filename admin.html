@@ -103,6 +103,7 @@
     <button class="nav-item" data-section="alumnos" id="nav-alumnos">
       <i class="bi bi-people-fill"></i> Alumnos
       <span class="badge-count d-none" id="badge-pending">0</span>
+      <span class="badge-count badge-count-accent d-none" id="badge-requests">0</span>
     </button>
     <button class="nav-item" data-section="ajustes" id="nav-ajustes">
       <i class="bi bi-gear-fill"></i> Ajustes
@@ -288,9 +289,11 @@
     <div class="tabs">
       <button class="tab-btn active" data-student-tab="approved">Aprobados</button>
       <button class="tab-btn" data-student-tab="pending">Pendientes</button>
+      <button class="tab-btn" data-student-tab="requests">Solicitudes de unión</button>
     </div>
     <div id="students-approved-container"></div>
     <div id="students-pending-container" class="d-none"></div>
+    <div id="students-requests-container" class="d-none"></div>
   </section>
 
   <!-- AJUSTES -->

@@ -110,7 +110,7 @@ document.getElementById('form-register').addEventListener('submit', async e => {
     await setDoc(doc(db, 'users', cred.user.uid), {
       uid: cred.user.uid, email, displayName: name,
       role: 'student', approved: false,
-      classId, classCode: code, className: classData.name,
+      classId, classIds: [classId], classCode: code, className: classData.name,
       createdAt: serverTimestamp(),
     });
     window.location.href = 'pending.html';
