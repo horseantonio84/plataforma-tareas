@@ -34,23 +34,20 @@
     <div class="form-title">Bienvenido</div>
     <div class="form-sub">Accede a tu espacio de clase</div>
 
-    <!-- Tabs -->
     <div class="auth-tabs">
       <button class="auth-tab active" id="tab-login" data-tab="login">Iniciar sesión</button>
       <button class="auth-tab" id="tab-register" data-tab="register">Crear cuenta</button>
     </div>
 
-    <!-- Alert global -->
-    <div id="auth-alert" class="alert alert-error" style="display:none"></div>
+    <div id="auth-alert" class="alert alert-error d-none"></div>
 
-    <!-- ── FORM LOGIN ── -->
+    <!-- FORM LOGIN -->
     <form id="form-login" autocomplete="on">
       <div class="form-group">
         <label class="form-label">Correo electrónico</label>
         <div class="input-icon">
           <i class="bi bi-envelope"></i>
-          <input type="email" class="form-control" id="login-email"
-            placeholder="tu@correo.com" required autocomplete="email"/>
+          <input type="email" class="form-control" id="login-email" placeholder="tu@correo.com" required autocomplete="email"/>
         </div>
       </div>
       <div class="form-group">
@@ -61,12 +58,9 @@
         <div class="password-wrap">
           <div class="input-icon">
             <i class="bi bi-lock"></i>
-            <input type="password" class="form-control" id="login-pass"
-              placeholder="••••••••" required autocomplete="current-password"/>
+            <input type="password" class="form-control" id="login-pass" placeholder="••••••••" required autocomplete="current-password"/>
           </div>
-          <button type="button" class="btn-eye" id="eye-login">
-            <i class="bi bi-eye"></i>
-          </button>
+          <button type="button" class="btn-eye" id="eye-login"><i class="bi bi-eye"></i></button>
         </div>
       </div>
       <button type="submit" class="btn btn-primary btn-lg btn-block mt-2" id="btn-login">
@@ -75,22 +69,20 @@
       </button>
     </form>
 
-    <!-- ── FORM REGISTRO ── -->
-    <form id="form-register" style="display:none" autocomplete="on">
+    <!-- FORM REGISTRO -->
+    <form id="form-register" class="d-none" autocomplete="on">
       <div class="form-group">
         <label class="form-label">Nombre completo <span class="req">*</span></label>
         <div class="input-icon">
           <i class="bi bi-person"></i>
-          <input type="text" class="form-control" id="reg-name"
-            placeholder="Ana García" required autocomplete="name"/>
+          <input type="text" class="form-control" id="reg-name" placeholder="Ana García" required autocomplete="name"/>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Correo electrónico <span class="req">*</span></label>
         <div class="input-icon">
           <i class="bi bi-envelope"></i>
-          <input type="email" class="form-control" id="reg-email"
-            placeholder="tu@correo.com" required autocomplete="email"/>
+          <input type="email" class="form-control" id="reg-email" placeholder="tu@correo.com" required autocomplete="email"/>
         </div>
       </div>
       <div class="form-group">
@@ -98,20 +90,16 @@
         <div class="password-wrap">
           <div class="input-icon">
             <i class="bi bi-lock"></i>
-            <input type="password" class="form-control" id="reg-pass"
-              placeholder="Mínimo 6 caracteres" required autocomplete="new-password"/>
+            <input type="password" class="form-control" id="reg-pass" placeholder="Mínimo 6 caracteres" required autocomplete="new-password"/>
           </div>
-          <button type="button" class="btn-eye" id="eye-reg">
-            <i class="bi bi-eye"></i>
-          </button>
+          <button type="button" class="btn-eye" id="eye-reg"><i class="bi bi-eye"></i></button>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Código de clase <span class="req">*</span></label>
         <div class="input-icon">
           <i class="bi bi-hash"></i>
-          <input type="text" class="form-control" id="reg-code"
-            placeholder="Ej: MAT3A" required maxlength="10" autocomplete="off"/>
+          <input type="text" class="form-control" id="reg-code" placeholder="Ej: MAT3A" required maxlength="10" autocomplete="off"/>
         </div>
         <div class="form-hint">Pídele el código a tu profesor.</div>
       </div>
@@ -122,7 +110,6 @@
       <p class="register-note">Tu cuenta quedará pendiente de aprobación por el profesor.</p>
     </form>
 
-    <!-- Footer -->
     <div class="login-footer">
       AulaOnline &copy; <span id="yr"></span> &nbsp;·&nbsp; Hecho con <i class="bi bi-heart-fill login-heart"></i>
     </div>
@@ -132,157 +119,6 @@
 
 <div id="toast-container"></div>
 
-<script type="module">
-import { auth, db } from './assets/js/firebase-config.js';
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  updateProfile,
-  onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp,
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-// ── Year ──────────────────────────────────────────────────────────────────────
-document.getElementById('yr').textContent = new Date().getFullYear();
-
-// ── Auth state: redirigir si ya está logueado ─────────────────────────────────
-onAuthStateChanged(auth, async user => {
-  if (!user) return;
-  const snap = await getDoc(doc(db, 'users', user.uid));
-  if (!snap.exists()) return;
-  const data = snap.data();
-  if (data.role === 'teacher')  window.location.href = 'admin.html';
-  else if (data.approved)       window.location.href = 'dashboard.html';
-  else                          window.location.href = 'pending.html';
-});
-
-// ── Alert helpers ─────────────────────────────────────────────────────────────
-function showAlert(msg, type = 'error') {
-  const el = document.getElementById('auth-alert');
-  el.className = `alert alert-${type}`;
-  el.innerHTML = `<i class="bi bi-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${msg}`;
-  el.style.display = 'flex';
-}
-function clearAlert() {
-  document.getElementById('auth-alert').style.display = 'none';
-}
-
-// ── Loading state ─────────────────────────────────────────────────────────────
-function setLoading(btnId, on) {
-  const btn = document.getElementById(btnId);
-  btn.classList.toggle('loading', on);
-  btn.disabled = on;
-}
-
-// ── Tab switch ────────────────────────────────────────────────────────────────
-function switchTab(tab) {
-  clearAlert();
-  document.getElementById('form-login').style.display    = tab === 'login'    ? 'block' : 'none';
-  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
-  document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
-}
-
-document.querySelectorAll('.auth-tab').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
-// ── Toggle password visibility ────────────────────────────────────────────────
-function togglePass(inputId, btnId) {
-  const input = document.getElementById(inputId);
-  const icon  = document.querySelector(`#${btnId} i`);
-  if (!input || !icon) return;
-  if (input.type === 'password') { input.type = 'text';     icon.className = 'bi bi-eye-slash'; }
-  else                           { input.type = 'password'; icon.className = 'bi bi-eye'; }
-}
-
-document.getElementById('eye-login').addEventListener('click', () => togglePass('login-pass', 'eye-login'));
-document.getElementById('eye-reg').addEventListener('click',   () => togglePass('reg-pass',   'eye-reg'));
-
-// ── Código de clase en mayúsculas automáticamente ─────────────────────────────
-document.getElementById('reg-code').addEventListener('input', e => {
-  e.target.value = e.target.value.toUpperCase();
-});
-
-// ── LOGIN ─────────────────────────────────────────────────────────────────────
-document.getElementById('form-login').addEventListener('submit', async e => {
-  e.preventDefault(); clearAlert();
-  const email = document.getElementById('login-email').value.trim();
-  const pass  = document.getElementById('login-pass').value;
-  setLoading('btn-login', true);
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-    // onAuthStateChanged se encarga de redirigir
-  } catch (err) {
-    setLoading('btn-login', false);
-    const msgs = {
-      'auth/user-not-found':     'No existe una cuenta con ese correo.',
-      'auth/wrong-password':     'Contraseña incorrecta.',
-      'auth/invalid-credential': 'Correo o contraseña incorrectos.',
-      'auth/too-many-requests':  'Demasiados intentos. Espera un momento.',
-      'auth/user-disabled':      'Esta cuenta ha sido desactivada.',
-    };
-    showAlert(msgs[err.code] || `Error: ${err.message}`);
-  }
-});
-
-// ── REGISTER ──────────────────────────────────────────────────────────────────
-document.getElementById('form-register').addEventListener('submit', async e => {
-  e.preventDefault(); clearAlert();
-  const name  = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pass  = document.getElementById('reg-pass').value;
-  const code  = document.getElementById('reg-code').value.trim().toUpperCase();
-
-  if (pass.length < 6) { showAlert('La contraseña debe tener al menos 6 caracteres.'); return; }
-  setLoading('btn-register', true);
-
-  try {
-    const classQ    = query(collection(db, 'classes'), where('code', '==', code));
-    const classSnap = await getDocs(classQ);
-    if (classSnap.empty) {
-      showAlert('Código de clase no válido. Compruébalo con tu profesor.');
-      setLoading('btn-register', false); return;
-    }
-    const classData = classSnap.docs[0].data();
-    const classId   = classSnap.docs[0].id;
-
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    await updateProfile(cred.user, { displayName: name });
-    await setDoc(doc(db, 'users', cred.user.uid), {
-      uid: cred.user.uid, email, displayName: name,
-      role: 'student', approved: false,
-      classId, classCode: code, className: classData.name,
-      createdAt: serverTimestamp(),
-    });
-    window.location.href = 'pending.html';
-  } catch (err) {
-    setLoading('btn-register', false);
-    const msgs = {
-      'auth/email-already-in-use': 'Ya existe una cuenta con ese correo.',
-      'auth/invalid-email':        'El correo no tiene un formato válido.',
-      'auth/weak-password':        'La contraseña es demasiado débil.',
-    };
-    showAlert(msgs[err.code] || `Error: ${err.message}`);
-  }
-});
-
-// ── RESET PASSWORD ────────────────────────────────────────────────────────────
-document.getElementById('link-reset').addEventListener('click', async e => {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  if (!email) { showAlert('Introduce tu correo primero.'); return; }
-  try {
-    await sendPasswordResetEmail(auth, email);
-    showAlert('Te hemos enviado un correo para restablecer tu contraseña.', 'success');
-  } catch {
-    showAlert('No se pudo enviar el correo. ¿El email es correcto?');
-  }
-});
-</script>
-
+<script type="module" src="assets/js/auth/login.js"></script>
 </body>
 </html>

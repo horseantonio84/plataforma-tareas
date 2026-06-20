@@ -10,14 +10,14 @@
 </head>
 <body>
 
-<!-- ══ LOADING ══ -->
+<!-- LOADING -->
 <div id="app-loading">
   <div class="loading-logo">Aula<em>Online</em></div>
   <div class="loading-spinner"></div>
   <div class="loading-text">Cargando tu clase...</div>
 </div>
 
-<!-- ══ TOPBAR ══ -->
+<!-- TOPBAR -->
 <header class="topbar">
   <button class="btn btn-ghost btn-icon d-none" id="sidebar-toggle">
     <i class="bi bi-list fs-4 text-white"></i>
@@ -63,7 +63,7 @@
   </div>
 </header>
 
-<!-- ══ SIDEBAR ══ -->
+<!-- SIDEBAR -->
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-section">
     <div class="sidebar-label">Principal</div>
@@ -99,56 +99,32 @@
   </div>
 </nav>
 
-<!-- ══ MAIN ══ -->
+<!-- MAIN -->
 <div class="app-layout">
 
-  <!-- ░░ INICIO ░░ -->
+  <!-- INICIO -->
   <section class="page" id="s-inicio">
     <div class="page-header">
       <h1 class="page-title">Mi clase <span id="greeting-sub"></span></h1>
     </div>
-
-    <!-- Stats -->
     <div class="stat-grid">
       <div class="stat-card fade-in">
-        <div class="stat-icon stat-icon-blue">
-          <i class="bi bi-check2-square icon-brand"></i>
-        </div>
-        <div>
-          <div class="stat-value" id="st-pending">—</div>
-          <div class="stat-label">Tareas pendientes</div>
-        </div>
+        <div class="stat-icon stat-icon-blue"><i class="bi bi-check2-square icon-brand"></i></div>
+        <div><div class="stat-value" id="st-pending">—</div><div class="stat-label">Tareas pendientes</div></div>
       </div>
       <div class="stat-card fade-in fade-in-delay-1">
-        <div class="stat-icon stat-icon-green">
-          <i class="bi bi-check-circle-fill icon-success"></i>
-        </div>
-        <div>
-          <div class="stat-value" id="st-done">—</div>
-          <div class="stat-label">Entregadas</div>
-        </div>
+        <div class="stat-icon stat-icon-green"><i class="bi bi-check-circle-fill icon-success"></i></div>
+        <div><div class="stat-value" id="st-done">—</div><div class="stat-label">Entregadas</div></div>
       </div>
       <div class="stat-card fade-in fade-in-delay-2">
-        <div class="stat-icon stat-icon-amber">
-          <i class="bi bi-star-fill icon-accent"></i>
-        </div>
-        <div>
-          <div class="stat-value" id="st-avg">—</div>
-          <div class="stat-label">Nota media</div>
-        </div>
+        <div class="stat-icon stat-icon-amber"><i class="bi bi-star-fill icon-accent"></i></div>
+        <div><div class="stat-value" id="st-avg">—</div><div class="stat-label">Nota media</div></div>
       </div>
       <div class="stat-card fade-in fade-in-delay-3">
-        <div class="stat-icon stat-icon-red">
-          <i class="bi bi-clock-fill icon-danger"></i>
-        </div>
-        <div>
-          <div class="stat-value" id="st-due-soon">—</div>
-          <div class="stat-label">Entregas esta semana</div>
-        </div>
+        <div class="stat-icon stat-icon-red"><i class="bi bi-clock-fill icon-danger"></i></div>
+        <div><div class="stat-value" id="st-due-soon">—</div><div class="stat-label">Entregas esta semana</div></div>
       </div>
     </div>
-
-    <!-- Progreso general -->
     <div class="card mb-4 fade-in">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -160,8 +136,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Próximas entregas + últimos anuncios -->
     <div class="row g-4" id="home-grid">
       <div class="col-12 col-lg-7">
         <div class="card fade-in h-100">
@@ -183,40 +157,38 @@
     </div>
   </section>
 
-  <!-- ░░ TAREAS ░░ -->
+  <!-- TAREAS -->
   <section class="page d-none" id="s-tareas">
     <div class="page-header">
       <h1 class="page-title">Tareas</h1>
-      <div class="d-flex gap-2 flex-wrap">
-        <select class="form-control w-auto" id="filter-status">
-          <option value="">Todas</option>
-          <option value="pending">Pendientes</option>
-          <option value="submitted">Entregadas</option>
-        </select>
-      </div>
+      <select class="form-control w-auto" id="filter-status">
+        <option value="">Todas</option>
+        <option value="pending">Pendientes</option>
+        <option value="submitted">Entregadas</option>
+      </select>
     </div>
     <div id="tasks-container"></div>
   </section>
 
-  <!-- ░░ ANUNCIOS ░░ -->
+  <!-- ANUNCIOS -->
   <section class="page d-none" id="s-anuncios">
     <div class="page-header"><h1 class="page-title">Anuncios</h1></div>
     <div id="annc-container"></div>
   </section>
 
-  <!-- ░░ RECURSOS ░░ -->
+  <!-- RECURSOS -->
   <section class="page d-none" id="s-recursos">
     <div class="page-header"><h1 class="page-title">Recursos</h1></div>
     <div id="resources-container"></div>
   </section>
 
-  <!-- ░░ MIS NOTAS ░░ -->
+  <!-- MIS NOTAS -->
   <section class="page d-none" id="s-notas">
     <div class="page-header"><h1 class="page-title">Mis calificaciones</h1></div>
     <div id="grades-container"></div>
   </section>
 
-  <!-- ░░ CHAT ░░ -->
+  <!-- CHAT -->
   <section class="page d-none" id="s-chat">
     <div class="page-header"><h1 class="page-title">Chat con el profesor</h1></div>
     <div class="chat-wrap">
@@ -227,16 +199,13 @@
         </div>
       </div>
       <div class="chat-input-bar">
-        <input type="text" class="form-control" id="chat-input"
-          placeholder="Escribe un mensaje..." maxlength="500"/>
-        <button class="btn btn-primary" id="btn-send-chat">
-          <i class="bi bi-send-fill"></i>
-        </button>
+        <input type="text" class="form-control" id="chat-input" placeholder="Escribe un mensaje..." maxlength="500"/>
+        <button class="btn btn-primary" id="btn-send-chat"><i class="bi bi-send-fill"></i></button>
       </div>
     </div>
   </section>
 
-  <!-- ░░ MI PERFIL ░░ -->
+  <!-- MI PERFIL -->
   <section class="page d-none" id="s-perfil">
     <div class="page-header"><h1 class="page-title">Mi perfil</h1></div>
     <div class="row g-4 perfil-grid-wrap" id="perfil-grid">
@@ -277,25 +246,21 @@
 
 </div><!-- /app-layout -->
 
-<!-- Panel de todas las clases -->
 <div id="perfil-all-classes" class="perfil-all-classes-panel d-none"></div>
 
-<!-- ════ MODAL: ENTREGAR TAREA ════ -->
+<!-- MODAL: ENTREGAR TAREA -->
 <div class="modal-overlay" id="modal-entrega">
   <div class="modal-box">
     <div class="modal-header">
       <h3><i class="bi bi-upload"></i> Entregar tarea</h3>
-      <button class="btn btn-ghost btn-icon" data-close-modal="modal-entrega">
-        <i class="bi bi-x-lg"></i>
-      </button>
+      <button class="btn btn-ghost btn-icon" data-close-modal="modal-entrega"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="sub-task-id"/>
       <div class="alert alert-info mb-3" id="sub-task-title"></div>
       <div class="form-group">
         <label class="form-label">Comentario / enlace a tu trabajo</label>
-        <textarea class="form-control" id="sub-comment" rows="4"
-          placeholder="Describe lo que has hecho, pega un enlace a Drive, GitHub, etc."></textarea>
+        <textarea class="form-control" id="sub-comment" rows="4" placeholder="Describe lo que has hecho, pega un enlace a Drive, GitHub, etc."></textarea>
         <div class="form-hint">Si tu trabajo está en un documento, copia aquí el enlace compartido.</div>
       </div>
     </div>
@@ -308,820 +273,33 @@
   </div>
 </div>
 
-<!-- ════ MODAL: UNIRSE A CLASE ════ -->
+<!-- MODAL: UNIRSE A CLASE -->
 <div class="modal-overlay" id="modal-join-class">
   <div class="modal-box modal-box-sm">
     <div class="modal-header">
       <h3><i class="bi bi-mortarboard-fill"></i> Unirse a otra clase</h3>
-      <button class="btn btn-ghost btn-icon" data-close-modal="modal-join-class">
-        <i class="bi bi-x-lg"></i>
-      </button>
+      <button class="btn btn-ghost btn-icon" data-close-modal="modal-join-class"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Código de clase <span class="req">*</span></label>
         <div class="input-icon">
           <i class="bi bi-hash"></i>
-          <input type="text" class="form-control" id="join-code"
-            placeholder="Ej: MAT3A" maxlength="10"/>
+          <input type="text" class="form-control" id="join-code" placeholder="Ej: MAT3A" maxlength="10"/>
         </div>
         <div class="form-hint">Pídele el código al profesor de la nueva clase.</div>
       </div>
       <div id="join-alert" class="d-none"></div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-close-modal="modal-join-class">Cancelar</button>
-      <button type="button" class="btn btn-primary" id="btn-join-class">
-        <i class="bi bi-plus-lg"></i> Solicitar
-      </button>
+      <button class="btn btn-secondary" data-close-modal="modal-join-class">Cancelar</button>
+      <button class="btn btn-primary" id="btn-join-class"><i class="bi bi-plus-lg"></i> Solicitar</button>
     </div>
   </div>
 </div>
 
 <div id="toast-container"></div>
 
-<script type="module">
-import { auth, db } from './assets/js/firebase-config.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
-  collection, query, where, orderBy, serverTimestamp, onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-// ─── STATE ───────────────────────────────────────────────────────────────────
-let currentUser        = null;
-let currentClass       = null;
-let allMyClasses       = [];
-let submissionsCache   = {};
-let tasksCache         = [];
-let announcementsCache = [];
-let resourcesCache     = [];
-let gradesCache        = [];
-
-let _tasksCacheLoaded       = false;
-let _annCacheLoaded         = false;
-let _resCacheLoaded         = false;
-let _gradesCacheLoaded      = false;
-let _submissionsCacheLoaded = false;
-
-let _unsubSubmissions   = null;
-let _unsubTasks         = null;
-let _unsubAnnouncements = null;
-let _unsubResources     = null;
-let _unsubGrades        = null;
-let _unsubChatNotif     = null;
-let _unsubChat          = null;
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-function fmtDate(ts) {
-  if (!ts) return '—';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
-}
-function fmtDateShort(str) {
-  if (!str) return '';
-  return new Date(str + 'T00:00:00').toLocaleDateString('es-ES', { day:'numeric', month:'short' });
-}
-function dueBadge(due) {
-  if (!due) return '';
-  const d = new Date(due + 'T00:00:00'), now = new Date(); now.setHours(0,0,0,0);
-  const diff = Math.round((d - now) / 86400000);
-  if (diff < 0)   return `<span class="badge badge-danger"><i class="bi bi-x-circle"></i> Vencida</span>`;
-  if (diff === 0) return `<span class="badge badge-warning"><i class="bi bi-alarm"></i> Hoy</span>`;
-  if (diff === 1) return `<span class="badge badge-warning"><i class="bi bi-clock"></i> Mañana</span>`;
-  if (diff <= 3)  return `<span class="badge badge-warning"><i class="bi bi-clock"></i> ${diff} días</span>`;
-  if (diff <= 7)  return `<span class="badge badge-accent"><i class="bi bi-calendar"></i> ${diff} días</span>`;
-  return `<span class="badge badge-neutral"><i class="bi bi-calendar"></i> ${fmtDateShort(due)}</span>`;
-}
-function gradeBadge(g) {
-  if (g == null) return '<span class="grade-badge grade-na">—</span>';
-  const n = parseFloat(g);
-  const cls = n >= 9 ? 'grade-a' : n >= 7 ? 'grade-b' : n >= 5 ? 'grade-c' : 'grade-d';
-  return `<span class="grade-badge ${cls}">${n.toFixed(1)}</span>`;
-}
-const PRIO = {
-  alta:  { cls: 'badge-danger',  label: 'Alta'  },
-  media: { cls: 'badge-warning', label: 'Media' },
-  baja:  { cls: 'badge-success', label: 'Baja'  },
-};
-const RES_ICON = {
-  pdf:'bi-file-earmark-pdf-fill', video:'bi-play-circle-fill',
-  link:'bi-link-45deg', ejercicio:'bi-pencil-square',
-  presentacion:'bi-easel-fill', otro:'bi-box-seam',
-};
-
-// show/hide helpers usando d-none (BS5) en vez de style.display
-function show(el) { el.classList.remove('d-none'); }
-function hide(el) { el.classList.add('d-none'); }
-
-function toast(msg, type = '') {
-  const el = document.createElement('div');
-  el.className = `toast${type ? ' toast-' + type : ''}`;
-  el.innerHTML = `<i class="bi bi-${type==='success'?'check-circle':type==='error'?'exclamation-circle':'info-circle'}"></i> ${msg}`;
-  document.getElementById('toast-container').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
-}
-
-// ─── MODALS ───────────────────────────────────────────────────────────────────
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-document.addEventListener('click', e => {
-  if (e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
-  const closer = e.target.closest('[data-close-modal]');
-  if (closer) closeModal(closer.dataset.closeModal);
-});
-
-// ─── AUTH ─────────────────────────────────────────────────────────────────────
-onAuthStateChanged(auth, async user => {
-  if (!user) { window.location.href = 'index.html'; return; }
-  const snap = await getDoc(doc(db, 'users', user.uid));
-  if (!snap.exists()) { window.location.href = 'index.html'; return; }
-  const data = snap.data();
-  if (data.role === 'teacher') { window.location.href = 'admin.html';   return; }
-  if (!data.approved)          { window.location.href = 'pending.html'; return; }
-  currentUser = { ...data, uid: user.uid };
-
-  if (!currentUser.classIds?.length) {
-    currentUser.classIds = currentUser.classId ? [currentUser.classId] : [];
-    await updateDoc(doc(db, 'users', user.uid), { classIds: currentUser.classIds }).catch(() => {});
-  }
-
-  allMyClasses = [];
-  for (const cid of currentUser.classIds) {
-    try {
-      const cs = await getDoc(doc(db, 'classes', cid));
-      if (cs.exists()) allMyClasses.push({ id: cs.id, ...cs.data() });
-    } catch(e) {}
-  }
-  if (!allMyClasses.length) { window.location.href = 'index.html'; return; }
-
-  const savedId = localStorage.getItem('ao_activeClassId_student');
-  currentClass = allMyClasses.find(c => c.id === savedId) || allMyClasses[0];
-
-  renderClassSwitcher();
-  initUI();
-  updateDoc(doc(db, 'users', user.uid), { lastSeen: serverTimestamp() }).catch(() => {});
-  await loadSubmissions();
-  startSubmissionsListener();
-  startTasksListener();
-  startAnnouncementsListener();
-  startResourcesListener();
-  startGradesListener();
-  startChatNotifications();
-
-  const loader = document.getElementById('app-loading');
-  if (loader) { loader.classList.add('hiding'); setTimeout(() => loader.remove(), 350); }
-  showSection('inicio');
-});
-
-function initUI() {
-  const initials = (currentUser.displayName || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-  document.getElementById('avatar-initials').textContent = initials;
-  document.getElementById('menu-name').textContent  = currentUser.displayName || '—';
-  document.getElementById('menu-email').textContent = currentUser.email || '—';
-  const h = new Date().getHours();
-  const greet = h < 13 ? '☀️ Buenos días' : h < 20 ? '👋 Buenas tardes' : '🌙 Buenas noches';
-  document.getElementById('greeting-sub').textContent = `· ${greet}, ${(currentUser.displayName||'').split(' ')[0]}`;
-}
-
-// ─── NAVEGACIÓN ───────────────────────────────────────────────────────────────
-function showSection(id) {
-  document.querySelectorAll('.app-layout > section').forEach(s => s.classList.add('d-none'));
-  document.getElementById('s-' + id).classList.remove('d-none');
-  document.querySelectorAll('.sidebar .nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('nav-' + id)?.classList.add('active');
-
-  if (id === 'inicio') renderHome();
-
-  if (id === 'tareas') {
-    localStorage.setItem('ao_seenTasks_' + currentClass.id, JSON.stringify(tasksCache.map(t => t.id)));
-    hide(document.getElementById('badge-tareas'));
-    renderTasks();
-  }
-  if (id === 'anuncios') {
-    localStorage.setItem('ao_seenAnns_' + currentClass.id, JSON.stringify(announcementsCache.map(a => a.id)));
-    hide(document.getElementById('badge-anuncios'));
-    renderAnnouncementsFromCache();
-  }
-  if (id === 'recursos') {
-    localStorage.setItem('ao_seenRes_' + currentClass.id, JSON.stringify(resourcesCache.map(r => r.id)));
-    hide(document.getElementById('badge-recursos'));
-    renderResourcesFromCache();
-  }
-  if (id === 'notas') {
-    localStorage.setItem('ao_seenGrades_' + currentClass.id, JSON.stringify(gradesCache.map(g => g.id)));
-    hide(document.getElementById('badge-notas'));
-    renderGradesFromCache();
-  }
-  if (id === 'chat')   initChat();
-  if (id === 'perfil') renderPerfil();
-
-  if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
-}
-
-document.querySelectorAll('.sidebar .nav-item[data-section]').forEach(btn => {
-  btn.addEventListener('click', () => showSection(btn.dataset.section));
-});
-document.querySelectorAll('[data-nav-to]').forEach(btn => {
-  btn.addEventListener('click', () => showSection(btn.dataset.navTo));
-});
-
-// Sidebar toggle responsive
-const sidebarToggle = document.getElementById('sidebar-toggle');
-sidebarToggle.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
-function updateToggle() {
-  window.innerWidth < 768 ? show(sidebarToggle) : hide(sidebarToggle);
-}
-updateToggle();
-window.addEventListener('resize', updateToggle);
-
-// ─── CLASS SWITCHER ───────────────────────────────────────────────────────────
-function renderClassSwitcher() {
-  document.getElementById('topbar-classname').textContent = currentClass.name;
-  document.getElementById('csm-list').innerHTML = allMyClasses.map(c => `
-    <button class="csm-item ${c.id === currentClass.id ? 'active' : ''}" data-switch-class="${c.id}">
-      <div class="csm-item-icon">${c.name[0].toUpperCase()}</div>
-      <div class="csm-item-info">
-        <div class="csm-item-name">${esc(c.name)}</div>
-        <div class="csm-item-code">${c.code || ''}</div>
-      </div>
-      ${c.id === currentClass.id ? '<i class="bi bi-check2 ms-auto icon-brand"></i>' : ''}
-    </button>`).join('');
-  document.querySelectorAll('[data-switch-class]').forEach(btn => {
-    btn.addEventListener('click', () => switchClass(btn.dataset.switchClass));
-  });
-}
-
-document.getElementById('class-switcher-btn').addEventListener('click', () => {
-  document.getElementById('class-switcher-menu').classList.toggle('open');
-});
-document.addEventListener('click', e => {
-  if (!document.getElementById('class-switcher').contains(e.target))
-    document.getElementById('class-switcher-menu').classList.remove('open');
-});
-function closeClassMenu() { document.getElementById('class-switcher-menu').classList.remove('open'); }
-
-async function switchClass(classId) {
-  if (currentClass?.id === classId) { closeClassMenu(); return; }
-  currentClass = allMyClasses.find(c => c.id === classId);
-  localStorage.setItem('ao_activeClassId_student', classId);
-  renderClassSwitcher(); closeClassMenu();
-
-  tasksCache = []; _tasksCacheLoaded = false;
-  announcementsCache = []; _annCacheLoaded = false;
-  resourcesCache = []; _resCacheLoaded = false;
-  gradesCache = []; _gradesCacheLoaded = false;
-  submissionsCache = {}; _submissionsCacheLoaded = false;
-
-  [_unsubSubmissions,_unsubTasks,_unsubAnnouncements,
-   _unsubResources,_unsubGrades,_unsubChatNotif,_unsubChat]
-    .forEach(u => u?.());
-
-  await loadSubmissions();
-  startSubmissionsListener(); startTasksListener();
-  startAnnouncementsListener(); startResourcesListener();
-  startGradesListener(); startChatNotifications();
-  showSection('inicio');
-  toast(`Cambiado a: ${currentClass.name}`, 'success');
-}
-
-// ─── JOIN CLASS ───────────────────────────────────────────────────────────────
-document.getElementById('btn-open-join-class').addEventListener('click', () => {
-  closeClassMenu();
-  document.getElementById('join-code').value = '';
-  hide(document.getElementById('join-alert'));
-  openModal('modal-join-class');
-});
-document.getElementById('join-code').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
-document.getElementById('join-code').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); joinClass(); } });
-document.getElementById('btn-join-class').addEventListener('click', joinClass);
-
-async function joinClass() {
-  const code    = document.getElementById('join-code').value.trim().toUpperCase();
-  const alertEl = document.getElementById('join-alert');
-  if (!code) {
-    alertEl.className = 'alert alert-error';
-    alertEl.innerHTML = '<i class="bi bi-exclamation-circle"></i> Introduce un código.';
-    show(alertEl); return;
-  }
-  const classSnap = await getDocs(query(collection(db,'classes'), where('code','==',code)));
-  if (classSnap.empty) {
-    alertEl.className = 'alert alert-error';
-    alertEl.innerHTML = '<i class="bi bi-exclamation-circle"></i> Código no válido.';
-    show(alertEl); return;
-  }
-  const newClass = { id: classSnap.docs[0].id, ...classSnap.docs[0].data() };
-  if (allMyClasses.some(c => c.id === newClass.id)) {
-    alertEl.className = 'alert alert-warning';
-    alertEl.innerHTML = '<i class="bi bi-info-circle"></i> Ya perteneces a esta clase.';
-    show(alertEl); return;
-  }
-  await addDoc(collection(db,'classRequests'), {
-    classId: newClass.id, studentUid: currentUser.uid,
-    studentName: currentUser.displayName, email: currentUser.email,
-    status: 'pending', createdAt: serverTimestamp(),
-  });
-  closeModal('modal-join-class');
-  toast(`✅ Solicitud enviada a "${newClass.name}". El profesor debe aprobarte.`, 'success');
-}
-
-// ─── AVATAR ───────────────────────────────────────────────────────────────────
-document.getElementById('avatar-btn').addEventListener('click', () => {
-  document.getElementById('avatar-menu').classList.toggle('open');
-});
-document.addEventListener('click', e => {
-  if (!document.getElementById('avatar-btn').contains(e.target))
-    document.getElementById('avatar-menu').classList.remove('open');
-});
-document.getElementById('btn-logout').addEventListener('click', async () => {
-  await signOut(auth); window.location.href = 'index.html';
-});
-
-// ─── SUBMISSIONS ─────────────────────────────────────────────────────────────
-async function loadSubmissions() {
-  const snap = await getDocs(query(collection(db,'submissions'), where('studentUid','==',currentUser.uid)));
-  submissionsCache = {};
-  snap.docs.forEach(d => { const s = d.data(); submissionsCache[s.taskId] = { id:d.id,...s }; });
-}
-
-function startSubmissionsListener() {
-  if (_unsubSubmissions) _unsubSubmissions();
-  _unsubSubmissions = onSnapshot(
-    query(collection(db,'submissions'), where('studentUid','==',currentUser.uid)),
-    snap => {
-      const newCache = {};
-      snap.docs.forEach(d => { const s = d.data(); newCache[s.taskId] = { id:d.id,...s }; });
-      if (_submissionsCacheLoaded) {
-        Object.values(newCache).forEach(sub => {
-          const old = submissionsCache[sub.taskId];
-          if (old && old.grade == null && sub.grade != null) {
-            toast(`⭐ El profesor ha corregido tu tarea: ${sub.grade}/10`, 'success');
-            const activeSection = document.querySelector('.sidebar .nav-item.active')?.id;
-            if (activeSection !== 'nav-notas' && activeSection !== 'nav-tareas') {
-              const badge = document.getElementById('badge-tareas');
-              const cur = parseInt(badge.textContent || '0');
-              show(badge); badge.textContent = cur > 0 ? cur : 1;
-            }
-            if (activeSection === 'nav-tareas') renderTasksFromCache();
-          }
-        });
-      }
-      submissionsCache = newCache;
-      _submissionsCacheLoaded = true;
-      const active = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (active === 'nav-tareas') renderTasks();
-      if (active === 'nav-inicio') renderHome();
-      updateHomeStats();
-    }
-  );
-}
-
-// ─── TASKS ────────────────────────────────────────────────────────────────────
-function recalcTasksBadge() {
-  const seen   = JSON.parse(localStorage.getItem('ao_seenTasks_' + currentClass.id) || '[]');
-  const unseen = tasksCache.filter(t => !seen.includes(t.id) && !submissionsCache[t.id]);
-  const badge  = document.getElementById('badge-tareas');
-  unseen.length > 0 ? show(badge) : hide(badge);
-  badge.textContent = unseen.length;
-}
-
-function startTasksListener() {
-  if (_unsubTasks) _unsubTasks();
-  _unsubTasks = onSnapshot(
-    query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
-    snap => {
-      const newTasks = snap.docs.map(d => ({ id:d.id,...d.data() }));
-      if (_tasksCacheLoaded) {
-        const oldIds = new Set(tasksCache.map(t => t.id));
-        newTasks.filter(t => !oldIds.has(t.id)).forEach(t => {
-          if (document.querySelector('.sidebar .nav-item.active')?.id !== 'nav-tareas')
-            toast(`📋 Nueva tarea: ${t.title}`, 'success');
-        });
-      }
-      tasksCache = newTasks; _tasksCacheLoaded = true;
-      const active = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (active !== 'nav-tareas') recalcTasksBadge();
-      if (active === 'nav-tareas') renderTasksFromCache();
-      if (active === 'nav-inicio') renderHome();
-      updateHomeStats();
-    }
-  );
-}
-
-function updateHomeStats() {
-  const pending   = tasksCache.filter(t => !submissionsCache[t.id]);
-  const submitted = tasksCache.filter(t =>  submissionsCache[t.id]);
-  const now = new Date(); now.setHours(0,0,0,0);
-  const dueSoon = pending.filter(t => { if (!t.due) return false; const d = new Date(t.due+'T00:00:00'); return (d-now)/86400000<=7 && d>=now; });
-  const set = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-  set('st-pending', pending.length);
-  set('st-done',    submitted.length);
-  set('st-due-soon',dueSoon.length);
-  const pct  = tasksCache.length ? Math.round(submitted.length/tasksCache.length*100) : 0;
-  const pBar = document.getElementById('progress-bar');
-  const pPct = document.getElementById('progress-pct');
-  if (pBar) pBar.style.width = pct + '%';
-  if (pPct) pPct.textContent = pct + '%';
-}
-
-function renderTasksFromCache() {
-  const filter = document.getElementById('filter-status').value;
-  let tasks = [...tasksCache];
-  if (filter === 'submitted') tasks = tasks.filter(t =>  submissionsCache[t.id]);
-  if (filter === 'pending')   tasks = tasks.filter(t => !submissionsCache[t.id]);
-
-  const el = document.getElementById('tasks-container');
-  if (!tasks.length) {
-    el.innerHTML = `<div class="empty-state"><i class="bi bi-clipboard"></i><p>No hay tareas en esta categoría.</p></div>`;
-    return;
-  }
-  el.innerHTML = tasks.map(t => {
-    const sub = submissionsCache[t.id];
-    const p   = PRIO[t.priority || 'media'];
-    return `
-    <div class="task-item priority-${t.priority||'media'} ${sub?'done':''} fade-in">
-      <div class="task-body">
-        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-          <span class="task-title">${esc(t.title)}</span>
-          <span class="badge ${p.cls}">${p.label}</span>
-          ${dueBadge(t.due)}
-          ${sub ? `<span class="badge badge-success"><i class="bi bi-check-circle"></i> Entregada</span>` : ''}
-        </div>
-        ${t.desc ? `<div class="task-desc">${esc(t.desc)}</div>` : ''}
-        <div class="task-meta">
-          ${t.link ? `<a href="${esc(t.link)}" target="_blank" class="badge badge-brand"><i class="bi bi-link-45deg"></i> Material adjunto</a>` : ''}
-        </div>
-        ${sub ? `
-        <div class="task-submission-detail">
-          <div class="task-submission-label"><i class="bi bi-upload me-1"></i>Tu entrega:</div>
-          <div>${esc(sub.comment||'(sin comentario)')}</div>
-          ${sub.grade != null ? `<div class="mt-2">Nota: ${gradeBadge(sub.grade)}${sub.feedback?`<span class="task-feedback">${esc(sub.feedback)}</span>`:''}` : ''}
-        </div>` : ''}
-      </div>
-      <div class="task-actions">
-        ${!sub ? `<button class="btn btn-sm btn-primary btn-open-submit" data-task-id="${t.id}" data-task-title="${esc(t.title)}">
-          <i class="bi bi-send-fill"></i> Entregar
-        </button>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-
-  el.querySelectorAll('.btn-open-submit').forEach(btn => {
-    btn.addEventListener('click', () => openSubmit(btn.dataset.taskId, btn.dataset.taskTitle));
-  });
-}
-
-async function renderTasks() {
-  if (!tasksCache.length) {
-    const snap = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-    tasksCache = snap.docs.map(d => ({ id:d.id,...d.data() }));
-  }
-  renderTasksFromCache();
-}
-document.getElementById('filter-status').addEventListener('change', renderTasks);
-
-function openSubmit(taskId, taskTitle) {
-  document.getElementById('sub-task-id').value = taskId;
-  document.getElementById('sub-task-title').innerHTML = `<i class="bi bi-check2-square"></i> <strong>${taskTitle}</strong>`;
-  document.getElementById('sub-comment').value = '';
-  openModal('modal-entrega');
-}
-
-document.getElementById('btn-submit-task').addEventListener('click', async () => {
-  const taskId  = document.getElementById('sub-task-id').value;
-  const comment = document.getElementById('sub-comment').value.trim();
-  if (!comment) { toast('Escribe un comentario o enlace a tu trabajo.','error'); return; }
-  if (submissionsCache[taskId]) { toast('Ya has entregado esta tarea.','error'); closeModal('modal-entrega'); return; }
-  const existing = await getDocs(query(collection(db,'submissions'), where('taskId','==',taskId), where('studentUid','==',currentUser.uid)));
-  if (!existing.empty) { toast('Ya has entregado esta tarea.','error'); closeModal('modal-entrega'); return; }
-  closeModal('modal-entrega');
-  const taskSnap  = await getDoc(doc(db,'tasks',taskId));
-  const taskTitle = taskSnap.exists() ? taskSnap.data().title : '';
-  await addDoc(collection(db,'submissions'), {
-    classId:currentClass.id, taskId, studentUid:currentUser.uid,
-    studentName:currentUser.displayName, comment, grade:null, feedback:null, submittedAt:serverTimestamp(),
-  });
-  await addDoc(collection(db,'activity'), {
-    classId:currentClass.id, type:'submission',
-    text:`${currentUser.displayName} entregó: "${taskTitle}"`,
-    detail:comment.slice(0,80), createdAt:serverTimestamp(),
-  });
-  submissionsCache[taskId] = { taskId, comment, grade:null };
-  toast('¡Tarea entregada!','success');
-});
-
-// ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────
-function startAnnouncementsListener() {
-  if (_unsubAnnouncements) _unsubAnnouncements();
-  _unsubAnnouncements = onSnapshot(
-    query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
-    snap => {
-      const newAnns = snap.docs.map(d => ({ id:d.id,...d.data() }));
-      if (_annCacheLoaded) {
-        const oldIds = new Set(announcementsCache.map(a => a.id));
-        const added  = newAnns.filter(a => !oldIds.has(a.id));
-        if (added.length && document.querySelector('.sidebar .nav-item.active')?.id !== 'nav-anuncios') {
-          const seen   = JSON.parse(localStorage.getItem('ao_seenAnns_'+currentClass.id)||'[]');
-          const unseen = newAnns.filter(a => !seen.includes(a.id));
-          const badge  = document.getElementById('badge-anuncios');
-          unseen.length ? show(badge) : hide(badge);
-          badge.textContent = unseen.length;
-          added.forEach(a => toast(`📢 Nuevo anuncio: ${a.title}`,'success'));
-        }
-      }
-      announcementsCache = newAnns; _annCacheLoaded = true;
-      const active = document.querySelector('.sidebar .nav-item.active')?.id;
-      if (active === 'nav-anuncios') renderAnnouncementsFromCache();
-      if (active === 'nav-inicio')   renderHome();
-    }
-  );
-}
-
-function renderAnnouncementsFromCache() {
-  const el = document.getElementById('annc-container');
-  el.innerHTML = !announcementsCache.length
-    ? `<div class="empty-state"><i class="bi bi-megaphone"></i><p>No hay anuncios aún.</p></div>`
-    : announcementsCache.map(a => `
-      <div class="annc-card fade-in">
-        <div class="annc-header"><div class="annc-title">${esc(a.title)}</div></div>
-        <div class="annc-body">${esc(a.body)}</div>
-        <div class="annc-meta"><i class="bi bi-clock me-1"></i>${fmtDate(a.createdAt)}</div>
-      </div>`).join('');
-}
-
-// ─── RESOURCES ────────────────────────────────────────────────────────────────
-function startResourcesListener() {
-  if (_unsubResources) _unsubResources();
-  _unsubResources = onSnapshot(
-    query(collection(db,'resources'), where('classId','==',currentClass.id), orderBy('createdAt','desc')),
-    snap => {
-      const newRes = snap.docs.map(d => ({ id:d.id,...d.data() }));
-      if (_resCacheLoaded) {
-        const oldIds = new Set(resourcesCache.map(r => r.id));
-        const added  = newRes.filter(r => !oldIds.has(r.id));
-        if (added.length && document.querySelector('.sidebar .nav-item.active')?.id !== 'nav-recursos') {
-          const seen   = JSON.parse(localStorage.getItem('ao_seenRes_'+currentClass.id)||'[]');
-          const unseen = newRes.filter(r => !seen.includes(r.id));
-          const badge  = document.getElementById('badge-recursos');
-          unseen.length ? show(badge) : hide(badge);
-          badge.textContent = unseen.length;
-          added.forEach(r => toast(`📁 Nuevo recurso: ${r.name}`,'success'));
-        }
-      }
-      resourcesCache = newRes; _resCacheLoaded = true;
-      if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-recursos') renderResourcesFromCache();
-    }
-  );
-}
-
-function renderResourcesFromCache() {
-  const el = document.getElementById('resources-container');
-  el.innerHTML = !resourcesCache.length
-    ? `<div class="empty-state"><i class="bi bi-folder-x"></i><p>El profesor no ha subido recursos aún.</p></div>`
-    : resourcesCache.map(r => `
-      <div class="res-card fade-in">
-        <div class="res-icon"><i class="bi ${RES_ICON[r.type]||'bi-box-seam'}"></i></div>
-        <div class="res-info">
-          <div class="res-name">${esc(r.name)}</div>
-          ${r.desc?`<div class="res-desc">${esc(r.desc)}</div>`:''}
-        </div>
-        <a href="${esc(r.url)}" target="_blank" class="btn btn-sm btn-secondary">
-          <i class="bi bi-box-arrow-up-right"></i> Abrir
-        </a>
-      </div>`).join('');
-}
-
-// ─── GRADES ───────────────────────────────────────────────────────────────────
-function startGradesListener() {
-  if (_unsubGrades) _unsubGrades();
-  _unsubGrades = onSnapshot(
-    query(collection(db,'grades'), where('classId','==',currentClass.id), where('studentUid','==',currentUser.uid), orderBy('createdAt','desc')),
-    snap => {
-      const newGrades = snap.docs.map(d => ({ id:d.id,...d.data() }));
-      if (_gradesCacheLoaded) {
-        const oldIds = new Set(gradesCache.map(g => g.id));
-        const added  = newGrades.filter(g => !oldIds.has(g.id));
-        if (added.length && document.querySelector('.sidebar .nav-item.active')?.id !== 'nav-notas') {
-          const seen   = JSON.parse(localStorage.getItem('ao_seenGrades_'+currentClass.id)||'[]');
-          const unseen = newGrades.filter(g => !seen.includes(g.id));
-          const badge  = document.getElementById('badge-notas');
-          unseen.length ? show(badge) : hide(badge);
-          badge.textContent = unseen.length;
-          added.forEach(g => toast(`⭐ Nueva nota: ${g.concept} — ${g.grade}`,'success'));
-        }
-      }
-      gradesCache = newGrades; _gradesCacheLoaded = true;
-      if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-notas') renderGradesFromCache();
-    }
-  );
-}
-
-function renderGradesFromCache() {
-  const el = document.getElementById('grades-container');
-  if (!gradesCache.length) {
-    el.innerHTML = `<div class="empty-state"><i class="bi bi-star"></i><p>Todavía no tienes calificaciones.</p></div>`;
-    return;
-  }
-  const avg = (gradesCache.reduce((a,g) => a+g.grade,0)/gradesCache.length).toFixed(1);
-  el.innerHTML = `
-    <div class="card mb-3 p-4 d-flex flex-row align-items-center gap-4">
-      <div>
-        <div class="grades-avg-label">Nota media</div>
-        <div class="grades-avg-value">${avg}</div>
-      </div>
-      <div class="text-muted text-sm">
-        ${gradesCache.length} calificación${gradesCache.length>1?'es':''} registrada${gradesCache.length>1?'s':''}
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Concepto</th><th>Nota</th><th>Comentario del profesor</th><th>Fecha</th></tr></thead>
-        <tbody>
-          ${gradesCache.map(g=>`<tr>
-            <td class="fw-semibold">${esc(g.concept)}</td>
-            <td>${gradeBadge(g.grade)}</td>
-            <td class="text-muted text-xs">${esc(g.comment||'—')}</td>
-            <td class="text-xs">${fmtDate(g.createdAt)}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-// ─── HOME ─────────────────────────────────────────────────────────────────────
-async function renderHome() {
-  await loadSubmissions();
-  const tasksSnap = await getDocs(query(collection(db,'tasks'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  const tasks = tasksSnap.docs.map(d => ({ id:d.id,...d.data() }));
-  const submitted = tasks.filter(t =>  submissionsCache[t.id]);
-  const pending   = tasks.filter(t => !submissionsCache[t.id]);
-  const now = new Date(); now.setHours(0,0,0,0);
-  const dueSoon = pending.filter(t => { if(!t.due) return false; const d=new Date(t.due+'T00:00:00'); return (d-now)/86400000<=7 && d>=now; });
-
-  document.getElementById('st-pending').textContent  = pending.length;
-  document.getElementById('st-done').textContent     = submitted.length;
-  document.getElementById('st-due-soon').textContent = dueSoon.length;
-
-  const gradesSnap = await getDocs(query(collection(db,'grades'), where('classId','==',currentClass.id), where('studentUid','==',currentUser.uid)));
-  const grades = gradesSnap.docs.map(d => d.data().grade).filter(g => g != null);
-  document.getElementById('st-avg').textContent = grades.length
-    ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
-
-  const pct = tasks.length ? Math.round(submitted.length/tasks.length*100) : 0;
-  document.getElementById('progress-pct').textContent = pct + '%';
-  document.getElementById('progress-bar').style.width = pct + '%';
-
-  const upcoming = pending.filter(t=>t.due).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5);
-  document.getElementById('home-upcoming').innerHTML = !upcoming.length
-    ? `<div class="empty-state p-4"><i class="bi bi-check-all fs-2"></i><p>¡Todo entregado!</p></div>`
-    : upcoming.map(t=>`
-      <div class="home-list-row">
-        <span class="badge ${PRIO[t.priority||'media'].cls}">${PRIO[t.priority||'media'].label}</span>
-        <span class="home-list-title">${esc(t.title)}</span>
-        ${dueBadge(t.due)}
-      </div>`).join('');
-
-  const annSnap = await getDocs(query(collection(db,'announcements'), where('classId','==',currentClass.id), orderBy('createdAt','desc')));
-  document.getElementById('home-anncs').innerHTML = !annSnap.size
-    ? `<div class="empty-state p-4"><i class="bi bi-megaphone fs-2"></i><p>Sin anuncios recientes</p></div>`
-    : annSnap.docs.slice(0,3).map(d => {
-        const a = d.data();
-        return `<div class="home-list-row flex-column align-items-start">
-          <div class="fw-semibold text-sm">${esc(a.title)}</div>
-          <div class="text-muted text-xs">${fmtDate(a.createdAt)}</div>
-        </div>`;
-      }).join('');
-}
-
-// ─── CHAT ─────────────────────────────────────────────────────────────────────
-function getConvId() { return `${currentClass.id}_${currentUser.uid}`; }
-
-function initChat() {
-  if (_unsubChat) { _unsubChat(); _unsubChat = null; }
-  hide(document.getElementById('badge-chat'));
-  localStorage.setItem('ao_chatLastRead_' + currentClass.id, Date.now());
-
-  _unsubChat = onSnapshot(
-    query(collection(db,'messages'), where('convId','==',getConvId()), orderBy('createdAt','asc')),
-    snap => {
-      const el = document.getElementById('chat-messages');
-      if (!el) return;
-      snap.docs.forEach(d => {
-        const m = d.data();
-        if (m.fromRole==='teacher' && !m.readAt)
-          updateDoc(doc(db,'messages',d.id), { readAt:serverTimestamp() }).catch(()=>{});
-      });
-      if (snap.empty) {
-        el.innerHTML = `<div class="empty-state"><i class="bi bi-chat-dots"></i><p>Sin mensajes aún. ¡Escribe al profesor!</p></div>`;
-        return;
-      }
-      el.innerHTML = snap.docs.map(d => {
-        const m      = d.data();
-        const isMine = m.fromRole === 'student';
-        const time   = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
-        const read   = isMine ? (m.readAt ? `<span class="chat-read" title="Leído">✓✓</span>` : `<span class="chat-unread" title="Enviado">✓</span>`) : '';
-        return `
-        <div class="chat-msg ${isMine?'mine':'theirs'}">
-          ${!isMine?`<div class="chat-avatar"><i class="bi bi-person-fill"></i></div>`:''}
-          <div class="chat-bubble-wrap">
-            ${!isMine?`<div class="chat-sender">Profesor</div>`:''}
-            <div class="chat-bubble">${esc(m.text)}</div>
-            <div class="chat-time">${time} ${read}${isMine?` <i class="bi bi-trash chat-delete-msg" data-msg-id="${d.id}"></i>`:''}</div>
-          </div>
-        </div>`;
-      }).join('');
-      el.querySelectorAll('.chat-delete-msg').forEach(i => {
-        i.addEventListener('click', () => deleteChatMessage(i.dataset.msgId));
-      });
-      el.scrollTop = el.scrollHeight;
-    }
-  );
-}
-
-async function sendChatMessage() {
-  const input = document.getElementById('chat-input');
-  const text  = input.value.trim();
-  if (!text) return;
-  input.value = '';
-  await addDoc(collection(db,'messages'), {
-    convId:getConvId(), classId:currentClass.id,
-    studentUid:currentUser.uid, fromUid:currentUser.uid,
-    fromName:currentUser.displayName, fromRole:'student',
-    text, readAt:null, createdAt:serverTimestamp(),
-  });
-}
-async function deleteChatMessage(msgId) {
-  if (!confirm('¿Borrar este mensaje?')) return;
-  await deleteDoc(doc(db,'messages',msgId));
-}
-document.getElementById('btn-send-chat').addEventListener('click', sendChatMessage);
-document.getElementById('chat-input').addEventListener('keydown', e => {
-  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
-});
-
-function startChatNotifications() {
-  if (_unsubChatNotif) _unsubChatNotif();
-  _unsubChatNotif = onSnapshot(
-    query(collection(db,'messages'), where('convId','==',getConvId()), where('fromRole','==','teacher'), orderBy('createdAt','desc')),
-    snap => {
-      if (document.querySelector('.sidebar .nav-item.active')?.id === 'nav-chat') return;
-      const lastRead = parseInt(localStorage.getItem('ao_chatLastRead_'+currentClass.id)||'0');
-      const newMsgs  = snap.docs.filter(d => (d.data().createdAt?.toMillis?.()||0) > lastRead);
-      const badge    = document.getElementById('badge-chat');
-      newMsgs.length ? show(badge) : hide(badge);
-      badge.textContent = newMsgs.length;
-    }
-  );
-}
-
-// ─── PERFIL ───────────────────────────────────────────────────────────────────
-function renderPerfil() {
-  const initials = (currentUser.displayName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  document.getElementById('perfil-avatar').textContent    = initials;
-  document.getElementById('perfil-name').textContent      = currentUser.displayName || '—';
-  document.getElementById('perfil-email').textContent     = currentUser.email || '—';
-  document.getElementById('perfil-classname').textContent = currentClass.name || '—';
-  document.getElementById('perfil-classdesc').textContent = currentClass.description || 'Sin descripción';
-  document.getElementById('perfil-code').textContent      = currentClass.code || '—';
-
-  const el = document.getElementById('perfil-all-classes');
-  if (!el) return;
-  if (allMyClasses.length <= 1) { hide(el); return; }
-  show(el);
-  el.innerHTML = `
-    <div class="perfil-all-label">Todas mis clases (${allMyClasses.length})</div>
-    ${allMyClasses.map(c=>`
-      <div class="perfil-class-row">
-        <div class="perfil-class-icon">${c.name[0].toUpperCase()}</div>
-        <div class="perfil-class-info">
-          <div class="perfil-class-name">${esc(c.name)}</div>
-          <div class="perfil-class-code">${c.code||''}</div>
-        </div>
-        ${c.id===currentClass.id
-          ? '<span class="badge badge-brand">Activa</span>'
-          : `<button class="btn btn-sm btn-secondary btn-switch-perfil" data-cid="${c.id}">Cambiar</button>`}
-      </div>`).join('')}`;
-  el.querySelectorAll('.btn-switch-perfil').forEach(btn => {
-    btn.addEventListener('click', () => switchClass(btn.dataset.cid));
-  });
-}
-
-// ─── DARK MODE ────────────────────────────────────────────────────────────────
-function applyTheme(dark) {
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
-  document.getElementById('dark-icon').className = dark ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
-}
-document.getElementById('dark-toggle').addEventListener('click', () => {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  localStorage.setItem('ao_theme', isDark ? 'light' : 'dark');
-  applyTheme(!isDark);
-});
-applyTheme(localStorage.getItem('ao_theme') === 'dark');
-</script>
-
+<script type="module" src="assets/js/dashboard/main.js"></script>
 </body>
 </html>
