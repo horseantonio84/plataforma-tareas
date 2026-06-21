@@ -11,6 +11,11 @@ import { hide, show } from '../shared/dom.js';
 
 let _unsubChat = null;
 let _unsubChatNotif = null;
+// Recordamos qué mensajes ya hemos marcado como leídos para no repetir la
+// escritura cada vez que el listener se vuelve a disparar (serverTimestamp()
+// es "null" en el cliente hasta que el servidor confirma, así que sin este
+// control se entraba en un bucle de escrituras que hacía parpadear el chat).
+const _markedRead = new Set();
 
 function getConvId() {
   return `${state.currentClass.id}_${state.currentUser.uid}`;
@@ -28,8 +33,10 @@ export function initChat() {
       if (!el) return;
       snap.docs.forEach(d => {
         const m = d.data();
-        if (m.fromRole === 'teacher' && !m.readAt)
-          updateDoc(doc(db, 'messages', d.id), { readAt: serverTimestamp() }).catch(() => {});
+        if (m.fromRole === 'teacher' && !m.readAt && !_markedRead.has(d.id)) {
+          _markedRead.add(d.id);
+          updateDoc(doc(db, 'messages', d.id), { readAt: serverTimestamp() }).catch(() => { _markedRead.delete(d.id); });
+        }
       });
       if (snap.empty) {
         el.innerHTML = `<div class="empty-state"><i class="bi bi-chat-dots"></i><p>Sin mensajes aún. ¡Escribe al profesor!</p></div>`;

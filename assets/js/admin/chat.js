@@ -14,6 +14,8 @@ import { getApprovedStudents } from './students.js';
 
 let _unsubChat = null;
 let _chatStudentUid = null;
+// Mismo control que en el chat del alumno: evita reescribir readAt en bucle.
+const _markedRead = new Set();
 
 function getConvId(studentUid) {
   return `${state.currentClass.id}_${studentUid}`;
@@ -88,8 +90,10 @@ function openConversation(studentUid, studentName) {
       if (!el) return;
       snap.docs.forEach(d => {
         const m = d.data();
-        if (m.fromRole === 'student' && !m.readAt)
-          updateDoc(doc(db, 'messages', d.id), { readAt: serverTimestamp() }).catch(() => {});
+        if (m.fromRole === 'student' && !m.readAt && !_markedRead.has(d.id)) {
+          _markedRead.add(d.id);
+          updateDoc(doc(db, 'messages', d.id), { readAt: serverTimestamp() }).catch(() => { _markedRead.delete(d.id); });
+        }
       });
       if (snap.empty) {
         el.innerHTML = `<div class="empty-state"><i class="bi bi-chat-dots"></i><p>Sin mensajes aún. Escribe el primero.</p></div>`;
